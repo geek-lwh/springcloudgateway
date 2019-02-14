@@ -1,0 +1,27 @@
+# feign的属性策略只能通过yml生效,亲测properties无效
+feign:
+  httpclient: #如果有java config,比如项目中的httpClientConfiguration 则会被替代,优先级java config高
+    maxConnections: 200
+    maxConnectionsPerRoute: 100
+  compression:
+    request:
+      enabled: true # request打开压缩
+    response:
+      enabled: true # response打开压缩
+  client:
+    config:
+      default: # default代表全局配置
+        connectTimeout: 5000
+        readTimeout: 5000
+        loggerLevcel: full
+#        errorDecoder: com.aha.tech.config.ExceptionErrorDecoder
+#        encoder: com.aha.tech.config.JacksonEncoder
+#        decoder: com.aha.tech.config.JacksonDecoder
+        requestInterceptors:
+#          - com.aha.tech.base.interceptor.DefaultFeignRequestInterceptor
+        #          - com.aha.tech.base.interceptor.TemplateServerFeignRequestInterceptor
+        decode404: false
+#      templateserver: #feign client name = templateserver的配置
+#              connectTimeout: 5000
+#              readTimeout: 5000
+#              loggerLevel: full

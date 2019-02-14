@@ -42,6 +42,12 @@ targetCompatibility = 1.8
             it.options.encoding = "UTF-8"
         }
 
+dependencyManagement {
+    imports {
+        mavenBom 'org.springframework.cloud:spring-cloud-dependencies:Finchley.RELEASE'
+    }
+}
+
 dependencies {
 
     // swagger dependency
@@ -58,31 +64,30 @@ dependencies {
     compile('com.aha.public:aha-commons-utils:1.2.2')
 
     // spring boot and spring cloud dependency
-    compile('org.springframework.boot:spring-boot-starter-web')
     compile('org.springframework.boot:spring-boot-starter-aop')
     compile('org.springframework.boot:spring-boot-starter-actuator')
-    compile('org.springframework.boot:spring-cloud-starter-gateway')
+
+
+    compile('org.springframework.cloud:spring-cloud-starter-gateway')
     compile('org.springframework.cloud:spring-cloud-starter-config:2.0.1.RELEASE')
     compile('org.springframework.cloud:spring-cloud-starter-netflix-eureka-client')
     compile ('org.springframework.cloud:spring-cloud-starter-openfeign')
+    compile('org.springframework.cloud:spring-cloud-starter-netflix-hystrix')
 
 
     // redis dependency
-    compile('org.springframework.boot:spring-boot-starter-data-redis')
-    compile('org.apache.commons:commons-pool2')
+//    compile('org.springframework.boot:spring-boot-starter-data-redis')
+//    compile('org.apache.commons:commons-pool2')
 
     // http
-    compile('org.apache.httpcomponents:httpclient:4.5.6')
-    compile('org.apache.httpcomponents:httpcore:4.4.10')
+//    compile('org.apache.httpcomponents:httpclient:4.5.6')
+//    compile('org.apache.httpcomponents:httpcore:4.4.10')
     // apollo config center
     compile('com.ctrip.framework.apollo:apollo-client:1.0.0')
 
+    // ahaschool
+    compile('com.aha.spi:aha-passport-spi:1.0.2')
+    compile('com.aha.public:aha-commons-utils:1.2.3')
     // test dependency
     testCompile("org.springframework.boot:spring-boot-starter-test")
-
-    // serializer
-    compile('com.esotericsoftware:kryo:4.0.2')
-    compile('org.msgpack:msgpack-core:0.8.16')
-    compile('org.msgpack:jackson-dataformat-msgpack:0.8.16')
-    compile('de.javakaffee:kryo-serializers:0.42')
 }
