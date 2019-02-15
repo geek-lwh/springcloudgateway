@@ -4,6 +4,8 @@ import com.aha.tech.commons.response.RpcResponse;
 import com.aha.tech.core.controller.resource.PassportResource;
 import com.aha.tech.passportserver.facade.model.vo.UserVo;
 import com.alibaba.fastjson.JSON;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,13 +18,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ServerWebExchange;
+import org.springframework.web.server.adapter.DefaultServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Optional;
 
 import static com.aha.tech.commons.constants.ResponseConstants.SUCCESS;
 import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.setResponseStatus;
@@ -39,18 +42,12 @@ public class AuthCheckGatewayFilterFactory implements GlobalFilter {
     @Autowired(required = false)
     private PassportResource passportResource;
 
-    @Autowired
-    private RestTemplate restTemplate;
-
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         HttpHeaders requestHeaders = exchange.getRequest().getHeaders();
-        List<String> tokenList = requestHeaders.get("token");
-        if (CollectionUtils.isEmpty(tokenList)) {
-            return null;
-        }
+        List<String> headersOfToken = requestHeaders.get("token");
+        String accessToken = CollectionUtils.isEmpty(headersOfToken) ? StringUtils.EMPTY : headersOfToken.get(0);
 
-        String accessToken = tokenList.get(0);
         RpcResponse<UserVo> response = passportResource.verify(accessToken);
         int code = response.getCode();
         if (code != SUCCESS) {
