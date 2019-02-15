@@ -1,7 +1,7 @@
-package com.aha.tech.controller.resource.fallback;
+package com.aha.tech.core.controller.resource.fallback;
 
 import com.aha.tech.commons.response.RpcResponse;
-import com.aha.tech.controller.resource.PassportResource;
+import com.aha.tech.core.controller.resource.PassportResource;
 import com.aha.tech.passportserver.facade.model.dto.AuthorizationRequestDto;
 import com.aha.tech.passportserver.facade.model.dto.KillSessionRequestDto;
 import com.aha.tech.passportserver.facade.model.vo.AccessTokenVo;

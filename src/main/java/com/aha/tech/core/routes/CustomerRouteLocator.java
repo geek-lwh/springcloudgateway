@@ -1,6 +1,6 @@
-package com.aha.tech.routes;
+package com.aha.tech.core.routes;
 
-import com.aha.tech.filters.AuthCheckGatewayFilterFactory;
+import com.aha.tech.core.filters.AuthCheckGatewayFilterFactory;
 import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
 import org.springframework.context.annotation.Bean;
@@ -18,7 +18,7 @@ public class CustomerRouteLocator {
         return builder.routes()
                 .route(p -> p
                         .path("/aha-account/**")
-                        .filters(f -> f.filter(new AuthCheckGatewayFilterFactory()))
+//                        .filters(f -> f.filter(new AuthCheckGatewayFilterFactory()))
                         .uri("lb://accountserver")
                         .order(-1)
                         .id("auth"))

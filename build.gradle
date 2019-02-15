@@ -66,7 +66,7 @@ dependencies {
     // spring boot and spring cloud dependency
     compile('org.springframework.boot:spring-boot-starter-aop')
     compile('org.springframework.boot:spring-boot-starter-actuator')
-
+    compile 'io.projectreactor.ipc:reactor-netty:0.7.12.RELEASE'
 
     compile('org.springframework.cloud:spring-cloud-starter-gateway')
     compile('org.springframework.cloud:spring-cloud-starter-config:2.0.1.RELEASE')
@@ -80,8 +80,8 @@ dependencies {
 //    compile('org.apache.commons:commons-pool2')
 
     // http
-//    compile('org.apache.httpcomponents:httpclient:4.5.6')
-//    compile('org.apache.httpcomponents:httpcore:4.4.10')
+    compile('org.apache.httpcomponents:httpclient:4.5.6')
+    compile('org.apache.httpcomponents:httpcore:4.4.10')
     // apollo config center
     compile('com.ctrip.framework.apollo:apollo-client:1.0.0')
 

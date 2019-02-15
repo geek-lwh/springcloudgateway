@@ -1,4 +1,4 @@
-//package com.aha.tech.filters;
+//package com.aha.tech.core.filters;
 //
 //import org.springframework.cloud.gateway.filter.GatewayFilter;
 //import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
