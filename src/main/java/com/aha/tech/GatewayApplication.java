@@ -40,7 +40,6 @@ public class GatewayApplication {
 
     private static final Logger logger = LoggerFactory.getLogger(GatewayApplication.class);
 
-
     public static void main(String[] args) {
         String profile = System.getProperty("spring.profiles.active");
         Assert.notNull(profile, "请指定 [-Dspring.profiles.active]");
@@ -77,7 +76,6 @@ public class GatewayApplication {
         String applicationName = env.getProperty("spring.application.name");
         String servletContextPath = env.getProperty("server.servlet.context-path");
         String serverPort = env.getProperty("server.port");
-
 
         logger.info(appBanner, applicationName,
                 StringUtils.isEmpty(env.getProperty("server.ssl.key-store")) ? "http" : "https",
