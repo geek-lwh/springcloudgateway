@@ -4,24 +4,34 @@ import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.netflix.hystrix.EnableHystrix;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.server.reactive.HttpHandler;
+import org.springframework.http.server.reactive.ReactorHttpHandlerAdapter;
 import org.springframework.util.Assert;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.reactive.config.EnableWebFlux;
+import org.springframework.web.reactive.function.server.RouterFunction;
+import org.springframework.web.reactive.function.server.ServerResponse;
+import reactor.ipc.netty.http.server.HttpServer;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
+
+import static org.springframework.web.reactive.function.server.RouterFunctions.toHttpHandler;
 
 /**
  * @Author: luweihong
@@ -35,7 +45,7 @@ import java.util.List;
 @EnableHystrix
 @EnableDiscoveryClient
 @EnableAspectJAutoProxy(proxyTargetClass = true)
-@SpringBootApplication
+@SpringBootApplication(exclude = {DataSourceAutoConfiguration.class})
 public class GatewayApplication {
 
     private static final Logger logger = LoggerFactory.getLogger(GatewayApplication.class);
