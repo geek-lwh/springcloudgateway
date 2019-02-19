@@ -4,13 +4,11 @@ import com.aha.tech.commons.response.RpcResponse;
 import com.aha.tech.core.controller.resource.PassportResource;
 import com.aha.tech.passportserver.facade.model.vo.UserVo;
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.netflix.discovery.converters.Auto;
 import io.netty.buffer.ByteBufAllocator;
 import org.apache.commons.lang3.StringUtils;
+import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,17 +25,15 @@ import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import javax.ws.rs.HttpMethod;
-import java.io.IOException;
 import java.net.URI;
-import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static com.aha.tech.commons.constants.ResponseConstants.SUCCESS;
 import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.setResponseStatus;
@@ -89,8 +85,8 @@ public class AuthCheckGatewayFilterFactory implements GlobalFilter {
             return Mono.defer(() -> {
                 setResponseStatus(exchange, HttpStatus.BAD_REQUEST);
                 final ServerHttpResponse resp = exchange.getResponse();
-                RpcResponse rpcResponse = RpcResponse.defaultFailureResponse();
-                rpcResponse.setMessage("request body is empty");
+                RpcResponse responseBody = RpcResponse.defaultFailureResponse();
+                responseBody.setMessage("request body is empty");
 
                 byte[] bytes = new byte[0];
                 try {
@@ -105,18 +101,41 @@ public class AuthCheckGatewayFilterFactory implements GlobalFilter {
             });
         }
 
-        JSONObject newBody = JSON.parseObject(resolveBody);
-        newBody.put("user_id", userVo.getUserId());
+        try {
+            JSONObject obj = new JSONObject(resolveBody);
+            obj.put("user_id", userVo.getUserId());
+            resolveBody = obj.toString();
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
 
-        DataBuffer bodyDataBuffer = stringBuffer(newBody.toJSONString());
+//        Map<String, Object> newBody = null;
+//        try {
+//            newBody = objectMapper.readValue(resolveBody, Map.class);
+//            newBody.put("user_id", userVo.getUserId());
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
 
+        DataBuffer bodyDataBuffer = stringBuffer(resolveBody);
+        int len = bodyDataBuffer.readableByteCount();
         Flux<DataBuffer> bodyFlux = Flux.just(bodyDataBuffer);
+
+        HttpHeaders myHeaders = new HttpHeaders();
+        copyMultiValueMap(serverHttpRequest.getHeaders(), myHeaders);
+        myHeaders.remove(HttpHeaders.CONTENT_LENGTH);
+        myHeaders.set(HttpHeaders.CONTENT_LENGTH, String.valueOf(len));
 
         ServerHttpRequest request = serverHttpRequest.mutate().uri(uri).build();
         request = new ServerHttpRequestDecorator(request) {
             @Override
             public Flux<DataBuffer> getBody() {
                 return bodyFlux;
+            }
+
+            @Override
+            public HttpHeaders getHeaders() {
+                return myHeaders;
             }
         };
 
@@ -132,24 +151,48 @@ public class AuthCheckGatewayFilterFactory implements GlobalFilter {
      */
     private String resolveBodyFromRequest(ServerHttpRequest serverHttpRequest) {
         //获取请求体
-        Flux<DataBuffer> body = serverHttpRequest.getBody();
+//        Flux<DataBuffer> body = serverHttpRequest.getBody();
+//
+//        AtomicReference<String> bodyRef = new AtomicReference<>();
+//        body.subscribe(buffer -> {
+//            CharBuffer charBuffer = StandardCharsets.UTF_8.decode(buffer.asByteBuffer());
+//            DataBufferUtils.release(buffer);
+//            bodyRef.set(charBuffer.toString());
+//        });
+//
+//        return bodyRef.get();
 
-        AtomicReference<String> bodyRef = new AtomicReference<>();
+        Flux<DataBuffer> body = serverHttpRequest.getBody();
+        StringBuilder sb = new StringBuilder();
+
         body.subscribe(buffer -> {
-            CharBuffer charBuffer = StandardCharsets.UTF_8.decode(buffer.asByteBuffer());
+            byte[] bytes = new byte[buffer.readableByteCount()];
+            buffer.read(bytes);
             DataBufferUtils.release(buffer);
-            bodyRef.set(charBuffer.toString());
+            String bodyString = new String(bytes, StandardCharsets.UTF_8);
+            sb.append(bodyString);
         });
-        //获取request body
-        return bodyRef.get();
+        String str = sb.toString();
+
+        return str;
     }
 
+    /**
+     * 构建DataBuffer
+     * @param value
+     * @return
+     */
     private DataBuffer stringBuffer(String value) {
         byte[] bytes = value.getBytes(StandardCharsets.UTF_8);
+
         NettyDataBufferFactory nettyDataBufferFactory = new NettyDataBufferFactory(ByteBufAllocator.DEFAULT);
         DataBuffer buffer = nettyDataBufferFactory.allocateBuffer(bytes.length);
         buffer.write(bytes);
         return buffer;
+    }
+
+    private static <K, V> void copyMultiValueMap(MultiValueMap<K, V> source, MultiValueMap<K, V> target) {
+        source.forEach((key, value) -> target.put(key, new LinkedList<>(value)));
     }
 
 }
