@@ -38,7 +38,9 @@ public class JsonExceptionHandler extends DefaultErrorWebExceptionHandler {
         if (error instanceof org.springframework.cloud.gateway.support.NotFoundException) {
             code = 404;
         }
-        return response(code, this.buildMessage(request, error));
+
+
+        return response(error,code, this.buildMessage(request, error));
     }
 
     /**
@@ -85,11 +87,12 @@ public class JsonExceptionHandler extends DefaultErrorWebExceptionHandler {
      * @param errorMessage  异常信息
      * @return
      */
-    public static Map<String, Object> response(int status, String errorMessage) {
+    public static Map<String, Object> response(Throwable ex,int status, String errorMessage) {
         Map<String, Object> map = new HashMap<>();
         map.put("code", status);
         map.put("message", errorMessage);
         map.put("date", DateUtil.currentDateByDefaultFormat());
+        map.put("trace", ex.getStackTrace()[0]);
         return map;
     }
 
