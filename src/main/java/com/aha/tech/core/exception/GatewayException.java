@@ -19,4 +19,8 @@ public class GatewayException extends BaseException {
     public GatewayException(int code, Throwable cause) {
         super(code, cause);
     }
+
+    public GatewayException(Throwable cause) {
+        super(500, cause);
+    }
 }

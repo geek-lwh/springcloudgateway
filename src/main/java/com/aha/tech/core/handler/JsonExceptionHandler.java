@@ -1,5 +1,6 @@
 package com.aha.tech.core.handler;
 
+import com.aha.tech.commons.utils.DateUtil;
 import org.springframework.boot.autoconfigure.web.ErrorProperties;
 import org.springframework.boot.autoconfigure.web.ResourceProperties;
 import org.springframework.boot.autoconfigure.web.reactive.error.DefaultErrorWebExceptionHandler;
@@ -88,7 +89,7 @@ public class JsonExceptionHandler extends DefaultErrorWebExceptionHandler {
         Map<String, Object> map = new HashMap<>();
         map.put("code", status);
         map.put("message", errorMessage);
-        map.put("data", null);
+        map.put("date", DateUtil.currentDateByDefaultFormat());
         return map;
     }
 

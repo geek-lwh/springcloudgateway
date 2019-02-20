@@ -2,11 +2,10 @@ package com.aha.tech.core.filters.global;
 
 import com.aha.tech.commons.utils.DateUtil;
 import com.aha.tech.core.constant.FilterOrdered;
-import com.aha.tech.core.entity.GlobalResponseVo;
 import com.aha.tech.core.exception.EmptyBodyException;
+import com.aha.tech.core.exception.GatewayException;
 import com.aha.tech.core.handler.SessionHandler;
 import com.aha.tech.passportserver.facade.model.vo.UserVo;
-import com.alibaba.fastjson.JSON;
 import io.netty.buffer.ByteBufAllocator;
 import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jettison.json.JSONException;
@@ -21,10 +20,8 @@ import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.core.io.buffer.NettyDataBufferFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
-import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.server.ServerWebExchange;
@@ -37,8 +34,6 @@ import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicReference;
-
-import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.setResponseStatus;
 
 /**
  * @Author: luweihong
@@ -71,7 +66,6 @@ public class AddRequestBodyGatewayFilter implements GlobalFilter, Ordered {
         }
 
         String resolveBody = resolveBodyFromRequest(serverHttpRequest);
-
         if (StringUtils.isBlank(resolveBody)) {
             throw new EmptyBodyException();
         }
@@ -80,17 +74,9 @@ public class AddRequestBodyGatewayFilter implements GlobalFilter, Ordered {
         ServerHttpRequest newRequest;
         try {
             newRequest = addRequestBody(resolveBody, userVo, serverHttpRequest, serverHttpRequest.mutate().uri(newUri).build());
-        } catch (JSONException e) {
+        } catch (Exception e) {
             logger.error("date : {} mutate new request has error", DateUtil.currentDateByDefaultFormat(), e);
-            return Mono.defer(() -> {
-                setResponseStatus(exchange, HttpStatus.UNAUTHORIZED);
-                final ServerHttpResponse resp = exchange.getResponse();
-                GlobalResponseVo globalResponseVo = GlobalResponseVo.globalBaseErrorTemplate(110, e.toString(), uri.toString());
-                byte[] bytes = JSON.toJSONString(globalResponseVo).getBytes(StandardCharsets.UTF_8);
-                DataBuffer buffer = exchange.getResponse().bufferFactory().wrap(bytes);
-
-                return resp.writeWith(Flux.just(buffer));
-            });
+            throw new GatewayException(e);
         }
 
         return chain.filter(exchange.mutate().request(newRequest).build());
