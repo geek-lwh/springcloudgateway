@@ -1,6 +1,5 @@
 package com.aha.tech.core.routes;
 
-import com.aha.tech.core.filters.AuthGatewayFilterFactory;
 import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
 import org.springframework.context.annotation.Bean;
