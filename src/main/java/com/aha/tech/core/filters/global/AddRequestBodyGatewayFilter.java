@@ -3,6 +3,7 @@ package com.aha.tech.core.filters.global;
 import com.aha.tech.commons.utils.DateUtil;
 import com.aha.tech.core.constant.FilterOrdered;
 import com.aha.tech.core.entity.GlobalResponseVo;
+import com.aha.tech.core.exception.EmptyBodyException;
 import com.aha.tech.core.handler.SessionHandler;
 import com.aha.tech.passportserver.facade.model.vo.UserVo;
 import com.alibaba.fastjson.JSON;
@@ -72,8 +73,7 @@ public class AddRequestBodyGatewayFilter implements GlobalFilter, Ordered {
         String resolveBody = resolveBodyFromRequest(serverHttpRequest);
 
         if (StringUtils.isBlank(resolveBody)) {
-            logger.error("request body is empty");
-            throw new NullPointerException();
+            throw new EmptyBodyException();
         }
 
         URI newUri = UriComponentsBuilder.fromUri(serverHttpRequest.getURI()).build(true).toUri();
