@@ -16,6 +16,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
+import org.springframework.cloud.gateway.filter.factory.AbstractNameValueGatewayFilterFactory;
+import org.springframework.cloud.gateway.filter.factory.AddRequestParameterGatewayFilterFactory;
+import org.springframework.core.Ordered;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.core.io.buffer.NettyDataBufferFactory;
@@ -51,7 +54,7 @@ import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.s
  * need to modify the header Content-Length, If you don't do this, the body may be truncated after you have modify the request body and the body becomes longer
  */
 @Component
-public class AuthGatewayFilterFactory implements GlobalFilter {
+public class AuthGatewayFilterFactory implements GlobalFilter,Ordered {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthGatewayFilterFactory.class);
 
@@ -84,7 +87,9 @@ public class AuthGatewayFilterFactory implements GlobalFilter {
         }
 
         UserVo userVo = userVoRpcResponse.getData();
-        ServerHttpRequest oldRequest = exchange.getRequest(), newRequest;
+
+        ServerHttpRequest oldRequest = exchange.getRequest();
+        ServerHttpRequest newRequest;
 
         // add userId
         try {
@@ -104,6 +109,7 @@ public class AuthGatewayFilterFactory implements GlobalFilter {
         }
 
         return chain.filter(exchange.mutate().request(newRequest).build());
+//            return chain.filter(exchange);
     }
 
     /**
@@ -135,9 +141,8 @@ public class AuthGatewayFilterFactory implements GlobalFilter {
         }
 
         URI newUri = UriComponentsBuilder.fromUri(serverHttpRequest.getURI()).build(true).toUri();
-        ServerHttpRequest newRequest = addRequestBody(resolveBody, userVo, serverHttpRequest, serverHttpRequest.mutate().uri(newUri).build());
 
-        return newRequest;
+        return addRequestBody(resolveBody, userVo, serverHttpRequest, serverHttpRequest.mutate().uri(newUri).build());
     }
 
     /**
@@ -188,8 +193,8 @@ public class AuthGatewayFilterFactory implements GlobalFilter {
         URI uri = serverHttpRequest.getURI();
 
         String originalQuery = uri.getRawQuery();
-        String query = addRequestParams(originalQuery,userVo);
 
+        String query = addRequestParams(originalQuery,userVo);
         URI newUri = UriComponentsBuilder.fromUri(uri)
                 .replaceQuery(query)
                 .build(false)
@@ -214,7 +219,6 @@ public class AuthGatewayFilterFactory implements GlobalFilter {
         }
 
         query.append("user_id").append("=").append(userVo.getUserId());
-        query.append("name").append("=").append("卢伟宏");
 
         return query.toString();
     }
@@ -260,5 +264,10 @@ public class AuthGatewayFilterFactory implements GlobalFilter {
      */
     private static Boolean isWhiteList() {
         return Boolean.FALSE;
+    }
+
+    @Override
+    public int getOrder() {
+        return -100;
     }
 }
