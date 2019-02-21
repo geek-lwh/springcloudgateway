@@ -1,7 +1,7 @@
 package com.aha.tech.core.filters.global;
 
 import com.aha.tech.commons.response.RpcResponse;
-import com.aha.tech.core.constant.FilterOrdered;
+import com.aha.tech.core.constant.FilterOrderedConstant;
 import com.aha.tech.core.controller.resource.PassportResource;
 import com.aha.tech.core.handler.SessionHandler;
 import com.aha.tech.passportserver.facade.model.vo.UserVo;
@@ -47,7 +47,7 @@ public class AuthGatewayFilterFactory implements GlobalFilter, Ordered {
 
     @Override
     public int getOrder() {
-        return FilterOrdered.GLOBAL_AUTH_GATEWAY_FILTER;
+        return FilterOrderedConstant.GLOBAL_AUTH_GATEWAY_FILTER;
     }
 
     @Override

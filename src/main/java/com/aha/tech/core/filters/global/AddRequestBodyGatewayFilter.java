@@ -1,7 +1,7 @@
 package com.aha.tech.core.filters.global;
 
 import com.aha.tech.commons.utils.DateUtil;
-import com.aha.tech.core.constant.FilterOrdered;
+import com.aha.tech.core.constant.FilterOrderedConstant;
 import com.aha.tech.core.exception.EmptyBodyException;
 import com.aha.tech.core.exception.GatewayException;
 import com.aha.tech.core.handler.SessionHandler;
@@ -23,7 +23,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
 import org.springframework.stereotype.Component;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
@@ -32,8 +31,9 @@ import reactor.core.publisher.Mono;
 import java.net.URI;
 import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicReference;
+
+import static com.aha.tech.core.tools.BeanUtil.copyMultiValueMap;
 
 /**
  * @Author: luweihong
@@ -49,27 +49,38 @@ public class AddRequestBodyGatewayFilter implements GlobalFilter, Ordered {
 
     @Override
     public int getOrder() {
-        return FilterOrdered.GLOBAL_ADD_REQUEST_BODY_GATEWAY_FILTER;
+        return FilterOrderedConstant.GLOBAL_ADD_REQUEST_BODY_GATEWAY_FILTER;
     }
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         logger.debug("执行添加post参数过滤器");
+
         ServerHttpRequest serverHttpRequest = exchange.getRequest();
         HttpMethod httpMethod = serverHttpRequest.getMethod();
         URI uri = serverHttpRequest.getURI();
 
-        UserVo userVo = SessionHandler.get();
-        if (httpMethod != HttpMethod.POST || userVo == null) {
+        if (httpMethod != HttpMethod.POST) {
             logger.info("不满足 执行添加post参数过滤器 要求,url : {},httpMethod : {} ", uri, httpMethod);
             return chain.filter(exchange);
         }
 
+        ServerHttpRequest newRequest = buildNewRequest(serverHttpRequest);
+        return chain.filter(exchange.mutate().request(newRequest).build());
+    }
+
+    /**
+     * 构建新的请求
+     * @param serverHttpRequest
+     * @return
+     */
+    private ServerHttpRequest buildNewRequest(ServerHttpRequest serverHttpRequest) {
         String resolveBody = resolveBodyFromRequest(serverHttpRequest);
         if (StringUtils.isBlank(resolveBody)) {
             throw new EmptyBodyException();
         }
 
+        UserVo userVo = SessionHandler.get();
         URI newUri = UriComponentsBuilder.fromUri(serverHttpRequest.getURI()).build(true).toUri();
         ServerHttpRequest newRequest;
         try {
@@ -79,9 +90,8 @@ public class AddRequestBodyGatewayFilter implements GlobalFilter, Ordered {
             throw new GatewayException(e);
         }
 
-        return chain.filter(exchange.mutate().request(newRequest).build());
+        return newRequest;
     }
-
 
     /**
      * 从request对象中解析body,DataBuffer 转 String
@@ -114,9 +124,6 @@ public class AddRequestBodyGatewayFilter implements GlobalFilter, Ordered {
         return buffer;
     }
 
-    private static <K, V> void copyMultiValueMap(MultiValueMap<K, V> source, MultiValueMap<K, V> target) {
-        source.forEach((key, value) -> target.put(key, new LinkedList<>(value)));
-    }
 
     /**
      * 添加request body

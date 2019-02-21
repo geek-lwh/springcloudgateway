@@ -1,6 +1,6 @@
 package com.aha.tech.core.filters.global;
 
-import com.aha.tech.core.constant.FilterOrdered;
+import com.aha.tech.core.constant.FilterOrderedConstant;
 import com.aha.tech.core.handler.SessionHandler;
 import com.aha.tech.passportserver.facade.model.vo.UserVo;
 import org.slf4j.Logger;
@@ -28,7 +28,7 @@ public class AddRequestParamsGatewayFilter implements GlobalFilter, Ordered {
 
     @Override
     public int getOrder() {
-        return FilterOrdered.GLOBAL_ADD_REQUEST_PARAMS_GATEWAY_FILTER;
+        return FilterOrderedConstant.GLOBAL_ADD_REQUEST_PARAMS_GATEWAY_FILTER;
     }
 
     @Override
@@ -38,14 +38,24 @@ public class AddRequestParamsGatewayFilter implements GlobalFilter, Ordered {
         HttpMethod httpMethod = serverHttpRequest.getMethod();
         URI uri = serverHttpRequest.getURI();
 
-        UserVo userVo = SessionHandler.get();
-        if (httpMethod != HttpMethod.GET || userVo == null) {
+        if (httpMethod != HttpMethod.GET) {
             logger.info("不满足 执行添加get参数过滤器 要求,url : {},httpMethod : {} ", uri, httpMethod);
             return chain.filter(exchange);
         }
 
+        ServerHttpRequest newRequest = buildNewRequest(serverHttpRequest);
+        return chain.filter(exchange.mutate().request(newRequest).build());
+    }
 
-        String originalQuery = uri.getRawQuery();
+    /**
+     * 构建新的请求体
+     * @param serverHttpRequest
+     * @return
+     */
+    private ServerHttpRequest buildNewRequest(ServerHttpRequest serverHttpRequest) {
+        UserVo userVo = SessionHandler.get();
+        URI uri = serverHttpRequest.getURI();
+        String originalQuery = serverHttpRequest.getURI().getRawQuery();
 
         StringBuilder query = new StringBuilder();
         if (org.springframework.util.StringUtils.hasText(originalQuery)) {
@@ -54,18 +64,13 @@ public class AddRequestParamsGatewayFilter implements GlobalFilter, Ordered {
                 query.append('&');
             }
         }
-
-
         query.append("user_id").append("=").append(userVo.getUserId());
 
         URI newUri = UriComponentsBuilder.fromUri(uri)
                 .replaceQuery(query.toString())
                 .build(false)
                 .toUri();
-
-        ServerHttpRequest newRequest = serverHttpRequest.mutate().uri(newUri).build();
-
-        return chain.filter(exchange.mutate().request(newRequest).build());
+        return serverHttpRequest.mutate().uri(newUri).build();
     }
 
 }
