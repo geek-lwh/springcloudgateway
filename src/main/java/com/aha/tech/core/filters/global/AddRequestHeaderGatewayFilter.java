@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
+import static com.aha.tech.core.constant.FilterOrderedConstant.GLOBAL_ADD_REQUEST_HEADER_GATEWAY_FILTER;
 import static com.aha.tech.core.constant.HeaderFieldConstant.*;
 import static com.aha.tech.core.tools.BeanUtil.copyMultiValueMap;
 
@@ -40,7 +41,7 @@ public class AddRequestHeaderGatewayFilter implements GlobalFilter, Ordered {
 
     @Override
     public int getOrder() {
-        return 0;
+        return GLOBAL_ADD_REQUEST_HEADER_GATEWAY_FILTER;
     }
 
     @Override

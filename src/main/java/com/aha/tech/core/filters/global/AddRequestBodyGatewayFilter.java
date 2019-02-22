@@ -65,7 +65,7 @@ public class AddRequestBodyGatewayFilter implements GlobalFilter, Ordered {
             return chain.filter(exchange);
         }
 
-        ServerHttpRequest newRequest = buildNewRequest(serverHttpRequest);
+        ServerHttpRequest newRequest = modifyRequestBodyEntity(serverHttpRequest);
         return chain.filter(exchange.mutate().request(newRequest).build());
     }
 
@@ -74,7 +74,7 @@ public class AddRequestBodyGatewayFilter implements GlobalFilter, Ordered {
      * @param serverHttpRequest
      * @return
      */
-    private ServerHttpRequest buildNewRequest(ServerHttpRequest serverHttpRequest) {
+    private ServerHttpRequest modifyRequestBodyEntity(ServerHttpRequest serverHttpRequest) {
         String resolveBody = resolveBodyFromRequest(serverHttpRequest);
         if (StringUtils.isBlank(resolveBody)) {
             throw new EmptyBodyException();

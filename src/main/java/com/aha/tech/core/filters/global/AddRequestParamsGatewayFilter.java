@@ -43,7 +43,7 @@ public class AddRequestParamsGatewayFilter implements GlobalFilter, Ordered {
             return chain.filter(exchange);
         }
 
-        ServerHttpRequest newRequest = buildNewRequest(serverHttpRequest);
+        ServerHttpRequest newRequest = addQueryParams(serverHttpRequest);
         return chain.filter(exchange.mutate().request(newRequest).build());
     }
 
@@ -52,7 +52,7 @@ public class AddRequestParamsGatewayFilter implements GlobalFilter, Ordered {
      * @param serverHttpRequest
      * @return
      */
-    private ServerHttpRequest buildNewRequest(ServerHttpRequest serverHttpRequest) {
+    private ServerHttpRequest addQueryParams(ServerHttpRequest serverHttpRequest) {
         UserVo userVo = SessionHandler.get();
         URI uri = serverHttpRequest.getURI();
         String originalQuery = serverHttpRequest.getURI().getRawQuery();
