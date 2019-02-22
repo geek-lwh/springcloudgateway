@@ -6,6 +6,10 @@ package com.aha.tech.core.constant;
  */
 public class HeaderFieldConstant {
 
+    public static final String HEADER_TOKEN = "X-Token";
+
+    public static final String DEFAULT_X_TOKEN_VALUE = "28ad87ef9fdce5d12dea093b860e8772";
+
     public static final String HEADER_AUTHORIZATION = "Authorization";
 
     public static final String HEADER_USER_AGENT = "User-Agent";
@@ -55,5 +59,14 @@ public class HeaderFieldConstant {
     public static final String X_ENV_FIELD_GUNIQID = "guniqid";
 
     public static final String HEADER_GUNIQID = "X-Env-Guniqid";
+
+    public static final String HEADER_PRAGMA = "Pragma";
+
+    public static final String HEADER_CACHE_CONTROL = "cache-control";
+
+    public static final String HEADER_REFERER = "Referer";
+
+    public static final String HEADER_ORIGIN = "Origin";
+
 
 }

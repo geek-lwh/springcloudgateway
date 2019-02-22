@@ -48,7 +48,7 @@ public class AddRequestHeaderGatewayFilter implements GlobalFilter, Ordered {
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         ServerHttpRequest serverHttpRequest = exchange.getRequest();
 
-        ServerHttpRequest newRequest = buildNewRequest(serverHttpRequest);
+        ServerHttpRequest newRequest = modifyRequestHeader(serverHttpRequest);
 
         return chain.filter(exchange.mutate().request(newRequest).build());
     }
@@ -58,7 +58,7 @@ public class AddRequestHeaderGatewayFilter implements GlobalFilter, Ordered {
      * @param serverHttpRequest
      * @return
      */
-    private ServerHttpRequest buildNewRequest(ServerHttpRequest serverHttpRequest) {
+    private ServerHttpRequest modifyRequestHeader(ServerHttpRequest serverHttpRequest) {
         //X-Env
         HttpHeaders httpHeaders = new HttpHeaders();
         copyMultiValueMap(serverHttpRequest.getHeaders(), httpHeaders);
@@ -66,8 +66,7 @@ public class AddRequestHeaderGatewayFilter implements GlobalFilter, Ordered {
 
         List<String> userAgent = httpHeaders.get(HEADER_USER_AGENT);
 
-        parseAuthorization(httpHeaders);
-        parseXEnv(httpHeaders);
+        modifyRequestHttpHeader(httpHeaders);
 
         serverHttpRequest = new ServerHttpRequestDecorator(serverHttpRequest) {
             @Override
@@ -80,18 +79,35 @@ public class AddRequestHeaderGatewayFilter implements GlobalFilter, Ordered {
     }
 
     /**
-     * 解析header中的 authorization
+     * 修改转发的头信息
      * @param httpHeaders
      */
-    private void parseAuthorization(HttpHeaders httpHeaders) {
-        List<String> authorization = httpHeaders.get(HEADER_AUTHORIZATION);
-        if (CollectionUtils.isEmpty(authorization)) {
-            return;
-        }
-
-//        String token = authorization.get(0);
-
+    private void modifyRequestHttpHeader(HttpHeaders httpHeaders) {
+        parseXEnv(httpHeaders);
+        addHeader(httpHeaders);
+        removeHeader(httpHeaders);
     }
+
+    /**
+     * 删除不必要的头信息
+     * @param httpHeaders
+     */
+    private void removeHeader(HttpHeaders httpHeaders) {
+        httpHeaders.remove(HEADER_PRAGMA);
+        httpHeaders.remove(HEADER_CACHE_CONTROL);
+        httpHeaders.remove(HEADER_X_ENV);
+        httpHeaders.remove(HEADER_REFERER);
+        httpHeaders.remove(HEADER_ORIGIN);
+    }
+
+    /**
+     * 添加头信息
+     * @param httpHeaders
+     */
+    private void addHeader(HttpHeaders httpHeaders) {
+        httpHeaders.set(HEADER_TOKEN,DEFAULT_X_TOKEN_VALUE);
+    }
+
 
     /**
      * 解析header中的xEnv
@@ -112,10 +128,10 @@ public class AddRequestHeaderGatewayFilter implements GlobalFilter, Ordered {
                 String value = String.valueOf(entry.getValue());
                 switch (key) {
                     case X_ENV_FIELD_PK:
-                        parseAndSetHeaderFiledOfPK(value, httpHeaders);
+                        parseAndSetPk(value, httpHeaders);
                         break;
                     case X_ENV_FIELD_PP:
-                        parseAndSetHeaderFiledOfPP(value, httpHeaders);
+                        parseAndSetPp(value, httpHeaders);
                         break;
                     case X_ENV_FIELD_PD:
                         httpHeaders.set(HEADER_PD, value);
@@ -159,7 +175,7 @@ public class AddRequestHeaderGatewayFilter implements GlobalFilter, Ordered {
      * @param encodePK
      * @param httpHeaders
      */
-    private void parseAndSetHeaderFiledOfPK(String encodePK, HttpHeaders httpHeaders) {
+    private void parseAndSetPk(String encodePK, HttpHeaders httpHeaders) {
         if (StringUtils.isBlank(encodePK)) {
             httpHeaders.set(HEADER_PK, Strings.EMPTY);
             return;
@@ -179,7 +195,7 @@ public class AddRequestHeaderGatewayFilter implements GlobalFilter, Ordered {
      * @param encodePP
      * @param httpHeaders
      */
-    private void parseAndSetHeaderFiledOfPP(String encodePP, HttpHeaders httpHeaders) {
+    private void parseAndSetPp(String encodePP, HttpHeaders httpHeaders) {
         if (StringUtils.isBlank(encodePP)) {
             httpHeaders.set(HEADER_PP, Strings.EMPTY);
             return;

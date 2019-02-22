@@ -28,6 +28,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static com.aha.tech.commons.constants.ResponseConstants.SUCCESS;
+import static com.aha.tech.core.constant.HeaderFieldConstant.DEFAULT_X_TOKEN_VALUE;
 import static com.aha.tech.core.constant.HeaderFieldConstant.HEADER_AUTHORIZATION;
 import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.setResponseStatus;
 
@@ -45,8 +46,6 @@ public class AuthGatewayFilterFactory implements GlobalFilter, Ordered {
     private static final String VISITOR = "visitor";
 
     private static final String USER = "serv-auth";
-
-    private static final String DEFAULT_X_TOKEN = "28ad87ef9fdce5d12dea093b860e8772";
 
     @Autowired(required = false)
     private PassportResource passportResource;
@@ -78,7 +77,7 @@ public class AuthGatewayFilterFactory implements GlobalFilter, Ordered {
                 });
             }
             userVo = authResult.getData();
-        } else if (userName.equals(VISITOR) && password.equals(DEFAULT_X_TOKEN)) {
+        } else if (userName.equals(VISITOR) && password.equals(DEFAULT_X_TOKEN_VALUE)) {
             logger.info("设置匿名用户 userId = 0");
             userVo.setUserId(0L);
         }
