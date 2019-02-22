@@ -3,10 +3,11 @@ package com.aha.tech.core.filters.global;
 import com.aha.tech.commons.response.RpcResponse;
 import com.aha.tech.core.constant.FilterOrderedConstant;
 import com.aha.tech.core.controller.resource.PassportResource;
+import com.aha.tech.core.exception.MissAuthorizationHeaderException;
 import com.aha.tech.core.handler.SessionHandler;
 import com.aha.tech.passportserver.facade.model.vo.UserVo;
 import com.alibaba.fastjson.JSON;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static com.aha.tech.commons.constants.ResponseConstants.SUCCESS;
+import static com.aha.tech.core.constant.HeaderFieldConstant.HEADER_AUTHORIZATION;
 import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.setResponseStatus;
 
 /**
@@ -40,7 +42,11 @@ public class AuthGatewayFilterFactory implements GlobalFilter, Ordered {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthGatewayFilterFactory.class);
 
-    private static final String ACCESS_TOKEN_HEADER = "token";
+    private static final String VISITOR = "visitor";
+
+    private static final String USER = "serv-auth";
+
+    private static final String DEFAULT_X_TOKEN = "28ad87ef9fdce5d12dea093b860e8772";
 
     @Autowired(required = false)
     private PassportResource passportResource;
@@ -53,38 +59,52 @@ public class AuthGatewayFilterFactory implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         logger.debug("执行授权auth 过滤器");
-        if (isWhiteList()) {
-            logger.info("白名单资源,不进行授权行为, uri : {} ", exchange.getRequest().getURI());
-            return chain.filter(exchange);
-        }
-
+        UserVo userVo = null;
         HttpHeaders requestHeaders = exchange.getRequest().getHeaders();
-        List<String> headersOfToken = requestHeaders.get(ACCESS_TOKEN_HEADER);
-        String accessToken = CollectionUtils.isEmpty(headersOfToken) ? StringUtils.EMPTY : headersOfToken.get(0);
+        String[] authorization = parseAuthorizationHeader(requestHeaders);
+        String userName = authorization[0];
+        String password = authorization[1];
 
-        // 请求授权系统 验证access token 是否合法
-        RpcResponse<UserVo> authResult = passportResource.verify(accessToken);
-        if (authResult.getCode() != SUCCESS) {
-            return Mono.defer(() -> {
-                setResponseStatus(exchange, HttpStatus.UNAUTHORIZED);
-                final ServerHttpResponse resp = exchange.getResponse();
-                byte[] bytes = JSON.toJSONString(authResult).getBytes(StandardCharsets.UTF_8);
-                DataBuffer buffer = resp.bufferFactory().wrap(bytes);
-                return resp.writeWith(Flux.just(buffer));
-            });
+        if (userName.equals(USER)) {
+            logger.debug("access token is : {}", password);
+            RpcResponse<UserVo> authResult = passportResource.verify(password);
+            if (authResult.getCode() != SUCCESS) {
+                return Mono.defer(() -> {
+                    setResponseStatus(exchange, HttpStatus.UNAUTHORIZED);
+                    final ServerHttpResponse resp = exchange.getResponse();
+                    byte[] bytes = JSON.toJSONString(authResult).getBytes(StandardCharsets.UTF_8);
+                    DataBuffer buffer = resp.bufferFactory().wrap(bytes);
+                    return resp.writeWith(Flux.just(buffer));
+                });
+            }
+            userVo = authResult.getData();
+        } else if (userName.equals(VISITOR) && password.equals(DEFAULT_X_TOKEN)) {
+            logger.info("设置匿名用户 userId = 0");
+            userVo.setUserId(0L);
         }
 
-        UserVo userVo = authResult.getData();
         SessionHandler.set(userVo);
+
         return chain.filter(exchange);
     }
 
     /**
-     * 白名单不用授权
+     * 解析http header 中的Authorization
+     *
+     * @param requestHeaders
      * @return
      */
-    private static Boolean isWhiteList() {
-        return Boolean.FALSE;
+    private String[] parseAuthorizationHeader(HttpHeaders requestHeaders) {
+        List<String> headersOfAuthorization = requestHeaders.get(HEADER_AUTHORIZATION);
+        if (CollectionUtils.isEmpty(headersOfAuthorization)) {
+            throw new MissAuthorizationHeaderException();
+        }
+
+        String authorizationHeader = headersOfAuthorization.get(0).substring(6);
+        String decodeAuthorization = new String(Base64.decodeBase64(authorizationHeader), StandardCharsets.UTF_8);
+        String[] arr = decodeAuthorization.split(":");
+
+        return arr;
     }
 
 }
