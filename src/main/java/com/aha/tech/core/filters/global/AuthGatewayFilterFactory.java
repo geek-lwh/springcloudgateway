@@ -5,6 +5,7 @@ import com.aha.tech.core.constant.FilterOrderedConstant;
 import com.aha.tech.core.controller.resource.PassportResource;
 import com.aha.tech.core.exception.MissAuthorizationHeaderException;
 import com.aha.tech.core.handler.SessionHandler;
+import com.aha.tech.core.model.entity.PairEntity;
 import com.aha.tech.passportserver.facade.model.vo.UserVo;
 import com.alibaba.fastjson.JSON;
 import org.apache.commons.codec.binary.Base64;
@@ -60,9 +61,9 @@ public class AuthGatewayFilterFactory implements GlobalFilter, Ordered {
         logger.debug("执行授权auth 过滤器");
         UserVo userVo = null;
         HttpHeaders requestHeaders = exchange.getRequest().getHeaders();
-        String[] authorization = parseAuthorizationHeader(requestHeaders);
-        String userName = authorization[0];
-        String password = authorization[1];
+        PairEntity<String> authorization = parseAuthorizationHeader(requestHeaders);
+        String userName = authorization.getFirstEntity();
+        String password = authorization.getSecondEntity();
 
         if (userName.equals(USER)) {
             logger.debug("access token is : {}", password);
@@ -93,7 +94,7 @@ public class AuthGatewayFilterFactory implements GlobalFilter, Ordered {
      * @param requestHeaders
      * @return
      */
-    private String[] parseAuthorizationHeader(HttpHeaders requestHeaders) {
+    private PairEntity parseAuthorizationHeader(HttpHeaders requestHeaders) {
         List<String> headersOfAuthorization = requestHeaders.get(HEADER_AUTHORIZATION);
         if (CollectionUtils.isEmpty(headersOfAuthorization)) {
             throw new MissAuthorizationHeaderException();
@@ -103,7 +104,7 @@ public class AuthGatewayFilterFactory implements GlobalFilter, Ordered {
         String decodeAuthorization = new String(Base64.decodeBase64(authorizationHeader), StandardCharsets.UTF_8);
         String[] arr = decodeAuthorization.split(":");
 
-        return arr;
+        return new PairEntity(arr[0],arr[1]);
     }
 
 }
