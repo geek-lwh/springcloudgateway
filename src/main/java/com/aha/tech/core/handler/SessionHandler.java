@@ -17,6 +17,9 @@ public class SessionHandler {
         return userVo;
     }
 
+    public static void remove(){
+        threadLocal.remove();
+    }
     public static void set(UserVo userVo){
         threadLocal.set(userVo);
     }

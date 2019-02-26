@@ -88,6 +88,8 @@ public class AddRequestBodyGatewayFilter implements GlobalFilter, Ordered {
         } catch (Exception e) {
             logger.error("date : {} mutate new request has error", DateUtil.currentDateByDefaultFormat(), e);
             throw new GatewayException(e);
+        }finally {
+            SessionHandler.remove();
         }
 
         return newRequest;

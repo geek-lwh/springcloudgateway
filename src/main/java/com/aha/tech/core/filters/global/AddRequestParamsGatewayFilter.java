@@ -11,6 +11,7 @@ import org.springframework.core.Ordered;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
@@ -53,24 +54,30 @@ public class AddRequestParamsGatewayFilter implements GlobalFilter, Ordered {
      * @return
      */
     private ServerHttpRequest addQueryParams(ServerHttpRequest serverHttpRequest) {
-        UserVo userVo = SessionHandler.get();
-        URI uri = serverHttpRequest.getURI();
-        String originalQuery = serverHttpRequest.getURI().getRawQuery();
+        try {
+            UserVo userVo = SessionHandler.get();
+            URI uri = serverHttpRequest.getURI();
+            String originalQuery = serverHttpRequest.getURI().getRawQuery();
 
-        StringBuilder query = new StringBuilder();
-        if (org.springframework.util.StringUtils.hasText(originalQuery)) {
-            query.append(originalQuery);
-            if (originalQuery.charAt(originalQuery.length() - 1) != '&') {
-                query.append('&');
+            StringBuilder query = new StringBuilder();
+            if (StringUtils.hasText(originalQuery)) {
+                query.append(originalQuery);
+                if (originalQuery.charAt(originalQuery.length() - 1) != '&') {
+                    query.append('&');
+                }
             }
-        }
-        query.append("user_id").append("=").append(userVo.getUserId());
+            query.append("user_id").append("=").append(userVo.getUserId());
 
-        URI newUri = UriComponentsBuilder.fromUri(uri)
-                .replaceQuery(query.toString())
-                .build(false)
-                .toUri();
-        return serverHttpRequest.mutate().uri(newUri).build();
+            URI newUri = UriComponentsBuilder.fromUri(uri)
+                    .replaceQuery(query.toString())
+                    .build(false)
+                    .toUri();
+
+            return serverHttpRequest.mutate().uri(newUri).build();
+        } finally {
+            SessionHandler.remove();
+        }
+
     }
 
 }
