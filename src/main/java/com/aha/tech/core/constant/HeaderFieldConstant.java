@@ -14,6 +14,8 @@ public class HeaderFieldConstant {
 
     public static final String HEADER_USER_AGENT = "User-Agent";
 
+    public static final String HEADER_X_REQUEST_PAGE = "X-Request-Page";
+
     public static final String HEADER_X_ENV = "X-Env";
 
     public static final String X_ENV_FIELD_UTM_SOURCE = "utm_source";
@@ -67,6 +69,11 @@ public class HeaderFieldConstant {
     public static final String HEADER_REFERER = "Referer";
 
     public static final String HEADER_ORIGIN = "Origin";
+
+    public static final String HEADER_VERSION = "version";
+
+    public static final String HEADER_OS = "os";
+
 
 
 }

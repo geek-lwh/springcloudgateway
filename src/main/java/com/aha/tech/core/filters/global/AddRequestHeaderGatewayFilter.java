@@ -1,5 +1,7 @@
 package com.aha.tech.core.filters.global;
 
+import com.aha.tech.commons.symbol.Separator;
+import com.aha.tech.core.model.enums.WebClientTypeEnum;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
@@ -36,6 +38,12 @@ public class AddRequestHeaderGatewayFilter implements GlobalFilter, Ordered {
 
     private static final Logger logger = LoggerFactory.getLogger(AddRequestHeaderGatewayFilter.class);
 
+    private static final String DEFAULT_VERSION = "10";
+
+    private static final String DEFAULT_OS = "web";
+
+    private static final String STR_PREFIX = "ahaschool";
+
     @Autowired
     private ObjectMapper objectMapper;
 
@@ -59,15 +67,10 @@ public class AddRequestHeaderGatewayFilter implements GlobalFilter, Ordered {
      * @return
      */
     private ServerHttpRequest modifyRequestHeader(ServerHttpRequest serverHttpRequest) {
-        //X-Env
         HttpHeaders httpHeaders = new HttpHeaders();
         copyMultiValueMap(serverHttpRequest.getHeaders(), httpHeaders);
 
-
-        List<String> userAgent = httpHeaders.get(HEADER_USER_AGENT);
-
         modifyRequestHttpHeader(httpHeaders);
-
         serverHttpRequest = new ServerHttpRequestDecorator(serverHttpRequest) {
             @Override
             public HttpHeaders getHeaders() {
@@ -83,13 +86,48 @@ public class AddRequestHeaderGatewayFilter implements GlobalFilter, Ordered {
      * @param httpHeaders
      */
     private void modifyRequestHttpHeader(HttpHeaders httpHeaders) {
-        parseXEnv(httpHeaders);
-        addHeader(httpHeaders);
+        parseUserAgentAndModifyHeader(httpHeaders);
+        parseXEnvAndModifyHeader(httpHeaders);
+        initRequestHeader(httpHeaders);
         removeHeader(httpHeaders);
     }
 
     /**
+     * 解析user-anget头对象 并且设置http header头信息
+     * todo ios 审核版本判断需要app小组自己实现
+     * @param httpHeaders
+     */
+    private void parseUserAgentAndModifyHeader(HttpHeaders httpHeaders) {
+        List<String> userAgent = httpHeaders.get(HEADER_USER_AGENT);
+        if (CollectionUtils.isEmpty(userAgent)) {
+            return;
+        }
+
+        try {
+            String value = userAgent.get(0).toLowerCase();
+            int index = value.indexOf(STR_PREFIX);
+            if (index == -1) {
+                return;
+            }
+
+            // 截图出现的prefix到末尾
+            String subStr = value.substring(index);
+            String[] arr = StringUtils.split(subStr, Separator.SLASH_MARK);
+            String os = arr[1];
+            String version = arr[2];
+            if (os.equals(WebClientTypeEnum.ANDROID.getName()) || os.equals(WebClientTypeEnum.IOS.getName())) {
+                httpHeaders.add(HEADER_OS, os);
+                httpHeaders.add(HEADER_VERSION, version);
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+
+    }
+
+    /**
      * 删除不必要的头信息
+     * 减少http header 大小
      * @param httpHeaders
      */
     private void removeHeader(HttpHeaders httpHeaders) {
@@ -98,14 +136,18 @@ public class AddRequestHeaderGatewayFilter implements GlobalFilter, Ordered {
         httpHeaders.remove(HEADER_X_ENV);
         httpHeaders.remove(HEADER_REFERER);
         httpHeaders.remove(HEADER_ORIGIN);
+        httpHeaders.remove(HEADER_USER_AGENT);
+        httpHeaders.remove(HEADER_X_REQUEST_PAGE);
     }
 
     /**
      * 添加头信息
      * @param httpHeaders
      */
-    private void addHeader(HttpHeaders httpHeaders) {
-        httpHeaders.set(HEADER_TOKEN,DEFAULT_X_TOKEN_VALUE);
+    private void initRequestHeader(HttpHeaders httpHeaders) {
+        httpHeaders.set(HEADER_TOKEN, DEFAULT_X_TOKEN_VALUE);
+        httpHeaders.add(HEADER_OS, DEFAULT_OS);
+        httpHeaders.add(HEADER_VERSION, DEFAULT_VERSION);
     }
 
 
@@ -113,7 +155,7 @@ public class AddRequestHeaderGatewayFilter implements GlobalFilter, Ordered {
      * 解析header中的xEnv
      * @param httpHeaders
      */
-    private void parseXEnv(HttpHeaders httpHeaders) {
+    private void parseXEnvAndModifyHeader(HttpHeaders httpHeaders) {
         List<String> xEnv = httpHeaders.get(HEADER_X_ENV);
 
         if (CollectionUtils.isEmpty(xEnv)) {
@@ -123,7 +165,7 @@ public class AddRequestHeaderGatewayFilter implements GlobalFilter, Ordered {
         byte[] decryptXEnv = Base64.decodeBase64(xEnv.get(0));
         try {
             Map<String, Object> xEnvMap = objectMapper.readValue(decryptXEnv, Map.class);
-            for (Map.Entry<String, Object> entry : xEnvMap.entrySet()){
+            for (Map.Entry<String, Object> entry : xEnvMap.entrySet()) {
                 String key = entry.getKey();
                 String value = String.valueOf(entry.getValue());
                 switch (key) {
@@ -154,7 +196,7 @@ public class AddRequestHeaderGatewayFilter implements GlobalFilter, Ordered {
                     case X_ENV_FIELD_UTM_CONTENT:
                         httpHeaders.set(HEADER_UTM_CONTENT, value);
                         break;
-                    case X_ENV_FIELD_APP_TYPE :
+                    case X_ENV_FIELD_APP_TYPE:
                         httpHeaders.set(HEADER_APP_TYPE, value);
                         break;
                     case X_ENV_FIELD_GUNIQID:
@@ -230,7 +272,7 @@ public class AddRequestHeaderGatewayFilter implements GlobalFilter, Ordered {
      * @return
      */
     private static String formatXEnvHeaderKey(String k) {
-        if(k.length() > 1){
+        if (k.length() > 1) {
             return String.format("X-Env-%s%s", Character.toUpperCase(k.charAt(0)), k.substring(1));
         }
 
