@@ -7,11 +7,11 @@ package com.aha.tech.core.constant;
  */
 public class FilterOrderedConstant {
 
-    public static int GLOBAL_AUTH_GATEWAY_FILTER = 200;
+    public static int GLOBAL_AUTH_GATEWAY_FILTER_ORDER = 200;
 
-    public static int GLOBAL_ADD_REQUEST_HEADER_GATEWAY_FILTER = 205;
+    public static int GLOBAL_ADD_REQUEST_HEADER_GATEWAY_FILTER_ORDER = 205;
 
-    public static int GLOBAL_ADD_REQUEST_BODY_GATEWAY_FILTER = 210;
+    public static int GLOBAL_ADD_REQUEST_BODY_GATEWAY_FILTER_ORDER = 210;
 
-    public static int GLOBAL_ADD_REQUEST_PARAMS_GATEWAY_FILTER = 211;
+    public static int GLOBAL_ADD_REQUEST_PARAMS_GATEWAY_FILTER_ORDER = 211;
 }

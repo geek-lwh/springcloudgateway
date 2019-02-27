@@ -37,7 +37,8 @@ import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.s
  * @Author: luweihong
  * @Date: 2019/2/14
  *
- * need to modify the header Content-Length, If you don't do this, the body may be truncated after you have modify the request body and the body becomes longer
+ * 修改requestBody的同时,需要修改header的content length
+ * 否则增加的字节会被截断,导致后端服务报json解析不正确
  */
 @Component
 public class AuthGatewayFilterFactory implements GlobalFilter, Ordered {
@@ -53,7 +54,7 @@ public class AuthGatewayFilterFactory implements GlobalFilter, Ordered {
 
     @Override
     public int getOrder() {
-        return FilterOrderedConstant.GLOBAL_AUTH_GATEWAY_FILTER;
+        return FilterOrderedConstant.GLOBAL_AUTH_GATEWAY_FILTER_ORDER;
     }
 
     @Override

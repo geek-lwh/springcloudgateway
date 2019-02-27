@@ -29,7 +29,7 @@ public class AddRequestParamsGatewayFilter implements GlobalFilter, Ordered {
 
     @Override
     public int getOrder() {
-        return FilterOrderedConstant.GLOBAL_ADD_REQUEST_PARAMS_GATEWAY_FILTER;
+        return FilterOrderedConstant.GLOBAL_ADD_REQUEST_PARAMS_GATEWAY_FILTER_ORDER;
     }
 
     @Override
