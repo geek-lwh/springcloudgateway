@@ -46,6 +46,7 @@ public class ModifyResponseGatewayFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+        logger.debug("执行添加modify response 参数过滤器");
         ServerHttpResponse response = exchange.getResponse();
         ServerHttpResponseDecorator serverHttpResponseDecorator = modifyResponse(response);
 
