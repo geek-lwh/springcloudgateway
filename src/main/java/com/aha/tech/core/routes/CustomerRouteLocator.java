@@ -1,6 +1,5 @@
 package com.aha.tech.core.routes;
 
-import com.aha.tech.core.filters.normal.ModifyResponseGatewayFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
@@ -14,8 +13,6 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class CustomerRouteLocator {
 
-    @Autowired
-    private ModifyResponseGatewayFilter modifyResponseGatewayFilter;
 
     @Bean
     public RouteLocator myRoutes(RouteLocatorBuilder builder) {
@@ -23,7 +20,7 @@ public class CustomerRouteLocator {
                 .route(p -> p
                         .path("/aha-account/**").and()
                         .uri("lb://accountserver")
-                        .filter(modifyResponseGatewayFilter)
+//                        .filter(modifyResponseGatewayFilter)
                         .id("auth"))
                 .build();
     }
