@@ -1,6 +1,6 @@
 package com.aha.tech.core.filters.normal;
 
-import com.aha.tech.commons.response.RpcResponsePage;
+import com.aha.tech.core.model.vo.ResponseVo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
 import org.apache.commons.codec.binary.Base64;
@@ -67,13 +67,13 @@ public class ModifyResponseGatewayFilter implements GlobalFilter, Ordered {
                     Flux<? extends DataBuffer> flux = (Flux<? extends DataBuffer>) body;
                     return super.writeWith(flux.buffer().map(dataBuffers -> {
                         ByteOutputStream outputStream = new ByteOutputStream();
-                        dataBuffers.forEach(i -> {
-                            byte[] array = new byte[i.readableByteCount()];
-                            i.read(array);
-                            outputStream.write(array);
+                        dataBuffers.forEach(buf -> {
+                            byte[] stream = new byte[buf.readableByteCount()];
+                            buf.read(stream);
+                            outputStream.write(stream);
                         });
                         try {
-                            RpcResponsePage rpcResponsePage = objectMapper.readValue(outputStream.getBytes(), RpcResponsePage.class);
+                            ResponseVo rpcResponsePage = objectMapper.readValue(outputStream.getBytes(), ResponseVo.class);
                             String cursor = rpcResponsePage.getCursor();
                             if (StringUtils.isNotBlank(cursor)) {
                                 byte[] decodeCursor = Base64.decodeBase64(cursor);

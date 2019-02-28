@@ -58,7 +58,6 @@ dependencies {
     // 3-part tool dependency
     compile('com.google.guava:guava:23.0')
     compile('org.apache.commons:commons-lang3')
-    compile('com.alibaba:fastjson:1.2.47')
     // spring boot and spring cloud dependency
     compile('org.springframework.boot:spring-boot-starter-aop')
     compile('org.springframework.boot:spring-boot-starter-actuator')
