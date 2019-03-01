@@ -6,10 +6,11 @@ import com.aha.tech.core.exception.EmptyBodyException;
 import com.aha.tech.core.exception.GatewayException;
 import com.aha.tech.core.handler.SessionHandler;
 import com.aha.tech.passportserver.facade.model.vo.UserVo;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONException;
+import com.alibaba.fastjson.JSONObject;
 import io.netty.buffer.ByteBufAllocator;
 import org.apache.commons.lang3.StringUtils;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -137,7 +138,7 @@ public class AddRequestBodyGatewayFilter implements GlobalFilter, Ordered {
      * @throws JSONException
      */
     private ServerHttpRequest addRequestBody(String resolveBody, UserVo userVo, ServerHttpRequest serverHttpRequest, ServerHttpRequest newRequest) throws JSONException {
-        JSONObject obj = new JSONObject(resolveBody);
+        JSONObject obj = JSON.parseObject(resolveBody);
         obj.put("user_id", userVo.getUserId());
         DataBuffer bodyDataBuffer = stringBuffer(obj.toString());
         Flux<DataBuffer> bodyFlux = Flux.just(bodyDataBuffer);
