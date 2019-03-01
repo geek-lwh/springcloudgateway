@@ -82,7 +82,7 @@ public class ModifyResponseGatewayFilter implements GlobalFilter, Ordered {
                                 return dataBufferFactory.wrap(objectMapper.writeValueAsBytes(rpcResponsePage));
                             }
                         } catch (IOException e) {
-                            logger.error(e.getMessage(),e);
+                            logger.error(e.getMessage(), e);
                         }
 
                         return dataBufferFactory.wrap(outputStream.getBytes());

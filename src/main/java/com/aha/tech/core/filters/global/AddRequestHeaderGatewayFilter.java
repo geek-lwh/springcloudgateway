@@ -57,7 +57,7 @@ public class AddRequestHeaderGatewayFilter implements GlobalFilter, Ordered {
         ServerHttpRequest serverHttpRequest = exchange.getRequest();
 
         ServerHttpRequest newRequest = modifyRequestHeader(serverHttpRequest);
-
+        logger.debug("after modify request header : {}", newRequest.getHeaders());
         return chain.filter(exchange.mutate().request(newRequest).build());
     }
 

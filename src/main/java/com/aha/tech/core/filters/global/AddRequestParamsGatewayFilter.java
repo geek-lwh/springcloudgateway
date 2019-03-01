@@ -45,6 +45,7 @@ public class AddRequestParamsGatewayFilter implements GlobalFilter, Ordered {
         }
 
         ServerHttpRequest newRequest = addQueryParams(serverHttpRequest);
+        logger.debug("after add request query : {}", newRequest.getQueryParams());
         return chain.filter(exchange.mutate().request(newRequest).build());
     }
 

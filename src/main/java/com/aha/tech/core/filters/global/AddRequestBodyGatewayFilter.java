@@ -143,6 +143,7 @@ public class AddRequestBodyGatewayFilter implements GlobalFilter, Ordered {
         DataBuffer bodyDataBuffer = stringBuffer(obj.toString());
         Flux<DataBuffer> bodyFlux = Flux.just(bodyDataBuffer);
 
+        // 插入后计算新的content length,否则会出现异常
         HttpHeaders myHeaders = new HttpHeaders();
         copyMultiValueMap(serverHttpRequest.getHeaders(), myHeaders);
         myHeaders.remove(HttpHeaders.CONTENT_LENGTH);
