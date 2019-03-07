@@ -9,6 +9,7 @@ import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
@@ -24,7 +25,7 @@ import reactor.core.publisher.Mono;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import static com.aha.tech.core.constant.FilterOrderedConstant.GLOBAL_MODIFY_RESPONSE_GATEWAY_FILTER_ORDER;
+import static com.aha.tech.core.constant.FilterOrderedConstant.MODIFY_RESPONSE_GATEWAY_FILTER_ORDER;
 
 /**
  * @Author: luweihong
@@ -32,7 +33,7 @@ import static com.aha.tech.core.constant.FilterOrderedConstant.GLOBAL_MODIFY_RES
  * 修改http response 返回值
  */
 @Component
-public class ModifyResponseGatewayFilter implements GlobalFilter, Ordered {
+public class ModifyResponseGatewayFilter implements GlobalFilter,Ordered {
 
     private static final Logger logger = LoggerFactory.getLogger(ModifyResponseGatewayFilter.class);
 
@@ -41,7 +42,7 @@ public class ModifyResponseGatewayFilter implements GlobalFilter, Ordered {
 
     @Override
     public int getOrder() {
-        return GLOBAL_MODIFY_RESPONSE_GATEWAY_FILTER_ORDER;
+        return MODIFY_RESPONSE_GATEWAY_FILTER_ORDER;
     }
 
     @Override
@@ -73,8 +74,9 @@ public class ModifyResponseGatewayFilter implements GlobalFilter, Ordered {
                             buf.read(stream);
                             outputStream.write(stream);
                         });
+                        byte[] stream = outputStream.getBytes();
                         try {
-                            ResponseVo rpcResponsePage = objectMapper.readValue(outputStream.getBytes(), ResponseVo.class);
+                            ResponseVo rpcResponsePage = objectMapper.readValue(stream, ResponseVo.class);
                             String cursor = rpcResponsePage.getCursor();
                             if (StringUtils.isNotBlank(cursor)) {
                                 byte[] decodeCursor = Base64.decodeBase64(cursor);
@@ -85,7 +87,7 @@ public class ModifyResponseGatewayFilter implements GlobalFilter, Ordered {
                             logger.error(e.getMessage(), e);
                         }
 
-                        return dataBufferFactory.wrap(outputStream.getBytes());
+                        return dataBufferFactory.wrap(stream);
                     }));
                 }
 

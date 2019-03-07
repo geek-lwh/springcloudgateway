@@ -84,6 +84,9 @@ public class AuthGatewayFilterFactory implements GlobalFilter, Ordered {
             userVo.setUserId(0L);
         }
 
+        if(userVo == null){
+            logger.error("user is empty,check your access token");
+        }
         SessionHandler.set(userVo);
 
         return chain.filter(exchange);

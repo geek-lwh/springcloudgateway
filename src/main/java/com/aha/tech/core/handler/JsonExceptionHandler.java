@@ -39,6 +39,9 @@ public class JsonExceptionHandler extends DefaultErrorWebExceptionHandler {
             code = 404;
         }
 
+//        if (error instanceof org.springframework.web.server.ResponseStatusException) {
+//            code = 404;
+//        }
 
         return response(error,code, this.buildMessage(request, error));
     }

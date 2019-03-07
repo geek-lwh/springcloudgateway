@@ -1,5 +1,6 @@
 package com.aha.tech.core.filters.global;
 
+import com.aha.tech.commons.symbol.Separator;
 import com.aha.tech.core.constant.FilterOrderedConstant;
 import com.aha.tech.core.handler.SessionHandler;
 import com.aha.tech.passportserver.facade.model.vo.UserVo;
@@ -26,6 +27,8 @@ import java.net.URI;
 public class AddRequestParamsGatewayFilter implements GlobalFilter, Ordered {
 
     private static final Logger logger = LoggerFactory.getLogger(AddRequestParamsGatewayFilter.class);
+
+    private static final char CHAR_AND_MARK = Separator.AND_MARK.toCharArray()[0];
 
     @Override
     public int getOrder() {
@@ -63,15 +66,15 @@ public class AddRequestParamsGatewayFilter implements GlobalFilter, Ordered {
             StringBuilder query = new StringBuilder();
             if (StringUtils.hasText(originalQuery)) {
                 query.append(originalQuery);
-                if (originalQuery.charAt(originalQuery.length() - 1) != '&') {
-                    query.append('&');
+                if (originalQuery.charAt(originalQuery.length() - 1) != CHAR_AND_MARK) {
+                    query.append(Separator.AND_MARK);
                 }
             }
             query.append("user_id").append("=").append(userVo.getUserId());
 
             URI newUri = UriComponentsBuilder.fromUri(uri)
                     .replaceQuery(query.toString())
-                    .build(false)
+                    .build(true)
                     .toUri();
 
             return serverHttpRequest.mutate().uri(newUri).build();
