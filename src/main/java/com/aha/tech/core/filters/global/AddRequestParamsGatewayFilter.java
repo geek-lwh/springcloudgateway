@@ -19,6 +19,8 @@ import reactor.core.publisher.Mono;
 
 import java.net.URI;
 
+import static com.aha.tech.core.constant.GatewayAttributeConstant.SKIP_AUTHORIZATION;
+
 /**
  * @Author: luweihong
  * @Date: 2019/2/20
@@ -38,12 +40,14 @@ public class AddRequestParamsGatewayFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         logger.debug("执行添加get参数过滤器");
+        Boolean skipAuthorization = (Boolean) exchange.getAttributes().get(SKIP_AUTHORIZATION);
+
         ServerHttpRequest serverHttpRequest = exchange.getRequest();
         HttpMethod httpMethod = serverHttpRequest.getMethod();
         URI uri = serverHttpRequest.getURI();
 
-        if (httpMethod != HttpMethod.GET) {
-            logger.info("不满足 执行添加get参数过滤器 要求,url : {},httpMethod : {} ", uri, httpMethod);
+        if (skipAuthorization.equals(Boolean.TRUE) || httpMethod != HttpMethod.GET) {
+            logger.info("请求路径: {} 跳过过授权", uri.getRawPath());
             return chain.filter(exchange);
         }
 

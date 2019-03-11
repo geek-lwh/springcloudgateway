@@ -18,6 +18,7 @@ import javax.annotation.Resource;
 import java.net.URI;
 import java.util.Map;
 
+import static com.aha.tech.core.constant.GatewayAttributeConstant.SKIP_AUTHORIZATION;
 import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.GATEWAY_REQUEST_URL_ATTR;
 
 /**
@@ -28,9 +29,11 @@ import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.G
  * 修改body请求体
  */
 @Component
-public class RewriteRequestPathGatewayFilter implements GlobalFilter, Ordered {
+public class PreHandlerGatewayFilter implements GlobalFilter, Ordered {
 
-    private static final Logger logger = LoggerFactory.getLogger(RewriteRequestPathGatewayFilter.class);
+    private static final Logger logger = LoggerFactory.getLogger(PreHandlerGatewayFilter.class);
+
+    private static final String PUBLIC_TEXT = "public";
 
     @Resource
     private Map<String, RouteEntity> routeEntityMap;
@@ -45,12 +48,13 @@ public class RewriteRequestPathGatewayFilter implements GlobalFilter, Ordered {
         logger.debug("重写请求路径");
         ServerHttpRequest serverHttpRequest = exchange.getRequest();
         URI uri = serverHttpRequest.getURI();
-        logger.info("uri is : {}", uri);
+        logger.info("before rewrite url is : {}", uri);
         String path = uri.getRawPath();
 
-        ServerHttpRequest newRequest = rewriteRequestPath(path, serverHttpRequest);
+        ServerHttpRequest newRequest = rewriteRequestPath(path, serverHttpRequest, exchange);
 
-        exchange.getAttributes().put(GATEWAY_REQUEST_URL_ATTR, newRequest.getURI());
+        // 根据attributes 判断是否执行对应请求
+        logger.info("after rewrite url is : {}", newRequest.getURI().getRawPath());
         return chain.filter(exchange.mutate().request(newRequest).build());
     }
 
@@ -61,27 +65,35 @@ public class RewriteRequestPathGatewayFilter implements GlobalFilter, Ordered {
      * @param serverHttpRequest
      * @return
      */
-    private ServerHttpRequest rewriteRequestPath(String path, ServerHttpRequest serverHttpRequest) {
+    private ServerHttpRequest rewriteRequestPath(String path, ServerHttpRequest serverHttpRequest, ServerWebExchange exchange) {
         String[] arr = StringUtils.split(path, Separator.SLASH_MARK);
-        String mappingKey = arr[1];
+        Boolean skipAuthorization = path.contains(PUBLIC_TEXT);
+        String mappingKey = skipAuthorization ? arr[2] : arr[1];
+
         RouteEntity routeEntity = routeEntityMap.containsKey(mappingKey) ? routeEntityMap.get(mappingKey) : null;
         if (routeEntity == null) {
-            logger.error("no mapping handler url : {}", path);
-            // throw error
+            logger.error("没有匹配的路由地址 : {}", path);
+            return serverHttpRequest;
         }
 
-//        StringBuilder rewritePath = new StringBuilder(routeEntity.getContextPath()).append(Separator.SLASH_MARK);
-//        int index = 1;
-//        for (int i = index; i < arr.length; i++) {
-//            rewritePath.append(arr[i]).append(Separator.SLASH_MARK);
-//        }
-        String rewritePath = path.replaceAll(arr[0],routeEntity.getContextPath());
-//        String rewritePath = String.format("%s%s", routeEntity.getContextPath(), path);
+        String rewritePath = path.replaceAll(arr[0], routeEntity.getContextPath());
         ServerHttpRequest newRequest = serverHttpRequest.mutate()
                 .path(rewritePath)
                 .build();
 
+        setExchangeAttributes(skipAuthorization, exchange, newRequest);
         return newRequest;
+    }
+
+    /**
+     * 设置exchange attributes
+     * @param skipAuthorization
+     * @param exchange
+     * @param newRequest
+     */
+    private void setExchangeAttributes(Boolean skipAuthorization, ServerWebExchange exchange, ServerHttpRequest newRequest) {
+        exchange.getAttributes().put(GATEWAY_REQUEST_URL_ATTR, newRequest.getURI());
+        exchange.getAttributes().put(SKIP_AUTHORIZATION, skipAuthorization);
     }
 
 }

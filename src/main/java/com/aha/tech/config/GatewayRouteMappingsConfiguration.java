@@ -27,7 +27,7 @@ public class GatewayRouteMappingsConfiguration {
 
     @Bean
     public Map<String, RouteEntity> routeEntityMap() {
-        Map<String, RouteEntity> routeEntityMap = Maps.newConcurrentMap();
+        Map<String, RouteEntity> routeEntityMap = Maps.newHashMap();
         mappings.forEach((k, v) -> {
 
             RouteEntity routeEntity = null;

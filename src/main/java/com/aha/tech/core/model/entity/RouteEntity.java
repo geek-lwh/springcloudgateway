@@ -12,6 +12,8 @@ public class RouteEntity {
 
     private String uri;
 
+    private String contextPath;
+
     public String getId() {
         return id;
     }
@@ -34,5 +36,13 @@ public class RouteEntity {
 
     public void setUri(String uri) {
         this.uri = uri;
+    }
+
+    public String getContextPath() {
+        return contextPath;
+    }
+
+    public void setContextPath(String contextPath) {
+        this.contextPath = contextPath;
     }
 }

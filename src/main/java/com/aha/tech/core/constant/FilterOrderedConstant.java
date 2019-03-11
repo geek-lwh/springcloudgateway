@@ -9,7 +9,7 @@ public class FilterOrderedConstant {
 
     public static int GLOBAL_AUTH_GATEWAY_FILTER_ORDER = 200;
 
-    public static int GLOBAL_PROCESS_URL_MAPPING_ORDER = 0;
+    public static int GLOBAL_REWRITE_REQUEST_PATH_FILTER_ORDER = 0;
 
     public static int GLOBAL_ADD_REQUEST_HEADER_GATEWAY_FILTER_ORDER = 205;
 

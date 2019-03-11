@@ -29,6 +29,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static com.aha.tech.commons.constants.ResponseConstants.SUCCESS;
+import static com.aha.tech.core.constant.GatewayAttributeConstant.HTTP_METHOD;
+import static com.aha.tech.core.constant.GatewayAttributeConstant.SKIP_AUTHORIZATION;
 import static com.aha.tech.core.constant.HeaderFieldConstant.DEFAULT_X_TOKEN_VALUE;
 import static com.aha.tech.core.constant.HeaderFieldConstant.HEADER_AUTHORIZATION;
 import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.setResponseStatus;
@@ -47,7 +49,7 @@ public class AuthGatewayFilterFactory implements GlobalFilter, Ordered {
 
     private static final String VISITOR = "visitor";
 
-    private static final String USER = "serv-auth";
+    private static final String NEED_AUTHORIZATION = "serv-auth";
 
     @Autowired(required = false)
     private PassportResource passportResource;
@@ -60,13 +62,20 @@ public class AuthGatewayFilterFactory implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         logger.debug("执行授权auth 过滤器");
+
+        Boolean skipAuthorization = (Boolean) exchange.getAttributes().get(SKIP_AUTHORIZATION);
+        if (skipAuthorization) {
+            exchange.getAttributes().put(HTTP_METHOD, exchange.getRequest().getMethod());
+            return chain.filter(exchange);
+        }
+
         UserVo userVo = null;
         HttpHeaders requestHeaders = exchange.getRequest().getHeaders();
         PairEntity<String> authorization = parseAuthorizationHeader(requestHeaders);
         String userName = authorization.getFirstEntity();
         String password = authorization.getSecondEntity();
 
-        if (userName.equals(USER)) {
+        if (userName.equals(NEED_AUTHORIZATION)) {
             logger.debug("access token is : {}", password);
             RpcResponse<UserVo> authResult = passportResource.verify(password);
             if (authResult.getCode() != SUCCESS) {
@@ -84,7 +93,7 @@ public class AuthGatewayFilterFactory implements GlobalFilter, Ordered {
             userVo.setUserId(0L);
         }
 
-        if(userVo == null){
+        if (userVo == null) {
             logger.error("user is empty,check your access token");
         }
         SessionHandler.set(userVo);
@@ -108,7 +117,7 @@ public class AuthGatewayFilterFactory implements GlobalFilter, Ordered {
         String decodeAuthorization = new String(Base64.decodeBase64(authorizationHeader), StandardCharsets.UTF_8);
         String[] arr = decodeAuthorization.split(":");
 
-        return new PairEntity(arr[0],arr[1]);
+        return new PairEntity(arr[0], arr[1]);
     }
 
 }

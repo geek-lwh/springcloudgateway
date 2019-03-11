@@ -9,7 +9,6 @@ import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
@@ -33,7 +32,7 @@ import static com.aha.tech.core.constant.FilterOrderedConstant.MODIFY_RESPONSE_G
  * 修改http response 返回值
  */
 @Component
-public class ModifyResponseGatewayFilter implements GlobalFilter,Ordered {
+public class ModifyResponseGatewayFilter implements GlobalFilter, Ordered {
 
     private static final Logger logger = LoggerFactory.getLogger(ModifyResponseGatewayFilter.class);
 
@@ -49,9 +48,10 @@ public class ModifyResponseGatewayFilter implements GlobalFilter,Ordered {
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         logger.debug("执行添加modify response 参数过滤器");
         ServerHttpResponse response = exchange.getResponse();
-        ServerHttpResponseDecorator serverHttpResponseDecorator = modifyResponse(response);
+        ServerHttpResponseDecorator newResponse = modifyResponse(response);
 
-        ServerWebExchange swe = exchange.mutate().response(serverHttpResponseDecorator).build();
+        ServerWebExchange swe = exchange.mutate().response(newResponse).build();
+
         return chain.filter(swe);
     }
 
@@ -61,39 +61,42 @@ public class ModifyResponseGatewayFilter implements GlobalFilter,Ordered {
      * @return
      */
     private ServerHttpResponseDecorator modifyResponse(ServerHttpResponse response) {
-        DataBufferFactory dataBufferFactory = response.bufferFactory();
+        DataBufferFactory bufferFactory = response.bufferFactory();
         ServerHttpResponseDecorator decoratedResponse = new ServerHttpResponseDecorator(response) {
             @Override
             public Mono<Void> writeWith(Publisher<? extends DataBuffer> body) {
+                Flux<? extends DataBuffer> flux = (Flux<? extends DataBuffer>) body;
                 if (body instanceof Flux) {
-                    Flux<? extends DataBuffer> flux = (Flux<? extends DataBuffer>) body;
-                    return super.writeWith(flux.buffer().map(dataBuffers -> {
-                        ByteOutputStream outputStream = new ByteOutputStream();
-                        dataBuffers.forEach(buf -> {
-                            byte[] stream = new byte[buf.readableByteCount()];
-                            buf.read(stream);
-                            outputStream.write(stream);
-                        });
-                        byte[] stream = outputStream.getBytes();
-                        try {
-                            ResponseVo rpcResponsePage = objectMapper.readValue(stream, ResponseVo.class);
-                            String cursor = rpcResponsePage.getCursor();
-                            if (StringUtils.isNotBlank(cursor)) {
-                                byte[] decodeCursor = Base64.decodeBase64(cursor);
-                                rpcResponsePage.setCursor(new String(decodeCursor, StandardCharsets.UTF_8));
-                                return dataBufferFactory.wrap(objectMapper.writeValueAsBytes(rpcResponsePage));
-                            }
-                        } catch (IOException e) {
-                            logger.error(e.getMessage(), e);
-                        }
+                    return super.writeWith(
+                            flux.buffer().map(dataBuffers -> {
+                                ByteOutputStream outputStream = new ByteOutputStream();
+                                dataBuffers.forEach(i -> {
+                                    byte[] array = new byte[i.readableByteCount()];
+                                    i.read(array);
+                                    outputStream.write(array);
+                                });
 
-                        return dataBufferFactory.wrap(stream);
-                    }));
+                                byte[] stream = outputStream.getBytes();
+                                try {
+                                    ResponseVo rpcResponsePage = objectMapper.readValue(stream, ResponseVo.class);
+                                    String cursor = rpcResponsePage.getCursor();
+                                    if (StringUtils.isNotBlank(cursor)) {
+                                        byte[] decodeCursor = Base64.decodeBase64(cursor);
+                                        rpcResponsePage.setCursor(new String(decodeCursor, StandardCharsets.UTF_8));
+                                        return bufferFactory.wrap(objectMapper.writeValueAsBytes(rpcResponsePage));
+                                    }
+                                } catch (IOException e) {
+                                    logger.error(e.getMessage(), e);
+                                }
+
+                                return bufferFactory.wrap(stream);
+                            }));
                 }
-
                 return super.writeWith(body);
             }
+
         };
+
         return decoratedResponse;
     }
 }

@@ -31,9 +31,6 @@ public class DynamicRouteConfiguration implements RouteDefinitionLocator {
     @Resource
     private Map<String, RouteEntity> routeEntityMap;
 
-    @Autowired(required = false)
-    private RouteDefinition routeDefinition;
-
     @Override
     public Flux<RouteDefinition> getRouteDefinitions() {
         Set<RouteDefinition> routeDefinitionList = new HashSet<>();

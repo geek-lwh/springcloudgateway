@@ -34,6 +34,7 @@ import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static com.aha.tech.core.constant.GatewayAttributeConstant.SKIP_AUTHORIZATION;
 import static com.aha.tech.core.tools.BeanUtil.copyMultiValueMap;
 
 /**
@@ -56,13 +57,14 @@ public class AddRequestBodyGatewayFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         logger.debug("执行添加post参数过滤器");
+        Boolean skipAuthorization = (Boolean) exchange.getAttributes().get(SKIP_AUTHORIZATION);
 
         ServerHttpRequest serverHttpRequest = exchange.getRequest();
         HttpMethod httpMethod = serverHttpRequest.getMethod();
         URI uri = serverHttpRequest.getURI();
 
-        if (httpMethod != HttpMethod.POST) {
-            logger.info("不满足 执行添加post参数过滤器 要求,url : {},httpMethod : {} ", uri, httpMethod);
+        if (skipAuthorization.equals(Boolean.TRUE) || httpMethod != HttpMethod.POST) {
+            logger.info("请求路径: {} 跳过过授权", uri.getRawPath());
             return chain.filter(exchange);
         }
 
