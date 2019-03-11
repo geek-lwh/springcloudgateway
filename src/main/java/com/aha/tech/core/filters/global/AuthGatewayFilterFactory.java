@@ -29,8 +29,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static com.aha.tech.commons.constants.ResponseConstants.SUCCESS;
-import static com.aha.tech.core.constant.GatewayAttributeConstant.HTTP_METHOD;
-import static com.aha.tech.core.constant.GatewayAttributeConstant.SKIP_AUTHORIZATION;
+import static com.aha.tech.core.constant.ExchangeAttributeConstant.HTTP_METHOD;
+import static com.aha.tech.core.constant.ExchangeAttributeConstant.SKIP_AUTHORIZATION;
 import static com.aha.tech.core.constant.HeaderFieldConstant.DEFAULT_X_TOKEN_VALUE;
 import static com.aha.tech.core.constant.HeaderFieldConstant.HEADER_AUTHORIZATION;
 import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.setResponseStatus;

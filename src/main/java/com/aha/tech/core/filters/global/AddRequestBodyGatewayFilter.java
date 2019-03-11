@@ -34,7 +34,7 @@ import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static com.aha.tech.core.constant.GatewayAttributeConstant.SKIP_AUTHORIZATION;
+import static com.aha.tech.core.constant.ExchangeAttributeConstant.SKIP_AUTHORIZATION;
 import static com.aha.tech.core.tools.BeanUtil.copyMultiValueMap;
 
 /**

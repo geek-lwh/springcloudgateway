@@ -19,7 +19,7 @@ import reactor.core.publisher.Mono;
 
 import java.net.URI;
 
-import static com.aha.tech.core.constant.GatewayAttributeConstant.SKIP_AUTHORIZATION;
+import static com.aha.tech.core.constant.ExchangeAttributeConstant.SKIP_AUTHORIZATION;
 
 /**
  * @Author: luweihong

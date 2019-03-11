@@ -18,7 +18,7 @@ import javax.annotation.Resource;
 import java.net.URI;
 import java.util.Map;
 
-import static com.aha.tech.core.constant.GatewayAttributeConstant.SKIP_AUTHORIZATION;
+import static com.aha.tech.core.constant.ExchangeAttributeConstant.SKIP_AUTHORIZATION;
 import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.GATEWAY_REQUEST_URL_ATTR;
 
 /**
