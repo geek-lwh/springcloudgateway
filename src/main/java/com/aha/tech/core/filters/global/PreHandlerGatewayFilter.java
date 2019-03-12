@@ -16,7 +16,10 @@ import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.aha.tech.core.constant.ExchangeAttributeConstant.SKIP_AUTHORIZATION;
 import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.GATEWAY_REQUEST_URL_ATTR;
@@ -34,6 +37,10 @@ public class PreHandlerGatewayFilter implements GlobalFilter, Ordered {
     private static final Logger logger = LoggerFactory.getLogger(PreHandlerGatewayFilter.class);
 
     private static final String PUBLIC_TEXT = "public";
+
+    private static final int SKIP_FIRST_PART = 1;
+
+    private static final int SKIP_SECOND_PART = 2;
 
     @Resource
     private Map<String, RouteEntity> routeEntityMap;
@@ -66,17 +73,22 @@ public class PreHandlerGatewayFilter implements GlobalFilter, Ordered {
      * @return
      */
     private ServerHttpRequest rewriteRequestPath(String path, ServerHttpRequest serverHttpRequest, ServerWebExchange exchange) {
-        String[] arr = StringUtils.split(path, Separator.SLASH_MARK);
+        // 判断path是否带有public路径
         Boolean skipAuthorization = path.contains(PUBLIC_TEXT);
-        String mappingKey = skipAuthorization ? arr[2] : arr[1];
 
-        RouteEntity routeEntity = routeEntityMap.containsKey(mappingKey) ? routeEntityMap.get(mappingKey) : null;
-        if (routeEntity == null) {
+        int skipUrlPart = skipAuthorization ? SKIP_SECOND_PART : SKIP_FIRST_PART;
+        Stream<String> realUrlStream = Arrays.stream(org.springframework.util.StringUtils.tokenizeToStringArray(path, Separator.SLASH_MARK)).skip(skipUrlPart);
+
+        String subUrl = realUrlStream.collect(Collectors.joining(Separator.SLASH_MARK));
+        String mappingKey = StringUtils.substringBefore(subUrl,Separator.SLASH_MARK);
+        if (!routeEntityMap.containsKey(mappingKey)) {
             logger.error("没有匹配的路由地址 : {}", path);
             return serverHttpRequest;
         }
 
-        String rewritePath = path.replaceAll(arr[0], routeEntity.getContextPath());
+        RouteEntity routeEntity = routeEntityMap.get(mappingKey);
+        String rewritePath = String.format("%s,%s,%s",routeEntity.getContextPath() + Separator.SLASH_MARK + subUrl);
+
         ServerHttpRequest newRequest = serverHttpRequest.mutate()
                 .path(rewritePath)
                 .build();
