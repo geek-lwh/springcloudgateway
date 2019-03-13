@@ -15,10 +15,11 @@ import java.util.Map;
 /**
  * @Author: luweihong
  * @Date: 2019/3/5
+ * 运行时当前的路由映射关系
  */
 @Configuration
 @ConfigurationProperties(prefix = "route")
-public class GatewayRouteMappingsConfiguration {
+public class RuntimeRouteMappingsConfiguration {
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -27,17 +28,25 @@ public class GatewayRouteMappingsConfiguration {
 
     @Bean
     public Map<String, RouteEntity> routeEntityMap() {
-        Map<String, RouteEntity> routeEntityMap = Maps.newHashMap();
-        mappings.forEach((k, v) -> {
+        Map<String, RouteEntity> routeEntityMap = refreshRouteEntityMap();
+        return routeEntityMap;
+    }
 
-            RouteEntity routeEntity = null;
+    /**
+     * 刷新路由映射的实体映射对象
+     * @return
+     */
+    public Map<String, RouteEntity> refreshRouteEntityMap(){
+        Map<String, RouteEntity> routeEntityMap = Maps.newHashMapWithExpectedSize(mappings.size());
+        mappings.forEach((k, v) -> {
             try {
-                routeEntity = objectMapper.readValue(v, RouteEntity.class);
+                RouteEntity routeEntity = objectMapper.readValue(v, RouteEntity.class);
+                routeEntityMap.put(k, routeEntity);
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
-            routeEntityMap.put(k, routeEntity);
         });
 
         return routeEntityMap;

@@ -29,7 +29,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static com.aha.tech.commons.constants.ResponseConstants.SUCCESS;
-import static com.aha.tech.core.constant.ExchangeAttributeConstant.HTTP_METHOD;
 import static com.aha.tech.core.constant.ExchangeAttributeConstant.SKIP_AUTHORIZATION;
 import static com.aha.tech.core.constant.HeaderFieldConstant.DEFAULT_X_TOKEN_VALUE;
 import static com.aha.tech.core.constant.HeaderFieldConstant.HEADER_AUTHORIZATION;
@@ -65,7 +64,6 @@ public class AuthGatewayFilterFactory implements GlobalFilter, Ordered {
 
         Boolean skipAuthorization = (Boolean) exchange.getAttributes().get(SKIP_AUTHORIZATION);
         if (skipAuthorization) {
-            exchange.getAttributes().put(HTTP_METHOD, exchange.getRequest().getMethod());
             return chain.filter(exchange);
         }
 
@@ -75,10 +73,18 @@ public class AuthGatewayFilterFactory implements GlobalFilter, Ordered {
         String userName = authorization.getFirstEntity();
         String password = authorization.getSecondEntity();
 
+        if (userName.equals(VISITOR) && password.equals(DEFAULT_X_TOKEN_VALUE)) {
+            userVo.setUserId(0L);
+            SessionHandler.set(userVo);
+            return chain.filter(exchange);
+        }
+
         if (userName.equals(NEED_AUTHORIZATION)) {
             logger.debug("access token is : {}", password);
             RpcResponse<UserVo> authResult = passportResource.verify(password);
-            if (authResult.getCode() != SUCCESS) {
+            userVo = authResult.getData();
+            if (authResult.getCode() != SUCCESS || userVo == null) {
+                logger.info("访问令牌校验失败 : {}", password);
                 return Mono.defer(() -> {
                     setResponseStatus(exchange, HttpStatus.UNAUTHORIZED);
                     final ServerHttpResponse resp = exchange.getResponse();
@@ -87,16 +93,10 @@ public class AuthGatewayFilterFactory implements GlobalFilter, Ordered {
                     return resp.writeWith(Flux.just(buffer));
                 });
             }
-            userVo = authResult.getData();
-        } else if (userName.equals(VISITOR) && password.equals(DEFAULT_X_TOKEN_VALUE)) {
-            logger.info("设置匿名用户 userId = 0");
-            userVo.setUserId(0L);
-        }
 
-        if (userVo == null) {
-            logger.error("user is empty,check your access token");
+            logger.info("用户对象信息: {} , 访问令牌 : {}", userVo, password);
+            SessionHandler.set(userVo);
         }
-        SessionHandler.set(userVo);
 
         return chain.filter(exchange);
     }

@@ -1,5 +1,6 @@
 package com.aha.tech.core.event;
 
+import com.aha.tech.config.RouteConfiguration;
 import com.aha.tech.core.model.entity.RouteEntity;
 import com.aha.tech.util.SpringContextUtil;
 import com.ctrip.framework.apollo.model.ConfigChange;
@@ -35,12 +36,14 @@ public class VariableRefreshEvent {
     @Autowired
     private RefreshScope refreshScope;
 
+    private String DYNAMIC_ROUTE_BEAN = "routeEntityMap";
+
     private String ROUTE_PREFIX = "route.mappings.";
 
-    private String DYNAMIC_ROUTE_BEAN = "routeEntityMap";
 
     /**
      * apollo 配置变更
+     *
      * @param changeEvent
      */
     @ApolloConfigChangeListener({"application"})
@@ -48,36 +51,46 @@ public class VariableRefreshEvent {
         logger.info("配置中心 配置被发布!");
         Set<String> changeKeys = changeEvent.changedKeys();
         changeKeys.forEach(changeKeyName -> {
+            logger.info("变更的配置名 : {}", changeKeyName);
+            ConfigChange change = changeEvent.getChange(changeKeyName);
             if (changeKeyName.startsWith(ROUTE_PREFIX)) {
-                logger.info("网关路由配置变更 !");
-                ConfigChange change = changeEvent.getChange(changeKeyName);
-                String oldValue = change.getOldValue();
-                String newValue = change.getNewValue();
-                logger.info("变更前的值 : {},变更后的值 : {}", oldValue, newValue);
-
-                RouteEntity routeEntity = null;
-                Map<String, RouteEntity> routeEntityMap = (Map<String, RouteEntity>) SpringContextUtil.getBean(DYNAMIC_ROUTE_BEAN);
-                String key = changeKeyName.substring(ROUTE_PREFIX.length());
-                if(!routeEntityMap.containsKey(key)){
-                    routeEntity = parseMapping(newValue);
-                    routeEntityMap.put(key, routeEntity);
-                    refreshRouteMapping();
-                    logger.info("添加 路由配置映射关系 : {}", ROUTE_PREFIX + key);
-                    return;
-                }
-
-                if (StringUtils.isBlank(newValue)) {
-                    routeEntityMap.remove(key);
-                    refreshRouteMapping();
-                    logger.info("删除 路由配置映射关系 : {}", ROUTE_PREFIX + key);
-                    return;
-                }
-
-                routeEntityMap.put(key, parseMapping(newValue));
-                refreshRouteMapping();
-                logger.info("修改 路由配置映射关系 : {}", ROUTE_PREFIX + key);
+                runtimeRouteConfigChangeListener(change, changeKeyName);
             }
         });
+    }
+
+    /**
+     * 监听运行时路由配置变更
+     *
+     * @param change
+     * @param changeKeyName
+     */
+    private void runtimeRouteConfigChangeListener(ConfigChange change, String changeKeyName) {
+        logger.info("网关路由配置变更 !");
+        String oldValue = change.getOldValue();
+        String newValue = change.getNewValue();
+        logger.info("变更前的值 : {},变更后的值 : {}", oldValue, newValue);
+
+        Map<String, RouteEntity> routeEntityMap = (Map<String, RouteEntity>) SpringContextUtil.getBean(DYNAMIC_ROUTE_BEAN);
+        String key = changeKeyName.substring(ROUTE_PREFIX.length());
+        if (!routeEntityMap.containsKey(key)) {
+            RouteEntity routeEntity = parseMapping(newValue);
+            routeEntityMap.put(key, routeEntity);
+            refreshRuntimeRouteConfig();
+            logger.info("添加 路由配置映射关系 : {}", ROUTE_PREFIX + key);
+            return;
+        }
+
+        if (StringUtils.isBlank(newValue)) {
+            routeEntityMap.remove(key);
+            refreshRuntimeRouteConfig();
+            logger.info("删除 路由配置映射关系 : {}", ROUTE_PREFIX + key);
+            return;
+        }
+
+        routeEntityMap.put(key, parseMapping(newValue));
+        refreshRuntimeRouteConfig();
+        logger.info("修改 路由配置映射关系 : {}", ROUTE_PREFIX + key);
     }
 
     /**
@@ -91,15 +104,21 @@ public class VariableRefreshEvent {
         try {
             routeEntity = objectMapper.readValue(newValue, RouteEntity.class);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("解析json字符串异常,字符串 : {}", newValue, e);
         }
         return routeEntity;
     }
 
     /**
-     * 通过spring config 刷新spring bean
+     * 刷新路由映射配置
      */
-    private void refreshRouteMapping(){
-        refreshScope.refresh(DYNAMIC_ROUTE_BEAN);
+    private void refreshRuntimeRouteConfig() {
+        for(;;){
+            if(RouteConfiguration.routeChange.compareAndSet(false,true)){
+                refreshScope.refresh(DYNAMIC_ROUTE_BEAN);
+                break;
+            }
+        }
     }
+
 }

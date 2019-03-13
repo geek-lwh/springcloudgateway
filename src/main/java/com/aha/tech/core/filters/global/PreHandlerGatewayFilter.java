@@ -59,7 +59,9 @@ public class PreHandlerGatewayFilter implements GlobalFilter, Ordered {
         String path = uri.getRawPath();
 
         ServerHttpRequest newRequest = rewriteRequestPath(path, serverHttpRequest, exchange);
-
+        if(newRequest == null){
+            // todo handler empty new request
+        }
         // 根据attributes 判断是否执行对应请求
         logger.info("after rewrite url is : {}", newRequest.getURI().getRawPath());
         return chain.filter(exchange.mutate().request(newRequest).build());
@@ -80,14 +82,17 @@ public class PreHandlerGatewayFilter implements GlobalFilter, Ordered {
         Stream<String> realUrlStream = Arrays.stream(org.springframework.util.StringUtils.tokenizeToStringArray(path, Separator.SLASH_MARK)).skip(skipUrlPart);
 
         String subUrl = realUrlStream.collect(Collectors.joining(Separator.SLASH_MARK));
-        String mappingKey = StringUtils.substringBefore(subUrl,Separator.SLASH_MARK);
+        String mappingKey = StringUtils.substringBefore(subUrl, Separator.SLASH_MARK);
         if (!routeEntityMap.containsKey(mappingKey)) {
             logger.error("没有匹配的路由地址 : {}", path);
             return serverHttpRequest;
         }
 
         RouteEntity routeEntity = routeEntityMap.get(mappingKey);
-        String rewritePath = String.format("%s,%s,%s",routeEntity.getContextPath() + Separator.SLASH_MARK + subUrl);
+        String rewritePath = new StringBuilder()
+                .append(routeEntity.getContextPath())
+                .append(Separator.SLASH_MARK)
+                .append(subUrl).toString();
 
         ServerHttpRequest newRequest = serverHttpRequest.mutate()
                 .path(rewritePath)
