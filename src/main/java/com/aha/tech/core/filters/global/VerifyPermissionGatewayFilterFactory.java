@@ -41,13 +41,12 @@ import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.s
  * @Author: luweihong
  * @Date: 2019/2/14
  *
- * 修改requestBody的同时,需要修改header的content length
- * 否则增加的字节会被截断,导致后端服务报json解析不正确
+ * 权限校验
  */
 @Component
-public class AuthGatewayFilterFactory implements GlobalFilter, Ordered {
+public class VerifyPermissionGatewayFilterFactory implements GlobalFilter, Ordered {
 
-    private static final Logger logger = LoggerFactory.getLogger(AuthGatewayFilterFactory.class);
+    private static final Logger logger = LoggerFactory.getLogger(VerifyPermissionGatewayFilterFactory.class);
 
     private static final String VISITOR = "visitor";
 
