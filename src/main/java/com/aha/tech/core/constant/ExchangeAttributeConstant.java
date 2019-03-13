@@ -9,6 +9,8 @@ package com.aha.tech.core.constant;
 public class ExchangeAttributeConstant {
 
     // 是否需要授权
-    public static final String SKIP_AUTHORIZATION = "skip_authorization";
+    public static final String URL_IN_WHITE_LIST = "URL_IN_WHITE_LIST";
+
+    public static final String USER_INFO_SESSION = "USER_INFO_SESSION";
 
 }

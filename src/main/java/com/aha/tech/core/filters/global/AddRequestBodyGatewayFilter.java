@@ -1,13 +1,9 @@
 package com.aha.tech.core.filters.global;
 
-import com.aha.tech.commons.utils.DateUtil;
 import com.aha.tech.core.constant.FilterOrderedConstant;
 import com.aha.tech.core.exception.EmptyBodyException;
-import com.aha.tech.core.exception.GatewayException;
-import com.aha.tech.core.handler.SessionHandler;
 import com.aha.tech.passportserver.facade.model.vo.UserVo;
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
 import io.netty.buffer.ByteBufAllocator;
 import org.apache.commons.lang3.StringUtils;
@@ -34,7 +30,7 @@ import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static com.aha.tech.core.constant.ExchangeAttributeConstant.SKIP_AUTHORIZATION;
+import static com.aha.tech.core.constant.ExchangeAttributeConstant.USER_INFO_SESSION;
 import static com.aha.tech.core.tools.BeanUtil.copyMultiValueMap;
 
 /**
@@ -57,18 +53,19 @@ public class AddRequestBodyGatewayFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         logger.debug("执行添加post参数过滤器");
-        Boolean skipAuthorization = (Boolean) exchange.getAttributes().get(SKIP_AUTHORIZATION);
+        Object obj = exchange.getAttributes().get(USER_INFO_SESSION);
 
         ServerHttpRequest serverHttpRequest = exchange.getRequest();
         HttpMethod httpMethod = serverHttpRequest.getMethod();
         URI uri = serverHttpRequest.getURI();
 
-        if (skipAuthorization.equals(Boolean.TRUE) || httpMethod != HttpMethod.POST) {
+        if (obj == null || httpMethod != HttpMethod.POST) {
             logger.info("请求路径: {} 跳过过授权", uri.getRawPath());
             return chain.filter(exchange);
         }
 
-        ServerHttpRequest newRequest = modifyRequestBodyEntity(serverHttpRequest);
+        UserVo userVo = (UserVo) obj;
+        ServerHttpRequest newRequest = modifyRequestBody(serverHttpRequest, userVo);
         return chain.filter(exchange.mutate().request(newRequest).build());
     }
 
@@ -77,23 +74,13 @@ public class AddRequestBodyGatewayFilter implements GlobalFilter, Ordered {
      * @param serverHttpRequest
      * @return
      */
-    private ServerHttpRequest modifyRequestBodyEntity(ServerHttpRequest serverHttpRequest) {
+    private ServerHttpRequest modifyRequestBody(ServerHttpRequest serverHttpRequest, UserVo userVo) {
         String resolveBody = resolveBodyFromRequest(serverHttpRequest);
         if (StringUtils.isBlank(resolveBody)) {
             throw new EmptyBodyException();
         }
 
-        UserVo userVo = SessionHandler.get();
-        URI newUri = UriComponentsBuilder.fromUri(serverHttpRequest.getURI()).build(true).toUri();
-        ServerHttpRequest newRequest;
-        try {
-            newRequest = addRequestBody(resolveBody, userVo, serverHttpRequest, serverHttpRequest.mutate().uri(newUri).build());
-        } catch (Exception e) {
-            logger.error("date : {} mutate new request has error", DateUtil.currentDateByDefaultFormat(), e);
-            throw new GatewayException(e);
-        }finally {
-            SessionHandler.remove();
-        }
+        ServerHttpRequest newRequest = addRequestBody(resolveBody, userVo, serverHttpRequest);
 
         return newRequest;
     }
@@ -135,19 +122,22 @@ public class AddRequestBodyGatewayFilter implements GlobalFilter, Ordered {
      * @param resolveBody
      * @param userVo
      * @param serverHttpRequest
-     * @param newRequest
      * @return
-     * @throws JSONException
      */
-    private ServerHttpRequest addRequestBody(String resolveBody, UserVo userVo, ServerHttpRequest serverHttpRequest, ServerHttpRequest newRequest) throws JSONException {
+    private ServerHttpRequest addRequestBody(String resolveBody, UserVo userVo, ServerHttpRequest serverHttpRequest) {
         JSONObject obj = JSON.parseObject(resolveBody);
         obj.put("user_id", userVo.getUserId());
         DataBuffer bodyDataBuffer = stringBuffer(obj.toString());
         Flux<DataBuffer> bodyFlux = Flux.just(bodyDataBuffer);
 
+        HttpHeaders httpHeaders = serverHttpRequest.getHeaders();
+
+        URI newUri = UriComponentsBuilder.fromUri(serverHttpRequest.getURI()).build(true).toUri();
+        ServerHttpRequest newRequest = serverHttpRequest.mutate().uri(newUri).build();
+
         // 插入后计算新的content length,否则会出现异常
         HttpHeaders myHeaders = new HttpHeaders();
-        copyMultiValueMap(serverHttpRequest.getHeaders(), myHeaders);
+        copyMultiValueMap(httpHeaders, myHeaders);
         myHeaders.remove(HttpHeaders.CONTENT_LENGTH);
         int len = bodyDataBuffer.readableByteCount();
         myHeaders.set(HttpHeaders.CONTENT_LENGTH, String.valueOf(len));

@@ -19,7 +19,9 @@ import reactor.core.publisher.Mono;
 
 import java.net.URI;
 
-import static com.aha.tech.core.constant.ExchangeAttributeConstant.SKIP_AUTHORIZATION;
+import static com.aha.tech.core.constant.ExchangeAttributeConstant.URL_IN_WHITE_LIST;
+import static com.aha.tech.core.constant.ExchangeAttributeConstant.USER_INFO_SESSION;
+
 
 /**
  * @Author: luweihong
@@ -40,18 +42,19 @@ public class AddRequestParamsGatewayFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         logger.debug("执行添加get参数过滤器");
-        Boolean skipAuthorization = (Boolean) exchange.getAttributes().get(SKIP_AUTHORIZATION);
+        Object obj = exchange.getAttributes().get(USER_INFO_SESSION);
 
         ServerHttpRequest serverHttpRequest = exchange.getRequest();
         HttpMethod httpMethod = serverHttpRequest.getMethod();
         URI uri = serverHttpRequest.getURI();
 
-        if (skipAuthorization.equals(Boolean.TRUE) || httpMethod != HttpMethod.GET) {
+        if (obj == null || httpMethod != HttpMethod.GET) {
             logger.info("请求路径: {} 跳过过授权", uri.getRawPath());
             return chain.filter(exchange);
         }
 
-        ServerHttpRequest newRequest = addQueryParams(serverHttpRequest);
+        UserVo userVo = (UserVo) obj;
+        ServerHttpRequest newRequest = addQueryParams(serverHttpRequest,userVo);
         logger.debug("after add request query : {}", newRequest.getQueryParams());
         return chain.filter(exchange.mutate().request(newRequest).build());
     }
@@ -61,30 +64,25 @@ public class AddRequestParamsGatewayFilter implements GlobalFilter, Ordered {
      * @param serverHttpRequest
      * @return
      */
-    private ServerHttpRequest addQueryParams(ServerHttpRequest serverHttpRequest) {
-        try {
-            UserVo userVo = SessionHandler.get();
-            URI uri = serverHttpRequest.getURI();
-            String originalQuery = serverHttpRequest.getURI().getRawQuery();
+    private ServerHttpRequest addQueryParams(ServerHttpRequest serverHttpRequest,UserVo userVo) {
+        URI uri = serverHttpRequest.getURI();
+        String originalQuery = serverHttpRequest.getURI().getRawQuery();
 
-            StringBuilder query = new StringBuilder();
-            if (StringUtils.hasText(originalQuery)) {
-                query.append(originalQuery);
-                if (originalQuery.charAt(originalQuery.length() - 1) != CHAR_AND_MARK) {
-                    query.append(Separator.AND_MARK);
-                }
+        StringBuilder query = new StringBuilder();
+        if (StringUtils.hasText(originalQuery)) {
+            query.append(originalQuery);
+            if (originalQuery.charAt(originalQuery.length() - 1) != CHAR_AND_MARK) {
+                query.append(Separator.AND_MARK);
             }
-            query.append("user_id").append("=").append(userVo.getUserId());
-
-            URI newUri = UriComponentsBuilder.fromUri(uri)
-                    .replaceQuery(query.toString())
-                    .build(true)
-                    .toUri();
-
-            return serverHttpRequest.mutate().uri(newUri).build();
-        } finally {
-            SessionHandler.remove();
         }
+        query.append("user_id").append("=").append(userVo.getUserId());
+
+        URI newUri = UriComponentsBuilder.fromUri(uri)
+                .replaceQuery(query.toString())
+                .build(true)
+                .toUri();
+
+        return serverHttpRequest.mutate().uri(newUri).build();
 
     }
 

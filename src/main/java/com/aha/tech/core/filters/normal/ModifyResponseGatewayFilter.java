@@ -29,7 +29,7 @@ import static com.aha.tech.core.constant.FilterOrderedConstant.MODIFY_RESPONSE_G
 /**
  * @Author: luweihong
  * @Date: 2019/2/21
- * 修改http response 返回值
+ * 修改http buildResponseData 返回值
  */
 @Component
 public class ModifyResponseGatewayFilter implements GlobalFilter, Ordered {
@@ -46,7 +46,7 @@ public class ModifyResponseGatewayFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        logger.debug("执行添加modify response 参数过滤器");
+        logger.debug("执行添加modify buildResponseData 参数过滤器");
         ServerHttpResponse response = exchange.getResponse();
         ServerHttpResponseDecorator newResponse = modifyResponse(response);
 

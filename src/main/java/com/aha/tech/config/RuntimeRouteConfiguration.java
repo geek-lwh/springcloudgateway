@@ -18,8 +18,8 @@ import java.util.Map;
  * 运行时当前的路由映射关系
  */
 @Configuration
-@ConfigurationProperties(prefix = "route")
-public class RuntimeRouteMappingsConfiguration {
+@ConfigurationProperties(prefix = "route.uri")
+public class RuntimeRouteConfiguration {
 
     @Autowired
     private ObjectMapper objectMapper;

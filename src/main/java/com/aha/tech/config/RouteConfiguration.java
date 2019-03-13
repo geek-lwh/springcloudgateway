@@ -52,32 +52,7 @@ public class RouteConfiguration implements RouteDefinitionLocator {
     private Set<RouteDefinition> refreshRuntimeRoute() {
         Set<RouteDefinition> routeDefinitionSet = new HashSet<>();
         routeEntityMap.forEach((id, routeEntity) -> {
-            RouteDefinition routeDefinition = new RouteDefinition();
-
-            // route id
-            routeDefinition.setId(id);
-
-            // 自定义Predicate
-            PredicateDefinition predicate = new PredicateDefinition();
-            predicate.setName("Path");
-            Map<String, String> predicateParams = new HashMap<>(8);
-            predicateParams.put("pattern", routeEntity.getPath());
-            predicate.setArgs(predicateParams);
-            routeDefinition.getPredicates().add(predicate);
-
-            // uri
-            URI uri = URI.create(routeEntity.getUri());
-            routeDefinition.setUri(uri);
-
-            // filter
-            FilterDefinition filter1 = new FilterDefinition();
-            filter1.setName("Hystrix");
-            Map<String, String> filter1Params = new HashMap<>(8);
-            filter1Params.put("name", id);
-            filter1Params.put("fallbackUri", "forward:/fallback");
-            filter1.setArgs(filter1Params);
-            routeDefinition.setFilters(Arrays.asList(filter1));
-
+            RouteDefinition routeDefinition = configRouteDefinition(id,routeEntity);
             // hystrix properties
 //            String groupKey = "hystrix_group_" + id;
 //            HystrixObservableCommand.Setter setter = HystrixObservableCommand.Setter.withGroupKey(HystrixCommandGroupKey.Factory.asKey(groupKey))
@@ -106,6 +81,63 @@ public class RouteConfiguration implements RouteDefinitionLocator {
         });
 
         return routeDefinitionSet;
+    }
+
+    /**
+     * 配置路由
+     * @param id
+     * @param routeEntity
+     * @return
+     */
+    private RouteDefinition configRouteDefinition(String id,RouteEntity routeEntity) {
+        RouteDefinition routeDefinition = new RouteDefinition();
+        // 配置route
+        routeDefinition.setId(id);
+
+        // 配置route
+        PredicateDefinition predicate = predicateDefinition(routeEntity.getPath());
+        routeDefinition.getPredicates().add(predicate);
+
+        // uri
+        URI uri = URI.create(routeEntity.getUri());
+        routeDefinition.setUri(uri);
+
+        // filter
+        FilterDefinition filter1 = filterDefinition(id);
+//        routeDefinition.setFilters(Arrays.asList(filter1));
+
+        return routeDefinition;
+    }
+
+    /**
+     * 配置路由的匹配模式和匹配表达式
+     * @param pattern
+     * @return
+     */
+    private PredicateDefinition predicateDefinition (String pattern){
+        PredicateDefinition predicate = new PredicateDefinition();
+        predicate.setName("Path");
+        Map<String, String> predicateParams = new HashMap<>(8);
+        predicateParams.put("pattern", pattern);
+        predicate.setArgs(predicateParams);
+
+        return predicate;
+    }
+
+    /**
+     * 配置路由的普通过滤器
+     * @param name
+     * @return
+     */
+    private FilterDefinition filterDefinition(String name){
+        FilterDefinition filter1 = new FilterDefinition();
+        filter1.setName("Hystrix");
+        Map<String, String> filter1Params = new HashMap<>(8);
+        filter1Params.put("name", name);
+        filter1Params.put("fallbackUri", "forward:/fallback");
+        filter1.setArgs(filter1Params);
+
+        return filter1;
     }
 
 }

@@ -1,6 +1,11 @@
 package com.aha.tech.core.handler;
 
 import com.aha.tech.commons.utils.DateUtil;
+import com.aha.tech.core.exception.AnonymousUserException;
+import com.aha.tech.core.exception.AuthorizationFailedException;
+import com.aha.tech.core.exception.EmptyBodyException;
+import com.aha.tech.core.exception.MissAuthorizationHeaderException;
+import com.google.common.collect.Maps;
 import org.springframework.boot.autoconfigure.web.ErrorProperties;
 import org.springframework.boot.autoconfigure.web.ResourceProperties;
 import org.springframework.boot.autoconfigure.web.reactive.error.DefaultErrorWebExceptionHandler;
@@ -9,7 +14,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.server.*;
 
-import java.util.HashMap;
+import java.net.URI;
 import java.util.Map;
 
 /**
@@ -34,16 +39,37 @@ public class JsonExceptionHandler extends DefaultErrorWebExceptionHandler {
     @Override
     protected Map<String, Object> getErrorAttributes(ServerRequest request, boolean includeStackTrace) {
         int code = 500;
+        String message = "";
         Throwable error = super.getError(request);
         if (error instanceof org.springframework.cloud.gateway.support.NotFoundException) {
             code = 404;
         }
 
-//        if (error instanceof org.springframework.web.server.ResponseStatusException) {
-//            code = 404;
-//        }
+        if (error instanceof MissAuthorizationHeaderException) {
+            code = ((MissAuthorizationHeaderException) error).getCode();
+            message = MissAuthorizationHeaderException.MISS_AUTHORIZATION_HEADER;
+        }
 
-        return response(error,code, this.buildMessage(request, error));
+        if (error instanceof EmptyBodyException) {
+            code = ((EmptyBodyException) error).getCode();
+            message = EmptyBodyException.REQUEST_BODY_EMPTY;
+        }
+
+        if (error instanceof AnonymousUserException) {
+            code = ((AnonymousUserException) error).getCode();
+            message = AnonymousUserException.NO_PERMISSION;
+        }
+
+        if (error instanceof AuthorizationFailedException) {
+            code = ((AuthorizationFailedException) error).getCode();
+            message = error.getMessage();
+        }
+
+        String method = request.methodName();
+        URI uri = request.uri();
+        String requestUrl = this.buildRequestUrl(method, uri);
+
+        return buildResponseData(error, code, requestUrl, message);
     }
 
     /**
@@ -62,40 +88,44 @@ public class JsonExceptionHandler extends DefaultErrorWebExceptionHandler {
     @Override
     protected HttpStatus getHttpStatus(Map<String, Object> errorAttributes) {
         int statusCode = (int) errorAttributes.get("code");
-        return HttpStatus.valueOf(statusCode);
+        HttpStatus httpStatus;
+        try {
+            httpStatus = HttpStatus.valueOf(statusCode);
+        } catch (Exception e) {
+            httpStatus = HttpStatus.valueOf(500);
+        }
+        return httpStatus;
     }
 
     /**
      * 构建异常信息
-     * @param request
-     * @param ex
+     * @param methodName
+     * @param uri
      * @return
      */
-    private String buildMessage(ServerRequest request, Throwable ex) {
-        StringBuilder message = new StringBuilder("Failed to handle request [");
-        message.append(request.methodName());
-        message.append(" ");
-        message.append(request.uri());
-        message.append("]");
-        if (ex != null) {
-            message.append(": ");
-            message.append(ex.getMessage());
-        }
-        return message.toString();
+    private String buildRequestUrl(String methodName, URI uri) {
+        StringBuilder errorMsg = new StringBuilder();
+        errorMsg.append(methodName);
+        errorMsg.append(" ");
+        errorMsg.append(uri);
+        return errorMsg.toString();
     }
 
     /**
      * 构建返回的JSON数据格式
      * @param status        状态码
-     * @param errorMessage  异常信息
+     * @param requestUrl  请求路径
+     * @param message  异常信息
      * @return
      */
-    public static Map<String, Object> response(Throwable ex,int status, String errorMessage) {
-        Map<String, Object> map = new HashMap<>();
+    public static Map<String, Object> buildResponseData(Throwable ex, int status, String requestUrl, String message) {
+        Map<String, Object> map = Maps.newHashMapWithExpectedSize(5);
         map.put("code", status);
-        map.put("message", errorMessage);
+        map.put("url", requestUrl);
+        map.put("message", message);
         map.put("date", DateUtil.currentDateByDefaultFormat());
         map.put("trace", ex.getStackTrace()[0]);
+
         return map;
     }
 
