@@ -104,7 +104,7 @@ public class RouteConfiguration implements RouteDefinitionLocator {
 
         // filter
         FilterDefinition filter1 = filterDefinition(id);
-//        routeDefinition.setFilters(Arrays.asList(filter1));
+        routeDefinition.setFilters(Arrays.asList(filter1));
 
         return routeDefinition;
     }

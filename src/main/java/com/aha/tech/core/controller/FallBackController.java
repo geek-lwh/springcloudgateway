@@ -11,10 +11,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class FallBackController {
 
-//    @RequestMapping(value = "/fallback")
-//    public RpcResponse fallBack(Throwable throwable){
-//        RpcResponse rpcResponse = RpcResponse.defaultFailureResponse();
-//        rpcResponse.setMessage("网关调用服务进入降级");
-//        return rpcResponse;
-//    }
+    @RequestMapping(value = "/fallback")
+    public RpcResponse fallBack(){
+        RpcResponse rpcResponse = RpcResponse.defaultFailureResponse();
+        rpcResponse.setMessage("网关调用服务进入降级");
+        return rpcResponse;
+    }
 }

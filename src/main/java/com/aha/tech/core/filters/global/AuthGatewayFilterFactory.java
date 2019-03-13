@@ -9,6 +9,7 @@ import com.aha.tech.core.exception.MissAuthorizationHeaderException;
 import com.aha.tech.core.model.entity.AuthenticationEntity;
 import com.aha.tech.core.model.entity.PairEntity;
 import com.aha.tech.passportserver.facade.model.vo.UserVo;
+import com.alibaba.fastjson.JSON;
 import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,10 +17,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
+import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.server.ServerWebExchange;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
@@ -30,6 +35,7 @@ import static com.aha.tech.core.constant.ExchangeAttributeConstant.URL_IN_WHITE_
 import static com.aha.tech.core.constant.ExchangeAttributeConstant.USER_INFO_SESSION;
 import static com.aha.tech.core.constant.HeaderFieldConstant.DEFAULT_X_TOKEN_VALUE;
 import static com.aha.tech.core.constant.HeaderFieldConstant.HEADER_AUTHORIZATION;
+import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.setResponseStatus;
 
 /**
  * @Author: luweihong
@@ -59,10 +65,23 @@ public class AuthGatewayFilterFactory implements GlobalFilter, Ordered {
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         logger.debug("执行授权auth 过滤器");
 
-        Boolean verifyResult = verifyPermission(exchange);
+        RpcResponse rpcResponse = new RpcResponse();
+        Boolean verifyResult = Boolean.FALSE;
+        try {
+            verifyResult = verifyPermission(exchange);
+        } catch (AuthorizationFailedException e) {
+            rpcResponse.setCode(e.getCode());
+            rpcResponse.setMessage(e.getMessage());
+        }
 
         if (!verifyResult) {
-            throw new AuthorizationFailedException();
+            return Mono.defer(() -> {
+                setResponseStatus(exchange, HttpStatus.UNAUTHORIZED);
+                final ServerHttpResponse resp = exchange.getResponse();
+                byte[] bytes = JSON.toJSONString(rpcResponse).getBytes(StandardCharsets.UTF_8);
+                DataBuffer buffer = resp.bufferFactory().wrap(bytes);
+                return resp.writeWith(Flux.just(buffer));
+            });
         }
 
         return chain.filter(exchange);
