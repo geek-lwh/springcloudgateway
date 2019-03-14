@@ -39,11 +39,7 @@ public class PreHandlerGatewayFilter implements GlobalFilter, Ordered {
 
     private static final Logger logger = LoggerFactory.getLogger(PreHandlerGatewayFilter.class);
 
-    private static final String PUBLIC_TEXT = "public";
-
-    private static final int SKIP_FIRST_PART = 1;
-
-    private static final int SKIP_SECOND_PART = 2;
+    private static final int SKIP_STRIP_PREFIX_PART = 1;
 
     @Autowired
     private Map<String, List<String>> whiteListMap;
@@ -74,14 +70,15 @@ public class PreHandlerGatewayFilter implements GlobalFilter, Ordered {
 
     /**
      * 重写请求路径
-     * @param path
+     * 按/分组,跳过strip prefix的位置
+     * 判断路由映射,重写url 加入context path
+     * 设置exchange相关的属性
+     * @param path look like /V3/yanyuan/banner/get
      * @param serverHttpRequest
      * @return
      */
     private ServerHttpRequest rewriteRequestPath(String path, ServerHttpRequest serverHttpRequest, ServerWebExchange exchange) {
-
-
-        Stream<String> realUrlStream = Arrays.stream(org.springframework.util.StringUtils.tokenizeToStringArray(path, Separator.SLASH_MARK)).skip(SKIP_FIRST_PART);
+        Stream<String> realUrlStream = Arrays.stream(org.springframework.util.StringUtils.tokenizeToStringArray(path, Separator.SLASH_MARK)).skip(SKIP_STRIP_PREFIX_PART);
 
         String subUrl = realUrlStream.collect(Collectors.joining(Separator.SLASH_MARK));
         String id = StringUtils.substringBefore(subUrl, Separator.SLASH_MARK);

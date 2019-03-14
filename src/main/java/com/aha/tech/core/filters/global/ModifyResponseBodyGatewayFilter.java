@@ -1,4 +1,4 @@
-package com.aha.tech.core.filters.normal;
+package com.aha.tech.core.filters.global;
 
 import com.aha.tech.core.model.vo.ResponseVo;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,29 +24,29 @@ import reactor.core.publisher.Mono;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import static com.aha.tech.core.constant.FilterOrderedConstant.MODIFY_RESPONSE_GATEWAY_FILTER_ORDER;
+import static com.aha.tech.core.constant.FilterOrderedConstant.GLOBAL_MODIFY_RESPONSE_BODY_GATEWAY_FILTER_ORDER;
 
 /**
  * @Author: luweihong
  * @Date: 2019/2/21
- * 修改http buildResponseData 返回值
+ * 修改response body 网关过滤器
  */
 @Component
-public class ModifyResponseGatewayFilter implements GlobalFilter, Ordered {
+public class ModifyResponseBodyGatewayFilter implements GlobalFilter, Ordered {
 
-    private static final Logger logger = LoggerFactory.getLogger(ModifyResponseGatewayFilter.class);
+    private static final Logger logger = LoggerFactory.getLogger(ModifyResponseBodyGatewayFilter.class);
 
     @Autowired
     private ObjectMapper objectMapper;
 
     @Override
     public int getOrder() {
-        return MODIFY_RESPONSE_GATEWAY_FILTER_ORDER;
+        return GLOBAL_MODIFY_RESPONSE_BODY_GATEWAY_FILTER_ORDER;
     }
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        logger.debug("执行添加modify buildResponseData 参数过滤器");
+        logger.debug("执行修改response body 网关过滤器");
         ServerHttpResponse response = exchange.getResponse();
         ServerHttpResponseDecorator newResponse = modifyResponse(response);
 
@@ -78,15 +78,13 @@ public class ModifyResponseGatewayFilter implements GlobalFilter, Ordered {
 
                                 byte[] stream = outputStream.getBytes();
                                 try {
-                                    ResponseVo rpcResponsePage = objectMapper.readValue(stream, ResponseVo.class);
-                                    String cursor = rpcResponsePage.getCursor();
-                                    if (StringUtils.isNotBlank(cursor)) {
-                                        byte[] decodeCursor = Base64.decodeBase64(cursor);
-                                        rpcResponsePage.setCursor(new String(decodeCursor, StandardCharsets.UTF_8));
-                                        return bufferFactory.wrap(objectMapper.writeValueAsBytes(rpcResponsePage));
+                                    DataBuffer d = decryptBody(stream, bufferFactory);
+                                    if(d != null){
+                                        response.getHeaders().setContentLength(d.readableByteCount());
+                                        return d;
                                     }
                                 } catch (IOException e) {
-                                    logger.error(e.getMessage(), e);
+                                    e.printStackTrace();
                                 }
 
                                 return bufferFactory.wrap(stream);
@@ -99,4 +97,22 @@ public class ModifyResponseGatewayFilter implements GlobalFilter, Ordered {
 
         return decoratedResponse;
     }
+
+    /**
+     * 对response body 进行解码
+     * @param stream
+     * @return
+     */
+    private DataBuffer decryptBody(byte[] stream, DataBufferFactory dataBufferFactory) throws IOException {
+        ResponseVo responseVo = objectMapper.readValue(stream, ResponseVo.class);
+        String cursor = responseVo.getCursor();
+        if (StringUtils.isNotBlank(cursor)) {
+            byte[] decodeCursor = Base64.decodeBase64(cursor);
+            responseVo.setCursor(new String(decodeCursor, StandardCharsets.UTF_8));
+            return dataBufferFactory.wrap(objectMapper.writeValueAsBytes(responseVo));
+        }
+
+        return null;
+    }
+
 }

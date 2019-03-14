@@ -126,6 +126,11 @@ public class VerifyPermissionGatewayFilterFactory implements GlobalFilter, Order
         return Boolean.FALSE;
     }
 
+    /**
+     * 校验访问令牌
+     * @param accessToken
+     * @return
+     */
     private AuthenticationEntity verifyAccessTokenPermission(String accessToken) {
         AuthenticationEntity authenticationEntity = new AuthenticationEntity();
         RpcResponse<UserVo> authResult = passportResource.verify(accessToken);

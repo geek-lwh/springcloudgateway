@@ -41,9 +41,9 @@ import static com.aha.tech.core.tools.BeanUtil.copyMultiValueMap;
  * 修改body请求体
  */
 @Component
-public class AddRequestBodyGatewayFilter implements GlobalFilter, Ordered {
+public class ModifyRequestBodyGatewayFilter implements GlobalFilter, Ordered {
 
-    private static final Logger logger = LoggerFactory.getLogger(AddRequestBodyGatewayFilter.class);
+    private static final Logger logger = LoggerFactory.getLogger(ModifyRequestBodyGatewayFilter.class);
 
     @Override
     public int getOrder() {

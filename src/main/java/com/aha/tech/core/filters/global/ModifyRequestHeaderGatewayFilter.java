@@ -34,9 +34,9 @@ import static com.aha.tech.core.tools.BeanUtil.copyMultiValueMap;
  * @Date: 2019/2/21
  */
 @Component
-public class AddRequestHeaderGatewayFilter implements GlobalFilter, Ordered {
+public class ModifyRequestHeaderGatewayFilter implements GlobalFilter, Ordered {
 
-    private static final Logger logger = LoggerFactory.getLogger(AddRequestHeaderGatewayFilter.class);
+    private static final Logger logger = LoggerFactory.getLogger(ModifyRequestHeaderGatewayFilter.class);
 
     private static final String DEFAULT_VERSION = "10";
 
@@ -138,6 +138,10 @@ public class AddRequestHeaderGatewayFilter implements GlobalFilter, Ordered {
         httpHeaders.remove(HEADER_ORIGIN);
         httpHeaders.remove(HEADER_USER_AGENT);
         httpHeaders.remove(HEADER_X_REQUEST_PAGE);
+        httpHeaders.remove(HEADER_HOST);
+        httpHeaders.remove(HEADER_DNT);
+        httpHeaders.remove(HEADER_COOKIE);
+        httpHeaders.remove(HEADER_AUTHORIZATION);
     }
 
     /**
@@ -219,17 +223,17 @@ public class AddRequestHeaderGatewayFilter implements GlobalFilter, Ordered {
      */
     private void parseAndSetPk(String encodePK, HttpHeaders httpHeaders) {
         if (StringUtils.isBlank(encodePK)) {
-            httpHeaders.set(HEADER_PK, Strings.EMPTY);
+            httpHeaders.add(HEADER_PK, Strings.EMPTY);
             return;
         }
 
         String pk = new String(Base64.decodeBase64(encodePK), StandardCharsets.UTF_8);
-        if (StringUtils.isBlank(pk) || !pk.startsWith("/")) {
-            httpHeaders.set(HEADER_PK, Strings.EMPTY);
+        if (StringUtils.isBlank(pk) || !pk.startsWith(Separator.SLASH_MARK)) {
+            httpHeaders.add(HEADER_PK, Strings.EMPTY);
             return;
         }
 
-        httpHeaders.set(HEADER_PK, pk);
+        httpHeaders.add(HEADER_PK, pk);
     }
 
     /**
@@ -239,18 +243,18 @@ public class AddRequestHeaderGatewayFilter implements GlobalFilter, Ordered {
      */
     private void parseAndSetPp(String encodePP, HttpHeaders httpHeaders) {
         if (StringUtils.isBlank(encodePP)) {
-            httpHeaders.set(HEADER_PP, Strings.EMPTY);
+            httpHeaders.add(HEADER_PP, Strings.EMPTY);
             return;
         }
 
         String pp = new String(Base64.decodeBase64(encodePP), StandardCharsets.UTF_8);
         if (StringUtils.isBlank(pp) || !pp.contains("!")) {
-            httpHeaders.set(HEADER_PP, Strings.EMPTY);
+            httpHeaders.add(HEADER_PP, Strings.EMPTY);
             return;
         }
 
         String v = pp.substring(0, pp.indexOf("!"));
-        httpHeaders.set(HEADER_PP, v);
+        httpHeaders.add(HEADER_PP, v);
     }
 
     /**

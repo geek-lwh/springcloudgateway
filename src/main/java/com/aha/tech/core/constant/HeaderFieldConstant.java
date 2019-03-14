@@ -12,6 +12,12 @@ public class HeaderFieldConstant {
 
     public static final String HEADER_AUTHORIZATION = "Authorization";
 
+    public static final String HEADER_HOST = "Host";
+
+    public static final String HEADER_DNT = "DNT";
+
+    public static final String HEADER_COOKIE = "Cookie";
+
     public static final String HEADER_USER_AGENT = "User-Agent";
 
     public static final String HEADER_X_REQUEST_PAGE = "X-Request-Page";
@@ -73,6 +79,14 @@ public class HeaderFieldConstant {
     public static final String HEADER_VERSION = "version";
 
     public static final String HEADER_OS = "os";
+
+    public static final String HEADER_ACCESS_CONTROL_ALLOW_ORIGIN = "Access-Control-Allow-Origin";
+
+    public static final String HEADER_ACCESS_CONTROL_ALLOW_METHODS = "Access-Control-Allow-Methods";
+
+    public static final String HEADER_ACCESS_CONTROL_MAX_AGE = "Access-Control-Max-Age";
+
+    public static final String HEADER_ACCESS_CONTROL_ALLOW_HEADERS = "Access-Control-Allow-Headers";
 
 
 
