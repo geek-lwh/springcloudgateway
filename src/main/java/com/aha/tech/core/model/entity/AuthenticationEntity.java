@@ -2,6 +2,8 @@ package com.aha.tech.core.model.entity;
 
 import com.aha.tech.commons.response.RpcResponse;
 import com.aha.tech.passportserver.facade.model.vo.UserVo;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 /**
  * @Author: luweihong
@@ -53,5 +55,10 @@ public class AuthenticationEntity {
 
     public void setVerifyResult(Boolean verifyResult) {
         this.verifyResult = verifyResult;
+    }
+
+    @Override
+    public String toString(){
+        return ReflectionToStringBuilder.toString(this, ToStringStyle.NO_CLASS_NAME_STYLE);
     }
 }

@@ -1,6 +1,8 @@
 package com.aha.tech.core.filters.global;
 
 import com.aha.tech.core.model.vo.ResponseVo;
+import com.aha.tech.core.service.ModifyResponseService;
+import com.aha.tech.core.service.RequestHandlerService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
 import org.apache.commons.codec.binary.Base64;
@@ -21,6 +23,7 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import javax.annotation.Resource;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
@@ -36,8 +39,8 @@ public class ModifyResponseBodyGatewayFilter implements GlobalFilter, Ordered {
 
     private static final Logger logger = LoggerFactory.getLogger(ModifyResponseBodyGatewayFilter.class);
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    @Resource
+    private RequestHandlerService httpRequestHandlerService;
 
     @Override
     public int getOrder() {
@@ -46,73 +49,13 @@ public class ModifyResponseBodyGatewayFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        logger.debug("执行修改response body 网关过滤器");
-        ServerHttpResponse response = exchange.getResponse();
-        ServerHttpResponseDecorator newResponse = modifyResponse(response);
+        logger.debug("开始执行修改返回体网关过滤器");
+        ServerHttpResponse serverHttpResponse = exchange.getResponse();
+        ServerHttpResponseDecorator newResponse = httpRequestHandlerService.modifyResponseBody(serverHttpResponse);
 
-        ServerWebExchange swe = exchange.mutate().response(newResponse).build();
+        ServerWebExchange newExchange = exchange.mutate().response(newResponse).build();
 
-        return chain.filter(swe);
-    }
-
-    /**
-     * 获取response并且修改
-     * @param response
-     * @return
-     */
-    private ServerHttpResponseDecorator modifyResponse(ServerHttpResponse response) {
-        DataBufferFactory bufferFactory = response.bufferFactory();
-        ServerHttpResponseDecorator decoratedResponse = new ServerHttpResponseDecorator(response) {
-            @Override
-            public Mono<Void> writeWith(Publisher<? extends DataBuffer> body) {
-                Flux<? extends DataBuffer> flux = (Flux<? extends DataBuffer>) body;
-                if (body instanceof Flux) {
-                    return super.writeWith(
-                            flux.buffer().map(dataBuffers -> {
-                                ByteOutputStream outputStream = new ByteOutputStream();
-                                dataBuffers.forEach(i -> {
-                                    byte[] array = new byte[i.readableByteCount()];
-                                    i.read(array);
-                                    outputStream.write(array);
-                                });
-
-                                byte[] stream = outputStream.getBytes();
-                                try {
-                                    DataBuffer d = decryptBody(stream, bufferFactory);
-                                    if(d != null){
-                                        response.getHeaders().setContentLength(d.readableByteCount());
-                                        return d;
-                                    }
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
-
-                                return bufferFactory.wrap(stream);
-                            }));
-                }
-                return super.writeWith(body);
-            }
-
-        };
-
-        return decoratedResponse;
-    }
-
-    /**
-     * 对response body 进行解码
-     * @param stream
-     * @return
-     */
-    private DataBuffer decryptBody(byte[] stream, DataBufferFactory dataBufferFactory) throws IOException {
-        ResponseVo responseVo = objectMapper.readValue(stream, ResponseVo.class);
-        String cursor = responseVo.getCursor();
-        if (StringUtils.isNotBlank(cursor)) {
-            byte[] decodeCursor = Base64.decodeBase64(cursor);
-            responseVo.setCursor(new String(decodeCursor, StandardCharsets.UTF_8));
-            return dataBufferFactory.wrap(objectMapper.writeValueAsBytes(responseVo));
-        }
-
-        return null;
+        return chain.filter(newExchange);
     }
 
 }

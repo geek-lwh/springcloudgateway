@@ -6,7 +6,7 @@ package com.aha.tech.core.exception;
  */
 public class AnonymousUserException extends GatewayException {
 
-    public static String NO_PERMISSION = "无权限访问";
+    public static String NO_PERMISSION = "没有权限访问";
 
     public static int NO_PERMISSION_ERROR_CODE = 10002;
 
