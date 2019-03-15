@@ -42,12 +42,12 @@ public class AddRequestParamsGatewayFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         logger.debug("执行添加get参数过滤器");
-        Object obj = exchange.getAttributes().get(USER_INFO_SESSION);
 
         ServerHttpRequest serverHttpRequest = exchange.getRequest();
         HttpMethod httpMethod = serverHttpRequest.getMethod();
         URI uri = serverHttpRequest.getURI();
 
+        Object obj = exchange.getAttributes().get(USER_INFO_SESSION);
         if (obj == null || httpMethod != HttpMethod.GET) {
             logger.info("请求路径: {} 跳过过授权", uri.getRawPath());
             return chain.filter(exchange);

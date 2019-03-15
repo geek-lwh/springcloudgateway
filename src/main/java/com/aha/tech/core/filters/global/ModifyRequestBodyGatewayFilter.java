@@ -45,6 +45,8 @@ public class ModifyRequestBodyGatewayFilter implements GlobalFilter, Ordered {
 
     private static final Logger logger = LoggerFactory.getLogger(ModifyRequestBodyGatewayFilter.class);
 
+    private static final String USER_ID_FIELD = "user_id";
+
     @Override
     public int getOrder() {
         return FilterOrderedConstant.GLOBAL_ADD_REQUEST_BODY_GATEWAY_FILTER_ORDER;
@@ -53,12 +55,12 @@ public class ModifyRequestBodyGatewayFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         logger.debug("执行添加post参数过滤器");
-        Object obj = exchange.getAttributes().get(USER_INFO_SESSION);
 
         ServerHttpRequest serverHttpRequest = exchange.getRequest();
         HttpMethod httpMethod = serverHttpRequest.getMethod();
         URI uri = serverHttpRequest.getURI();
 
+        Object obj = exchange.getAttributes().get(USER_INFO_SESSION);
         if (obj == null || httpMethod != HttpMethod.POST) {
             logger.info("请求路径: {} 跳过过授权", uri.getRawPath());
             return chain.filter(exchange);
@@ -126,7 +128,7 @@ public class ModifyRequestBodyGatewayFilter implements GlobalFilter, Ordered {
      */
     private ServerHttpRequest addRequestBody(String resolveBody, UserVo userVo, ServerHttpRequest serverHttpRequest) {
         JSONObject obj = JSON.parseObject(resolveBody);
-        obj.put("user_id", userVo.getUserId());
+        obj.put(USER_ID_FIELD, userVo.getUserId());
         DataBuffer bodyDataBuffer = stringBuffer(obj.toString());
         Flux<DataBuffer> bodyFlux = Flux.just(bodyDataBuffer);
 

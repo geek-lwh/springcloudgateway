@@ -88,6 +88,4 @@ public class HeaderFieldConstant {
 
     public static final String HEADER_ACCESS_CONTROL_ALLOW_HEADERS = "Access-Control-Allow-Headers";
 
-
-
 }
