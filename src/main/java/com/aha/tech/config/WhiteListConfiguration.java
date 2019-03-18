@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @Author: luweihong
@@ -24,8 +25,8 @@ public class WhiteListConfiguration {
 
     private Map<String, String> mappings = new HashMap<>();
 
-    @Bean
-    public Map<String, List<String>> whiteList() {
+    @Bean("whiteListMap")
+    public Map<String, List<String>> whiteListMap() {
         Map<String, List<String>> whiteListMap = Maps.newHashMap();
 
         mappings.forEach((k, v) -> {

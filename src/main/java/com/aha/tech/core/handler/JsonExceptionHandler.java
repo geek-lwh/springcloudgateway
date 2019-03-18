@@ -1,10 +1,7 @@
 package com.aha.tech.core.handler;
 
 import com.aha.tech.commons.utils.DateUtil;
-import com.aha.tech.core.exception.AnonymousUserException;
-import com.aha.tech.core.exception.AuthorizationFailedException;
-import com.aha.tech.core.exception.EmptyBodyException;
-import com.aha.tech.core.exception.MissAuthorizationHeaderException;
+import com.aha.tech.core.exception.*;
 import com.google.common.collect.Maps;
 import org.springframework.boot.autoconfigure.web.ErrorProperties;
 import org.springframework.boot.autoconfigure.web.ResourceProperties;
@@ -45,24 +42,10 @@ public class JsonExceptionHandler extends DefaultErrorWebExceptionHandler {
             code = 404;
         }
 
-        if (error instanceof MissAuthorizationHeaderException) {
-            code = ((MissAuthorizationHeaderException) error).getCode();
-            message = MissAuthorizationHeaderException.MISS_AUTHORIZATION_HEADER;
-        }
-
-        if (error instanceof EmptyBodyException) {
-            code = ((EmptyBodyException) error).getCode();
-            message = EmptyBodyException.REQUEST_BODY_EMPTY;
-        }
-
-        if (error instanceof AnonymousUserException) {
-            code = ((AnonymousUserException) error).getCode();
-            message = AnonymousUserException.NO_PERMISSION;
-        }
-
-        if (error instanceof AuthorizationFailedException) {
-            code = ((AuthorizationFailedException) error).getCode();
-            message = error.getMessage();
+        GatewayException e = (GatewayException) error;
+        if (error instanceof GatewayException) {
+            code = e.getCode();
+            message = e.getMessage();
         }
 
         String method = request.methodName();

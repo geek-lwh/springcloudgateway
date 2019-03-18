@@ -18,7 +18,7 @@ import java.util.Map;
  * 运行时当前的路由映射关系
  */
 @Configuration
-@ConfigurationProperties(prefix = "route.uri")
+@ConfigurationProperties(prefix = "route.api.uri")
 public class RuntimeRouteConfiguration {
 
     @Autowired
@@ -26,7 +26,7 @@ public class RuntimeRouteConfiguration {
 
     private Map<String, String> mappings = new HashMap<>();
 
-    @Bean
+    @Bean("routeEntityMap")
     public Map<String, RouteEntity> routeEntityMap() {
         Map<String, RouteEntity> routeEntityMap = refreshRouteEntityMap();
         return routeEntityMap;

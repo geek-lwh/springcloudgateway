@@ -15,7 +15,6 @@ import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
 
-import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.GATEWAY_REQUEST_URL_ATTR;
 
 /**
  * @Author: luweihong
@@ -41,7 +40,6 @@ public class RewritePathGatewayFilter implements GlobalFilter, Ordered {
         logger.debug("进入重写请求路径网关过滤器");
 
         ServerHttpRequest newRequest = httpRequestHandlerService.rewriteRequestPath(exchange);
-
 
         return chain.filter(exchange.mutate().request(newRequest).build());
     }

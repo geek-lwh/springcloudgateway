@@ -6,12 +6,12 @@ package com.aha.tech.core.exception;
  */
 public class AuthorizationFailedException extends GatewayException {
 
-    public static String AUTHORIZATION_FAILED_ERROR_MESSAGE = "权限校验异常";
+    public static String AUTHORIZATION_FAILED_ERROR_MSG = "权限校验异常";
 
-    public static int AUTHORIZATION_FAILED_CODE = 500;
+    public static int AUTHORIZATION_FAILED_ERROR_CODE = 500;
 
     public AuthorizationFailedException() {
-        super(AUTHORIZATION_FAILED_ERROR_MESSAGE, AUTHORIZATION_FAILED_CODE);
+        super(AUTHORIZATION_FAILED_ERROR_MSG, AUTHORIZATION_FAILED_ERROR_CODE);
     }
 
     public AuthorizationFailedException(int code,String message){

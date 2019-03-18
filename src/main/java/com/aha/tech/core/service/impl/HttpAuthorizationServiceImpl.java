@@ -3,7 +3,6 @@ package com.aha.tech.core.service.impl;
 import com.aha.tech.commons.response.RpcResponse;
 import com.aha.tech.commons.symbol.Separator;
 import com.aha.tech.core.controller.resource.PassportResource;
-import com.aha.tech.core.exception.VisitorAccessTokenException;
 import com.aha.tech.core.exception.EmptyBodyException;
 import com.aha.tech.core.model.dto.Params;
 import com.aha.tech.core.model.entity.AuthenticationEntity;
@@ -23,10 +22,12 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
 
+import javax.annotation.Resource;
 import java.net.URI;
 import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
@@ -38,7 +39,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import static com.aha.tech.commons.constants.ResponseConstants.SUCCESS;
 import static com.aha.tech.core.constant.HeaderFieldConstant.DEFAULT_X_TOKEN_VALUE;
 import static com.aha.tech.core.tools.BeanUtil.copyMultiValueMap;
-import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.GATEWAY_REQUEST_URL_ATTR;
 
 /**
  * @Author: luweihong
@@ -57,8 +57,8 @@ public class HttpAuthorizationServiceImpl implements AuthorizationService {
     @Autowired(required = false)
     private PassportResource passportResource;
 
-    @Autowired
-    private Map<String, List<String>> whiteList;
+    @Resource
+    private Map<String, List<String>> whiteListMap;
 
     /**
      * 校验访客信息的合法性
@@ -80,9 +80,20 @@ public class HttpAuthorizationServiceImpl implements AuthorizationService {
         return authenticationEntity;
     }
 
+    /**
+     * 校验是否在访客列表中
+     * @param id
+     * @param path
+     * @return
+     */
     @Override
-    public Boolean verifyVisitorExistWhiteList(String id ,String path){
-        List<String> list = whiteList.containsKey(id) ? whiteList.get(id) : Collections.emptyList();
+    public Boolean verifyVisitorExistWhiteList(String id, String path) {
+        List<String> list = whiteListMap.containsKey(id) ? whiteListMap.get(id) : Collections.emptyList();
+        if (!CollectionUtils.isEmpty(list) && list.get(0).equals(Separator.ASTERISK_MARK)) {
+            logger.debug("该列表配置的白名单为*,允许所有请求通过");
+            return Boolean.TRUE;
+        }
+
         return list.contains(path);
     }
 
@@ -110,27 +121,28 @@ public class HttpAuthorizationServiceImpl implements AuthorizationService {
      */
     public ServerHttpRequest overwriteParams(ServerHttpRequest serverHttpRequest, Params params) {
         HttpMethod httpMethod = serverHttpRequest.getMethod();
-        if (params == null) {
+        if (params == null || params.getUserId() == null) {
             logger.error("没有找到正确的用户");
             return serverHttpRequest;
         }
 
-        Long userId = params.getUserId();
-        if (userId == null) {
-            logger.error("没有找到正确的用户");
-            return serverHttpRequest;
+        ServerHttpRequest newRequest;
+        switch (httpMethod) {
+            case GET:
+            case DELETE:
+                newRequest = addQueryParams(serverHttpRequest, params.getUserId());
+                break;
+            case POST:
+            case PUT:
+                newRequest = modifyRequestBody(serverHttpRequest, params.getUserId());
+                break;
+            default:
+                logger.error("授权认证通过,但是没有进行参数添加,http method : {}", httpMethod);
+                newRequest = serverHttpRequest;
+                break;
         }
 
-        if (httpMethod == HttpMethod.GET || httpMethod == HttpMethod.DELETE) {
-            return addQueryParams(serverHttpRequest, userId);
-        }
-
-        if (httpMethod == HttpMethod.POST || httpMethod == HttpMethod.PUT) {
-            return modifyRequestBody(serverHttpRequest, userId);
-        }
-
-        logger.error("授权认证通过,但是没有进行参数添加,http method : {}", httpMethod);
-        return serverHttpRequest;
+        return newRequest;
     }
 
     /**

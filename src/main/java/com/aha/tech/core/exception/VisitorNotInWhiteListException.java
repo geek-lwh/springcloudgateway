@@ -6,12 +6,12 @@ package com.aha.tech.core.exception;
  */
 public class VisitorNotInWhiteListException extends GatewayException {
 
-    public static String VISITOR_NOT_IN_WHITE_LIST_MSG = "访客请求资源不在白名单列表中";
+    public static String VISITOR_NOT_IN_WHITE_LIST_ERROR_MSG = "访客请求资源不在白名单列表中";
 
-    public static int VISITOR_NOT_IN_WHITE_LIST_CODE = 500;
+    public static int VISITOR_NOT_IN_WHITE_LIST_ERROR_CODE = 500;
 
     public VisitorNotInWhiteListException() {
-        super(VISITOR_NOT_IN_WHITE_LIST_MSG, VISITOR_NOT_IN_WHITE_LIST_CODE);
+        super(VISITOR_NOT_IN_WHITE_LIST_ERROR_MSG, VISITOR_NOT_IN_WHITE_LIST_ERROR_CODE);
     }
 
 }

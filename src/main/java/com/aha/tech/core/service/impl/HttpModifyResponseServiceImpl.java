@@ -1,5 +1,6 @@
 package com.aha.tech.core.service.impl;
 
+import com.aha.tech.core.exception.DecryptResponseBodyException;
 import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.ModifyResponseService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -7,6 +8,8 @@ import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.reactivestreams.Publisher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferFactory;
@@ -28,6 +31,8 @@ import static com.aha.tech.core.constant.HeaderFieldConstant.*;
  */
 @Service("httpModifyResponseService")
 public class HttpModifyResponseServiceImpl implements ModifyResponseService {
+
+    private static final Logger logger = LoggerFactory.getLogger(HttpModifyResponseServiceImpl.class);
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -55,17 +60,10 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
                                 });
 
                                 byte[] stream = outputStream.getBytes();
-                                try {
-                                    DataBuffer d = decryptBody(stream, bufferFactory);
-                                    if(d != null){
-                                        serverHttpResponse.getHeaders().setContentLength(d.readableByteCount());
-                                        return d;
-                                    }
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
+                                DataBuffer data = decryptBody(stream, bufferFactory);
+                                serverHttpResponse.getHeaders().setContentLength(data.readableByteCount());
 
-                                return bufferFactory.wrap(stream);
+                                return data;
                             }));
                 }
                 return super.writeWith(body);
@@ -99,15 +97,19 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
      * @param stream
      * @return
      */
-    private DataBuffer decryptBody(byte[] stream, DataBufferFactory dataBufferFactory) throws IOException {
-        ResponseVo responseVo = objectMapper.readValue(stream, ResponseVo.class);
-        String cursor = responseVo.getCursor();
-        if (StringUtils.isNotBlank(cursor)) {
-            byte[] decodeCursor = Base64.decodeBase64(cursor);
-            responseVo.setCursor(new String(decodeCursor, StandardCharsets.UTF_8));
+    private DataBuffer decryptBody(byte[] stream, DataBufferFactory dataBufferFactory) {
+        try {
+            ResponseVo responseVo = objectMapper.readValue(stream, ResponseVo.class);
+            String cursor = responseVo.getCursor();
+            if (StringUtils.isNotBlank(cursor)) {
+                byte[] decodeCursor = Base64.decodeBase64(cursor);
+                responseVo.setCursor(new String(decodeCursor, StandardCharsets.UTF_8));
+            }
+
             return dataBufferFactory.wrap(objectMapper.writeValueAsBytes(responseVo));
+        } catch (Exception e) {
+            throw new DecryptResponseBodyException();
         }
 
-        return null;
     }
 }

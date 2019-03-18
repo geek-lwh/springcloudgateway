@@ -25,6 +25,11 @@ public class ResponseVo<T> {
         this.data = data;
     }
 
+    public static ResponseVo defaultFailureResponseVo(){
+        ResponseVo responseVo = new ResponseVo();
+        return responseVo;
+    }
+
     public int getCode() {
         return code;
     }

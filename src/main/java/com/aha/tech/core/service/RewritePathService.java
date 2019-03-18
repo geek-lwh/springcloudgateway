@@ -1,9 +1,6 @@
 package com.aha.tech.core.service;
 
 import com.aha.tech.core.model.entity.RouteEntity;
-import org.springframework.stereotype.Component;
-
-import java.util.stream.Stream;
 
 /**
  * @Author: luweihong
@@ -19,5 +16,11 @@ public interface RewritePathService {
      */
     String excludeInvalidPath(String path, int skipPart);
 
+    /**
+     * 重写转发的请求地址
+     * @param oldPath
+     * @return
+     */
     RouteEntity rewritePath(String oldPath);
+
 }

@@ -6,12 +6,15 @@ package com.aha.tech.core.exception;
  */
 public class ParseAuthorizationHeaderException extends GatewayException {
 
-    public static String PARSE_AUTHORIZATION_HEADER = "解析Authorization头信息异常";
+    public static String PARSE_AUTHORIZATION_HEADER_ERROR_MSG = "解析Authorization头信息异常";
 
-    public static int PARSE_AUTHORIZATION_HEADER_CODE = 500;
+    public static int PARSE_AUTHORIZATION_HEADER_ERROR_CODE = 500;
 
     public ParseAuthorizationHeaderException() {
-        super(PARSE_AUTHORIZATION_HEADER, PARSE_AUTHORIZATION_HEADER_CODE);
+        super(PARSE_AUTHORIZATION_HEADER_ERROR_MSG, PARSE_AUTHORIZATION_HEADER_ERROR_CODE);
     }
 
+    public ParseAuthorizationHeaderException(String msg) {
+        super(msg, PARSE_AUTHORIZATION_HEADER_ERROR_CODE);
+    }
 }

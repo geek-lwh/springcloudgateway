@@ -8,11 +8,13 @@ package com.aha.tech.core.constant;
  */
 public class ExchangeAttributeConstant {
 
-    // 是否需要授权
-    public static final String URL_IN_WHITE_LIST = "URL_IN_WHITE_LIST";
+    // 请求中有效的路径属性
+    public static final String GATEWAY_REQUEST_VALID_PATH_ATTR = "GATEWAY_REQUEST_VALID_PATH_ATTR";
 
-    public static final String USER_INFO_SESSION = "USER_INFO_SESSION";
+    // 重写后的路径地址属性
+    public static final String GATEWAY_REQUEST_REWRITE_PATH_ATTR = "GATEWAY_REQUEST_REWRITE_PATH_ATTR";
 
-    public static final String ROUTE_ID = "ROUTE_ID";
+    // routeId 匹配路由资源映射的key
+    public static final String GATEWAY_REQUEST_ROUTE_ID_ATTR = "GATEWAY_REQUEST_ROUTE_ID_ATTR";
 
 }

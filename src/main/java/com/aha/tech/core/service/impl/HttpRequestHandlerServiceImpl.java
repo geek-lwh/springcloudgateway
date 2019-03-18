@@ -25,10 +25,9 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-import static com.aha.tech.core.constant.ExchangeAttributeConstant.ROUTE_ID;
+import static com.aha.tech.core.constant.ExchangeAttributeConstant.*;
 import static com.aha.tech.core.constant.HeaderFieldConstant.HEADER_AUTHORIZATION;
 import static com.aha.tech.core.tools.BeanUtil.copyMultiValueMap;
-import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.GATEWAY_REQUEST_URL_ATTR;
 
 /**
  * @Author: luweihong
@@ -78,8 +77,11 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
         RouteEntity routeEntity = httpRewritePathService.rewritePath(validPath);
         String rewritePath = routeEntity.getRewritePath();
         String id = routeEntity.getId();
-        serverWebExchange.getAttributes().put(GATEWAY_REQUEST_URL_ATTR, rewritePath);
-        serverWebExchange.getAttributes().put(ROUTE_ID, id);
+
+        // 设置exchange属性
+        serverWebExchange.getAttributes().put(GATEWAY_REQUEST_VALID_PATH_ATTR, validPath);
+        serverWebExchange.getAttributes().put(GATEWAY_REQUEST_REWRITE_PATH_ATTR, rewritePath);
+        serverWebExchange.getAttributes().put(GATEWAY_REQUEST_ROUTE_ID_ATTR, id);
         // 生成新的request对象
         ServerHttpRequest newRequest = serverHttpRequest.mutate()
                 .path(rewritePath)
@@ -103,12 +105,10 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
         PairEntity<String> authorization = parseAuthorizationHeader(requestHeaders);
         String userName = authorization.getFirstEntity();
         String accessToken = authorization.getSecondEntity();
-        String path = serverWebExchange.getAttribute(GATEWAY_REQUEST_URL_ATTR);
-        String id = serverWebExchange.getAttribute(ROUTE_ID);
-
-        Params params;
-
+        String path = serverWebExchange.getAttribute(GATEWAY_REQUEST_VALID_PATH_ATTR).toString();
+        String id = serverWebExchange.getAttribute(GATEWAY_REQUEST_ROUTE_ID_ATTR).toString();
         // 目前只有访客,用户 2种,其余报错
+        Params params;
         switch (userName) {
             case VISITOR:
                 params = checkVisitorPermission(id, path, accessToken);
@@ -117,7 +117,7 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
                 params = checkUserPermission(accessToken);
                 break;
             default:
-                throw new NoSuchUserNameMatchException();
+                throw new NoSuchUserNameException();
         }
 
         // 对于校验通过的请求添加参数
@@ -135,11 +135,13 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
         AuthenticationEntity authenticationEntity = httpAuthorizationService.verifyVisitorAccessToken(accessToken);
         Boolean verifyResult = authenticationEntity.getVerifyResult();
         if (!verifyResult) {
+            logger.error("解析后游客访问令牌不正确 : {}", accessToken);
             throw new VisitorAccessTokenException();
         }
 
         Boolean existWhiteList = httpAuthorizationService.verifyVisitorExistWhiteList(id, path);
         if (!existWhiteList) {
+            logger.error("游客访问资源不在白名单列表中 : {}", path);
             throw new VisitorNotInWhiteListException();
         }
 
@@ -231,11 +233,12 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
             String authorizationHeader = headersOfAuthorization.get(0).substring(6);
             String decodeAuthorization = new String(Base64.decodeBase64(authorizationHeader), StandardCharsets.UTF_8);
             arr = decodeAuthorization.split(":");
+            return new PairEntity(arr[0], arr[1]);
         } catch (Exception e) {
+            logger.error("解析请求头Authorization字段出现异常,Authorization : {}", headersOfAuthorization);
             throw new ParseAuthorizationHeaderException();
         }
 
-        return new PairEntity(arr[0], arr[1]);
     }
 
 }

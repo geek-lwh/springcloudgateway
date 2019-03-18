@@ -1,6 +1,7 @@
 package com.aha.tech.core.service.impl;
 
 import com.aha.tech.commons.symbol.Separator;
+import com.aha.tech.core.exception.NoSuchRouteException;
 import com.aha.tech.core.model.entity.RouteEntity;
 import com.aha.tech.core.service.RewritePathService;
 import org.apache.commons.lang3.StringUtils;
@@ -13,8 +14,6 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.GATEWAY_REQUEST_URL_ATTR;
 
 /**
  * @Author: luweihong
@@ -55,9 +54,8 @@ public class HttpRewritePathServiceImpl implements RewritePathService {
     public RouteEntity rewritePath(String validPath) {
         String id = StringUtils.substringBefore(validPath, Separator.SLASH_MARK);
         if (!routeEntityMap.containsKey(id)) {
-            // todo error
-            logger.error("没有匹配的路由地址 : {}", validPath);
-            return null;
+            logger.error("根据id : {} 查找不到对应的请求资源 : {}", id, routeEntityMap);
+            throw new NoSuchRouteException();
         }
 
         // 重写新的路由
