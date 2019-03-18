@@ -1,15 +1,17 @@
 package com.aha.tech.core.handler;
 
 import com.aha.tech.commons.utils.DateUtil;
-import com.aha.tech.core.exception.*;
+import com.aha.tech.core.exception.GatewayException;
 import com.google.common.collect.Maps;
 import org.springframework.boot.autoconfigure.web.ErrorProperties;
 import org.springframework.boot.autoconfigure.web.ResourceProperties;
 import org.springframework.boot.autoconfigure.web.reactive.error.DefaultErrorWebExceptionHandler;
 import org.springframework.boot.web.reactive.error.ErrorAttributes;
+import org.springframework.cloud.gateway.support.NotFoundException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.server.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.net.URI;
 import java.util.Map;
@@ -18,6 +20,10 @@ import java.util.Map;
  *  统一异常处理
  */
 public class JsonExceptionHandler extends DefaultErrorWebExceptionHandler {
+
+    private static final int NO_MATCHING_HANDLER_ERROR_CODE = 404;
+
+    private static final String NO_MATCHING_HANDLER_ERROR_MSG = "无效的资源路径";
 
     /**
      * Create a new {@code DefaultErrorWebExceptionHandler} instance.
@@ -38,12 +44,14 @@ public class JsonExceptionHandler extends DefaultErrorWebExceptionHandler {
         int code = 500;
         String message = "";
         Throwable error = super.getError(request);
-        if (error instanceof org.springframework.cloud.gateway.support.NotFoundException) {
-            code = 404;
+
+        if (error instanceof NotFoundException || error instanceof ResponseStatusException) {
+            code = NO_MATCHING_HANDLER_ERROR_CODE;
+            message = NO_MATCHING_HANDLER_ERROR_MSG;
         }
 
-        GatewayException e = (GatewayException) error;
         if (error instanceof GatewayException) {
+            GatewayException e = (GatewayException) error;
             code = e.getCode();
             message = e.getMessage();
         }
