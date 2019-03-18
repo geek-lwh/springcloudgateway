@@ -14,6 +14,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.GATEWAY_REQUEST_URL_ATTR;
+
 /**
  * @Author: luweihong
  * @Date: 2019/3/15
@@ -50,9 +52,10 @@ public class HttpRewritePathServiceImpl implements RewritePathService {
      * @return
      */
     @Override
-    public String rewritePath(String validPath) {
+    public RouteEntity rewritePath(String validPath) {
         String id = StringUtils.substringBefore(validPath, Separator.SLASH_MARK);
         if (!routeEntityMap.containsKey(id)) {
+            // todo error
             logger.error("没有匹配的路由地址 : {}", validPath);
             return null;
         }
@@ -64,8 +67,10 @@ public class HttpRewritePathServiceImpl implements RewritePathService {
                 .append(Separator.SLASH_MARK)
                 .append(validPath).toString();
 
+        routeEntity.setRewritePath(rewritePath);
+        routeEntity.setId(id);
         logger.debug("重写后的路径是: {}", rewritePath);
 
-        return rewritePath;
+        return routeEntity;
     }
 }

@@ -19,5 +19,5 @@ public interface RewritePathService {
      */
     String excludeInvalidPath(String path, int skipPart);
 
-    String rewritePath(String oldPath);
+    RouteEntity rewritePath(String oldPath);
 }

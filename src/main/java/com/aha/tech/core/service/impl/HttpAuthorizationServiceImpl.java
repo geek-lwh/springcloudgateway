@@ -3,6 +3,7 @@ package com.aha.tech.core.service.impl;
 import com.aha.tech.commons.response.RpcResponse;
 import com.aha.tech.commons.symbol.Separator;
 import com.aha.tech.core.controller.resource.PassportResource;
+import com.aha.tech.core.exception.VisitorAccessTokenException;
 import com.aha.tech.core.exception.EmptyBodyException;
 import com.aha.tech.core.model.dto.Params;
 import com.aha.tech.core.model.entity.AuthenticationEntity;
@@ -29,11 +30,15 @@ import reactor.core.publisher.Flux;
 import java.net.URI;
 import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.aha.tech.commons.constants.ResponseConstants.SUCCESS;
 import static com.aha.tech.core.constant.HeaderFieldConstant.DEFAULT_X_TOKEN_VALUE;
 import static com.aha.tech.core.tools.BeanUtil.copyMultiValueMap;
+import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.GATEWAY_REQUEST_URL_ATTR;
 
 /**
  * @Author: luweihong
@@ -52,13 +57,16 @@ public class HttpAuthorizationServiceImpl implements AuthorizationService {
     @Autowired(required = false)
     private PassportResource passportResource;
 
+    @Autowired
+    private Map<String, List<String>> whiteList;
+
     /**
      * 校验访客信息的合法性
      * @param accessToken
      * @return
      */
     @Override
-    public AuthenticationEntity verifyVisitor(String accessToken) {
+    public AuthenticationEntity verifyVisitorAccessToken(String accessToken) {
         AuthenticationEntity authenticationEntity = new AuthenticationEntity();
         authenticationEntity.setVerifyResult(Boolean.TRUE);
 
@@ -69,14 +77,13 @@ public class HttpAuthorizationServiceImpl implements AuthorizationService {
             return authenticationEntity;
         }
 
-        // todo 白名单判断
-//        if (!isWhite) {
-//            logger.warn("不在维护的白名单列表内");
-//            authenticationEntity.setVerifyResult(Boolean.FALSE);
-//            return authenticationEntity;
-//        }
-
         return authenticationEntity;
+    }
+
+    @Override
+    public Boolean verifyVisitorExistWhiteList(String id ,String path){
+        List<String> list = whiteList.containsKey(id) ? whiteList.get(id) : Collections.emptyList();
+        return list.contains(path);
     }
 
     /**
@@ -207,7 +214,7 @@ public class HttpAuthorizationServiceImpl implements AuthorizationService {
      * @param serverHttpRequest
      * @return
      */
-    private ServerHttpRequest addRequestBody(String resolveBody, String userId, ServerHttpRequest serverHttpRequest) {
+    private ServerHttpRequest addRequestBody(String resolveBody, Long userId, ServerHttpRequest serverHttpRequest) {
         JSONObject obj = JSON.parseObject(resolveBody);
         obj.put(USER_ID_FIELD, userId);
         DataBuffer bodyDataBuffer = stringBuffer(obj.toString());

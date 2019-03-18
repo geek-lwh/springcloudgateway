@@ -1,18 +1,16 @@
 package com.aha.tech.core.service.impl;
 
 import com.aha.tech.commons.response.RpcResponse;
-import com.aha.tech.core.exception.AnonymousUserException;
-import com.aha.tech.core.exception.AuthorizationFailedException;
-import com.aha.tech.core.exception.MissAuthorizationHeaderException;
+import com.aha.tech.core.exception.*;
 import com.aha.tech.core.model.dto.Params;
 import com.aha.tech.core.model.entity.AuthenticationEntity;
 import com.aha.tech.core.model.entity.PairEntity;
+import com.aha.tech.core.model.entity.RouteEntity;
 import com.aha.tech.core.service.*;
 import com.aha.tech.passportserver.facade.model.vo.UserVo;
 import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
@@ -26,8 +24,8 @@ import javax.annotation.Resource;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Map;
 
+import static com.aha.tech.core.constant.ExchangeAttributeConstant.ROUTE_ID;
 import static com.aha.tech.core.constant.HeaderFieldConstant.HEADER_AUTHORIZATION;
 import static com.aha.tech.core.tools.BeanUtil.copyMultiValueMap;
 import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.GATEWAY_REQUEST_URL_ATTR;
@@ -74,11 +72,14 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
         logger.info("开始重写请求路径,原路由路径 : {}", oldPath);
 
         // 去除路径中无效的字符
-        String validPath = httpRewritePathService.excludeInvalidPath(oldPath,SKIP_STRIP_PREFIX_PART);
+        String validPath = httpRewritePathService.excludeInvalidPath(oldPath, SKIP_STRIP_PREFIX_PART);
 
         // 重写请求路径
-        String rewritePath = httpRewritePathService.rewritePath(validPath);
-
+        RouteEntity routeEntity = httpRewritePathService.rewritePath(validPath);
+        String rewritePath = routeEntity.getRewritePath();
+        String id = routeEntity.getId();
+        serverWebExchange.getAttributes().put(GATEWAY_REQUEST_URL_ATTR, rewritePath);
+        serverWebExchange.getAttributes().put(ROUTE_ID, id);
         // 生成新的request对象
         ServerHttpRequest newRequest = serverHttpRequest.mutate()
                 .path(rewritePath)
@@ -98,42 +99,69 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
     public ServerHttpRequest authorize(ServerWebExchange serverWebExchange) {
         ServerHttpRequest serverHttpRequest = serverWebExchange.getRequest();
         HttpHeaders requestHeaders = serverHttpRequest.getHeaders();
-        // todo 白名单
+
         PairEntity<String> authorization = parseAuthorizationHeader(requestHeaders);
         String userName = authorization.getFirstEntity();
         String accessToken = authorization.getSecondEntity();
+        String path = serverWebExchange.getAttribute(GATEWAY_REQUEST_URL_ATTR);
+        String id = serverWebExchange.getAttribute(ROUTE_ID);
 
-        // 校验访客权限
-        if (userName.equals(VISITOR)) {
-            AuthenticationEntity authenticationEntity = httpAuthorizationService.verifyVisitor(accessToken);
-            Boolean verifyResult = authenticationEntity.getVerifyResult();
-            if (!verifyResult) {
-                String path = serverWebExchange.getAttribute(GATEWAY_REQUEST_URL_ATTR);
-                logger.warn("访问路径: {} 失败,原因 : 权限不足", path);
-                throw new AnonymousUserException();
-            }
+        Params params;
 
-            Params params = new Params(UserVo.anonymousUser());
-            return httpAuthorizationService.overwriteParams(serverHttpRequest,params);
+        // 目前只有访客,用户 2种,其余报错
+        switch (userName) {
+            case VISITOR:
+                params = checkVisitorPermission(id, path, accessToken);
+                break;
+            case NEED_AUTHORIZATION:
+                params = checkUserPermission(accessToken);
+                break;
+            default:
+                throw new NoSuchUserNameMatchException();
         }
 
-        // 校验用户权限
-        if (userName.equals(NEED_AUTHORIZATION)) {
-            logger.debug("访问令牌值 : {}", accessToken);
-            AuthenticationEntity authenticationEntity = httpAuthorizationService.verifyUser(accessToken);
-            Boolean verifyResult = authenticationEntity.getVerifyResult();
-            RpcResponse<UserVo> rpcResponse = authenticationEntity.getRpcResponse();
-            if (!verifyResult) {
-                throw new AuthorizationFailedException(rpcResponse.getCode(), rpcResponse.getMessage());
-            }
+        // 对于校验通过的请求添加参数
+        ServerHttpRequest newRequest = httpAuthorizationService.overwriteParams(serverHttpRequest, params);
 
-            UserVo userVo = authenticationEntity.getRpcResponse().getData();
-            Params params = new Params(userVo);
-            return httpAuthorizationService.overwriteParams(serverHttpRequest,params);
-//            return Boolean.TRUE;
+        return newRequest;
+    }
+
+    /**
+     * 检查访客权限
+     * @param accessToken
+     * @return
+     */
+    private Params checkVisitorPermission(String id, String path, String accessToken) {
+        AuthenticationEntity authenticationEntity = httpAuthorizationService.verifyVisitorAccessToken(accessToken);
+        Boolean verifyResult = authenticationEntity.getVerifyResult();
+        if (!verifyResult) {
+            throw new VisitorAccessTokenException();
         }
 
-        return serverHttpRequest;
+        Boolean existWhiteList = httpAuthorizationService.verifyVisitorExistWhiteList(id, path);
+        if (!existWhiteList) {
+            throw new VisitorNotInWhiteListException();
+        }
+
+        return new Params(UserVo.anonymousUser());
+    }
+
+    /**
+     * 检查用户权限
+     * @param accessToken
+     * @return
+     */
+    private Params checkUserPermission(String accessToken) {
+        logger.debug("访问令牌值 : {}", accessToken);
+        AuthenticationEntity authenticationEntity = httpAuthorizationService.verifyUser(accessToken);
+        Boolean verifyResult = authenticationEntity.getVerifyResult();
+        RpcResponse<UserVo> rpcResponse = authenticationEntity.getRpcResponse();
+        if (!verifyResult) {
+            throw new AuthorizationFailedException(rpcResponse.getCode(), rpcResponse.getMessage());
+        }
+
+        UserVo userVo = authenticationEntity.getRpcResponse().getData();
+        return new Params(userVo);
     }
 
     /**
@@ -198,10 +226,14 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
         if (CollectionUtils.isEmpty(headersOfAuthorization)) {
             throw new MissAuthorizationHeaderException();
         }
-
-        String authorizationHeader = headersOfAuthorization.get(0).substring(6);
-        String decodeAuthorization = new String(Base64.decodeBase64(authorizationHeader), StandardCharsets.UTF_8);
-        String[] arr = decodeAuthorization.split(":");
+        String[] arr;
+        try {
+            String authorizationHeader = headersOfAuthorization.get(0).substring(6);
+            String decodeAuthorization = new String(Base64.decodeBase64(authorizationHeader), StandardCharsets.UTF_8);
+            arr = decodeAuthorization.split(":");
+        } catch (Exception e) {
+            throw new ParseAuthorizationHeaderException();
+        }
 
         return new PairEntity(arr[0], arr[1]);
     }

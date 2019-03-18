@@ -41,7 +41,7 @@ public class RewritePathGatewayFilter implements GlobalFilter, Ordered {
         logger.debug("进入重写请求路径网关过滤器");
 
         ServerHttpRequest newRequest = httpRequestHandlerService.rewriteRequestPath(exchange);
-        exchange.getAttributes().put(GATEWAY_REQUEST_URL_ATTR, newRequest.getURI());
+
 
         return chain.filter(exchange.mutate().request(newRequest).build());
     }

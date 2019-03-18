@@ -15,7 +15,15 @@ public interface AuthorizationService {
      * @param accessToken
      * @return
      */
-    AuthenticationEntity verifyVisitor(String accessToken);
+    AuthenticationEntity verifyVisitorAccessToken(String accessToken);
+
+    /**
+     * 校验访客请求资源是否在白名单中
+     * @param id
+     * @param path
+     * @return
+     */
+    Boolean verifyVisitorExistWhiteList(String id,String path);
 
     /**
      * 校验用户信息

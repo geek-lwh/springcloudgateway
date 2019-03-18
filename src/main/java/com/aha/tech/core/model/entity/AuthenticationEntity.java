@@ -13,12 +13,24 @@ import org.apache.commons.lang3.builder.ToStringStyle;
  */
 public class AuthenticationEntity {
 
+    /**
+     * 授权接口调用结果
+     */
     private RpcResponse<UserVo> rpcResponse;
 
+    /**
+     * basic 用户名
+     */
     private String userName;
 
+    /**
+     * basic 密码
+     */
     private String password;
 
+    /**
+     * 验证结果
+     */
     private Boolean verifyResult;
 
     public AuthenticationEntity() {

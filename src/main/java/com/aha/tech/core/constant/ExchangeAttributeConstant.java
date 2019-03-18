@@ -13,4 +13,6 @@ public class ExchangeAttributeConstant {
 
     public static final String USER_INFO_SESSION = "USER_INFO_SESSION";
 
+    public static final String ROUTE_ID = "ROUTE_ID";
+
 }

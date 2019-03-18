@@ -17,6 +17,8 @@ public class RouteEntity {
 
     private String contextPath;
 
+    private String rewritePath;
+
     public String getId() {
         return id;
     }
@@ -47,6 +49,14 @@ public class RouteEntity {
 
     public void setContextPath(String contextPath) {
         this.contextPath = contextPath;
+    }
+
+    public String getRewritePath() {
+        return rewritePath;
+    }
+
+    public void setRewritePath(String rewritePath) {
+        this.rewritePath = rewritePath;
     }
 
     @Override
