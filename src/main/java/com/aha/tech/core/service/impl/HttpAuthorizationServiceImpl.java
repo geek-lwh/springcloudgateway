@@ -23,6 +23,7 @@ import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
@@ -152,7 +153,12 @@ public class HttpAuthorizationServiceImpl implements AuthorizationService {
      */
     private ServerHttpRequest addQueryParams(ServerHttpRequest serverHttpRequest, Long userId) {
         URI uri = serverHttpRequest.getURI();
-        String originalQuery = serverHttpRequest.getURI().getRawQuery();
+        String originalQuery = uri.getRawQuery();
+        MultiValueMap<String, String> params = serverHttpRequest.getQueryParams();
+        if(params.containsKey(USER_ID_FIELD)){
+            logger.warn("已存在user_id,不进行替换");
+            return serverHttpRequest;
+        }
 
         StringBuilder query = new StringBuilder();
         if (StringUtils.hasText(originalQuery)) {
@@ -161,7 +167,7 @@ public class HttpAuthorizationServiceImpl implements AuthorizationService {
                 query.append(Separator.AND_MARK);
             }
         }
-        query.append("user_id").append("=").append(userId);
+        query.append(USER_ID_FIELD).append("=").append(userId);
 
         URI newUri = UriComponentsBuilder.fromUri(uri)
                 .replaceQuery(query.toString())
@@ -228,7 +234,7 @@ public class HttpAuthorizationServiceImpl implements AuthorizationService {
      */
     private ServerHttpRequest addRequestBody(String resolveBody, Long userId, ServerHttpRequest serverHttpRequest) {
         JSONObject obj = JSON.parseObject(resolveBody);
-        obj.put(USER_ID_FIELD, userId);
+        obj.putIfAbsent(USER_ID_FIELD, userId);
         DataBuffer bodyDataBuffer = stringBuffer(obj.toString());
         Flux<DataBuffer> bodyFlux = Flux.just(bodyDataBuffer);
 

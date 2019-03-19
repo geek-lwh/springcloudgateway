@@ -34,7 +34,7 @@ public class ModifyResponseHeaderGatewayFilter implements GlobalFilter, Ordered 
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        logger.debug("执行修改返回体报头信息网关过滤器");
+        logger.debug("开始修改返回体报头信息网关过滤器");
 
         httpRequestHandlerService.modifyResponseHeaders(exchange);
 

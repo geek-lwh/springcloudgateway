@@ -109,10 +109,14 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
                 byte[] decodeCursor = Base64.decodeBase64(cursor);
                 String decryptCursor = new String(decodeCursor, StandardCharsets.UTF_8);
                 RpcResponsePage rpcResponsePage = new RpcResponsePage(decryptCursor,code,message,data);
+                logger.debug("返回值: {}",rpcResponsePage);
+
                 return dataBufferFactory.wrap(objectMapper.writeValueAsBytes(rpcResponsePage));
             }
 
             RpcResponse rpcResponse = new RpcResponse(code,message,data);
+            logger.debug("返回值: {}",rpcResponse);
+
             return dataBufferFactory.wrap(objectMapper.writeValueAsBytes(rpcResponse));
         } catch (Exception e) {
             throw new DecryptResponseBodyException();

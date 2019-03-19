@@ -86,6 +86,7 @@ public class RouteConfiguration implements RouteDefinitionLocator {
         FilterDefinition filter1 = hystrixFilter(id);
         FilterDefinition filter2 = rateLimterFilter(String.format("ratelimiter:%s", id));
         routeDefinition.setFilters(Arrays.asList(filter1));
+//        routeDefinition.setFilters(Arrays.asList(filter1,filter2));
 
         return routeDefinition;
     }
