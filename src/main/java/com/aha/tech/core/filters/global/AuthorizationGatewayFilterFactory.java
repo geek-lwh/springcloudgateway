@@ -1,7 +1,7 @@
 package com.aha.tech.core.filters.global;
 
 import com.aha.tech.commons.response.RpcResponse;
-import com.aha.tech.core.constant.FilterOrderedConstant;
+import com.aha.tech.core.constant.GatewayFilterProcessOrderedConstant;
 import com.aha.tech.core.exception.GatewayException;
 import com.aha.tech.core.service.RequestHandlerService;
 import com.alibaba.fastjson.JSON;
@@ -44,12 +44,12 @@ public class AuthorizationGatewayFilterFactory implements GlobalFilter, Ordered 
 
     @Override
     public int getOrder() {
-        return FilterOrderedConstant.GLOBAL_AUTH_GATEWAY_FILTER_ORDER;
+        return GatewayFilterProcessOrderedConstant.GLOBAL_AUTH_GATEWAY_FILTER_ORDER;
     }
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        logger.debug("执行授权auth 过滤器");
+        logger.debug("开始执行权限校验网关过滤器");
 
 
         String path = exchange.getAttribute(GATEWAY_REQUEST_URL_ATTR);

@@ -1,5 +1,7 @@
 package com.aha.tech.core.service.impl;
 
+import com.aha.tech.commons.response.RpcResponse;
+import com.aha.tech.commons.response.RpcResponsePage;
 import com.aha.tech.core.exception.DecryptResponseBodyException;
 import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.ModifyResponseService;
@@ -20,7 +22,6 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 import static com.aha.tech.core.constant.HeaderFieldConstant.*;
@@ -100,13 +101,19 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
     private DataBuffer decryptBody(byte[] stream, DataBufferFactory dataBufferFactory) {
         try {
             ResponseVo responseVo = objectMapper.readValue(stream, ResponseVo.class);
+            int code = responseVo.getCode();
+            String message = responseVo.getMessage();
+            Object data = responseVo.getData();
             String cursor = responseVo.getCursor();
             if (StringUtils.isNotBlank(cursor)) {
                 byte[] decodeCursor = Base64.decodeBase64(cursor);
-                responseVo.setCursor(new String(decodeCursor, StandardCharsets.UTF_8));
+                String decryptCursor = new String(decodeCursor, StandardCharsets.UTF_8);
+                RpcResponsePage rpcResponsePage = new RpcResponsePage(decryptCursor,code,message,data);
+                return dataBufferFactory.wrap(objectMapper.writeValueAsBytes(rpcResponsePage));
             }
 
-            return dataBufferFactory.wrap(objectMapper.writeValueAsBytes(responseVo));
+            RpcResponse rpcResponse = new RpcResponse(code,message,data);
+            return dataBufferFactory.wrap(objectMapper.writeValueAsBytes(rpcResponse));
         } catch (Exception e) {
             throw new DecryptResponseBodyException();
         }

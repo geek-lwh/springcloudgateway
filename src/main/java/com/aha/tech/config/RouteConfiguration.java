@@ -38,8 +38,8 @@ public class RouteConfiguration implements RouteDefinitionLocator {
             logger.info("刷新运行时路由配置");
             Set<RouteDefinition> routeDefinitionSet = refreshRuntimeRoute();
             runtimeRouteCache.addAll(routeDefinitionSet);
-            for(;;){
-                if(needToSyncLocal.compareAndSet(true, false)){
+            for (; ; ) {
+                if (needToSyncLocal.compareAndSet(true, false)) {
                     break;
                 }
             }
@@ -56,7 +56,7 @@ public class RouteConfiguration implements RouteDefinitionLocator {
     private Set<RouteDefinition> refreshRuntimeRoute() {
         Set<RouteDefinition> routeDefinitionSet = new HashSet<>();
         routeEntityMap.forEach((id, routeEntity) -> {
-            RouteDefinition routeDefinition = configRouteDefinition(id,routeEntity);
+            RouteDefinition routeDefinition = configRouteDefinition(id, routeEntity);
             routeDefinitionSet.add(routeDefinition);
         });
 
@@ -69,7 +69,7 @@ public class RouteConfiguration implements RouteDefinitionLocator {
      * @param routeEntity
      * @return
      */
-    private RouteDefinition configRouteDefinition(String id,RouteEntity routeEntity) {
+    private RouteDefinition configRouteDefinition(String id, RouteEntity routeEntity) {
         RouteDefinition routeDefinition = new RouteDefinition();
         // 配置route
         routeDefinition.setId(id);
@@ -83,7 +83,8 @@ public class RouteConfiguration implements RouteDefinitionLocator {
         routeDefinition.setUri(uri);
 
         // filter
-        FilterDefinition filter1 = filterDefinition(id);
+        FilterDefinition filter1 = hystrixFilter(id);
+        FilterDefinition filter2 = rateLimterFilter(String.format("ratelimiter:%s", id));
         routeDefinition.setFilters(Arrays.asList(filter1));
 
         return routeDefinition;
@@ -94,7 +95,7 @@ public class RouteConfiguration implements RouteDefinitionLocator {
      * @param pattern
      * @return
      */
-    private PredicateDefinition predicateDefinition (String pattern){
+    private PredicateDefinition predicateDefinition(String pattern) {
         PredicateDefinition predicate = new PredicateDefinition();
         predicate.setName("Path");
         Map<String, String> predicateParams = new HashMap<>(8);
@@ -109,12 +110,29 @@ public class RouteConfiguration implements RouteDefinitionLocator {
      * @param name
      * @return
      */
-    private FilterDefinition filterDefinition(String name){
+    private FilterDefinition hystrixFilter(String name) {
         FilterDefinition filter1 = new FilterDefinition();
         filter1.setName("Hystrix");
         Map<String, String> filter1Params = new HashMap<>(8);
         filter1Params.put("name", name);
         filter1Params.put("fallbackUri", "forward:/fallback");
+        filter1.setArgs(filter1Params);
+
+        return filter1;
+    }
+
+    /**
+     * 配置路由的普通过滤器
+     * @param name
+     * @return
+     */
+    private FilterDefinition rateLimterFilter(String name) {
+        FilterDefinition filter1 = new FilterDefinition();
+        filter1.setName("RequestRateLimiter");
+        Map<String, String> filter1Params = new HashMap<>(8);
+//        filter1Params.put("key-resolver", String.format("#{@%s}", name));
+        filter1Params.put("redis-rate-limiter.replenishRate", "1");
+        filter1Params.put("redis-rate-limiter.burstCapacity", "5");
         filter1.setArgs(filter1Params);
 
         return filter1;

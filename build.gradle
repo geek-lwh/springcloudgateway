@@ -61,7 +61,6 @@ dependencies {
     // spring boot and spring cloud dependency
     compile('org.springframework.boot:spring-boot-starter-aop')
     compile('org.springframework.boot:spring-boot-starter-actuator')
-//    compile('org.springframework.boot:spring-boot-starter-data-redis-reactive')
     compile('org.springframework.cloud:spring-cloud-starter-gateway')
     compile('org.springframework.cloud:spring-cloud-starter-config:2.0.1.RELEASE')
     compile('org.springframework.cloud:spring-cloud-starter-netflix-eureka-client')
@@ -72,6 +71,7 @@ dependencies {
 
 
     // redis dependency
+    compile('org.springframework.boot:spring-boot-starter-data-redis-reactive')
 //    compile('org.springframework.boot:spring-boot-starter-data-redis')
 //    compile('org.apache.commons:commons-pool2')
 
