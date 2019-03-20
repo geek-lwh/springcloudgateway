@@ -1,6 +1,7 @@
 package com.aha.tech.core.service.impl;
 
 import com.aha.tech.commons.symbol.Separator;
+import com.aha.tech.config.IpRateLimiterConfiguration;
 import com.aha.tech.config.RouteConfiguration;
 import com.aha.tech.core.model.entity.RouteEntity;
 import com.aha.tech.core.service.RuntimeConfigChangedService;
@@ -36,18 +37,21 @@ public class RuntimeConfigChangedServiceImpl implements RuntimeConfigChangedServ
 
     private String DYNAMIC_ROUTE_API_WHITE_LIST_BEAN = "whiteListMap";
 
+    private String IP_RATE_LIMITER_CONFIGURATION_BEAN = "ipRateLimiterConfiguration";
+
     private String ROUTE_API_URI_PREFIX = "route.api.uri.mappings.";
 
     private String ROUTE_API_WHITE_LIST_PREFIX = "route.api.whitelist.mappings.";
+
+    private String IP_RATELIMITER_DEFAULT_REPLENISH_RATE = "ip.ratelimiter.default.replenish.rate";
+
+    private String IP_RATELIMITER_DEFAULT_BURST_CAPACITY = "ip.ratelimiter.default.burst.capacity";
 
     @Autowired
     private ObjectMapper objectMapper;
 
     @Resource
     private RefreshScope refreshScope;
-
-
-
 
     /**
      * 路由API资源地址变更
@@ -83,7 +87,19 @@ public class RuntimeConfigChangedServiceImpl implements RuntimeConfigChangedServ
             if (changeKeyName.startsWith(ROUTE_API_WHITE_LIST_PREFIX)) {
                 refreshRouteApiWhiteListConfig(change,ROUTE_API_WHITE_LIST_PREFIX,changeKeyName);
             }
+        });
+    }
 
+    @Override
+    public void ipRateLimiterChanged(ConfigChangeEvent changeEvent, Set<String> changeKeys) {
+        changeKeys.forEach(changeKeyName -> {
+            ConfigChange change = changeEvent.getChange(changeKeyName);
+            if (changeKeyName.equals(IP_RATELIMITER_DEFAULT_REPLENISH_RATE)) {
+                refreshIpReplenishRate(change,changeKeyName);
+            }
+            if (changeKeyName.equals(IP_RATELIMITER_DEFAULT_BURST_CAPACITY)) {
+                refreshIpBurstCapacityRate(change,changeKeyName);
+            }
         });
     }
 
@@ -164,15 +180,47 @@ public class RuntimeConfigChangedServiceImpl implements RuntimeConfigChangedServ
     }
 
     /**
-     * 刷新路由映射配置
+     * 刷新ip速率
+     * @param change
      */
-    private void refreshRuntimeRouteConfig(String name, AtomicBoolean finishChanged) {
-        for (; ; ) {
-            if (finishChanged.compareAndSet(false, true)) {
-                refreshScope.refresh(name);
-                break;
-            }
+    private void refreshIpReplenishRate(ConfigChange change,String beanName) {
+        logger.info("ip速率变更 !");
+        String oldValue = change.getOldValue();
+        String newValue = change.getNewValue();
+        logger.info("变更前的值 : {},变更后的值 : {}", oldValue, newValue);
+
+        IpRateLimiterConfiguration configuration = (IpRateLimiterConfiguration) SpringContextUtil.getBean(IP_RATE_LIMITER_CONFIGURATION_BEAN);
+        Integer ipReplenishRate = Integer.parseInt(newValue);
+
+        if(ipReplenishRate.compareTo(1) == -1){
+            logger.error("速率变更必须大于 1,当前值 : {}",ipReplenishRate);
+            throw new IllegalArgumentException();
         }
+        configuration.setReplenishRate(ipReplenishRate);
+        refreshScope.refresh(beanName);
+        logger.info("更新 ip速率的值为 : {}", ipReplenishRate);
+    }
+
+    /**
+     * 更新ip容量
+     * @param change
+     */
+    private void refreshIpBurstCapacityRate(ConfigChange change,String beanName) {
+        logger.info("ip容量变更 !");
+        String oldValue = change.getOldValue();
+        String newValue = change.getNewValue();
+        logger.info("变更前的值 : {},变更后的值 : {}", oldValue, newValue);
+
+        IpRateLimiterConfiguration configuration = (IpRateLimiterConfiguration) SpringContextUtil.getBean(IP_RATE_LIMITER_CONFIGURATION_BEAN);
+        Integer burstCapacity = Integer.parseInt(newValue);
+
+        if(burstCapacity.compareTo(1) == -1){
+            logger.error("速率变更必须大于 1,当前值 : {}",burstCapacity);
+            throw new IllegalArgumentException();
+        }
+        configuration.setBurstCapacity(burstCapacity);
+        refreshScope.refresh(beanName);
+        logger.info("更新 ip容量的值为 : {}", burstCapacity);
     }
 
 }

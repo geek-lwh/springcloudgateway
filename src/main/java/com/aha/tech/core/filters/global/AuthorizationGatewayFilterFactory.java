@@ -57,15 +57,9 @@ public class AuthorizationGatewayFilterFactory implements GlobalFilter, Ordered 
         try {
             newRequest = httpRequestHandlerService.authorize(exchange);
         } catch (GatewayException ge) {
-            return Mono.defer(() -> {
-                logger.warn("访问路径: {} 失败,原因 : 权限不足", path, ge);
-                return writeWithGatewayError(exchange, ge);
-            });
+            return Mono.defer(() -> writeWithGatewayError(exchange, path, ge));
         } catch (Exception e) {
-            return Mono.defer(() -> {
-                logger.error("权限校验过滤器出现异常", e);
-                return writeWithError(exchange, e);
-            });
+            return Mono.defer(() -> writeWithError(exchange, e));
         }
 
         return chain.filter(exchange.mutate().request(newRequest).build());
@@ -77,7 +71,8 @@ public class AuthorizationGatewayFilterFactory implements GlobalFilter, Ordered 
      * @param e
      * @return
      */
-    private Mono<Void> writeWithGatewayError(ServerWebExchange exchange, GatewayException e) {
+    private Mono<Void> writeWithGatewayError(ServerWebExchange exchange, String path, GatewayException e) {
+        logger.warn("访问路径: {} 失败,原因 : 权限不足", path, e);
         setResponseStatus(exchange, HttpStatus.UNAUTHORIZED);
         final ServerHttpResponse resp = exchange.getResponse();
         RpcResponse rpcResponse = new RpcResponse(e.getCode(), e.getMessage());
@@ -95,10 +90,17 @@ public class AuthorizationGatewayFilterFactory implements GlobalFilter, Ordered 
      * @return
      */
     private Mono<Void> writeWithError(ServerWebExchange exchange, Exception e) {
+        logger.error("权限校验过滤器出现异常", e);
         setResponseStatus(exchange, HttpStatus.BAD_GATEWAY);
         final ServerHttpResponse resp = exchange.getResponse();
         RpcResponse rpcResponse = RpcResponse.defaultFailureResponse();
-        String message = StringUtils.isBlank(e.getMessage()) ? e.getCause().toString() : e.getMessage();
+        String message = e.getMessage();
+        if (StringUtils.isBlank(message) && e.getCause() != null) {
+            message = e.getCause().toString();
+        } else {
+            message = e.getClass().toString();
+        }
+
         rpcResponse.setMessage(message);
         byte[] bytes = JSON.toJSONString(rpcResponse).getBytes(StandardCharsets.UTF_8);
         DataBuffer buffer = resp.bufferFactory().wrap(bytes);

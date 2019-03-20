@@ -24,4 +24,11 @@ public interface RuntimeConfigChangedService {
      */
     void routeApiWhiteListChanged(ConfigChangeEvent changeEvent, Set<String> changeKeys);
 
+    /**
+     * ip限流参数变更
+     * @param changeEvent
+     * @param changeKeys
+     */
+    void ipRateLimiterChanged(ConfigChangeEvent changeEvent, Set<String> changeKeys);
+
 }

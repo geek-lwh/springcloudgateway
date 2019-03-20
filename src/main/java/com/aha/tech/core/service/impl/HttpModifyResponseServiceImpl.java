@@ -16,8 +16,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferFactory;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.http.server.reactive.ServerHttpResponseDecorator;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -46,10 +49,12 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
     @Override
     public ServerHttpResponseDecorator modifyBody(ServerHttpResponse serverHttpResponse) {
         DataBufferFactory bufferFactory = serverHttpResponse.bufferFactory();
+
         ServerHttpResponseDecorator decoratedResponse = new ServerHttpResponseDecorator(serverHttpResponse) {
             @Override
             public Mono<Void> writeWith(Publisher<? extends DataBuffer> body) {
                 Flux<? extends DataBuffer> flux = (Flux<? extends DataBuffer>) body;
+                logger.info("flux type : {}", flux.getClass().toString());
                 if (body instanceof Flux) {
                     return super.writeWith(
                             flux.buffer().map(dataBuffers -> {
@@ -108,19 +113,18 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
             if (StringUtils.isNotBlank(cursor)) {
                 byte[] decodeCursor = Base64.decodeBase64(cursor);
                 String decryptCursor = new String(decodeCursor, StandardCharsets.UTF_8);
-                RpcResponsePage rpcResponsePage = new RpcResponsePage(decryptCursor,code,message,data);
-                logger.debug("返回值: {}",rpcResponsePage);
+                RpcResponsePage rpcResponsePage = new RpcResponsePage(decryptCursor, code, message, data);
+                logger.debug("返回值: {}", rpcResponsePage);
 
                 return dataBufferFactory.wrap(objectMapper.writeValueAsBytes(rpcResponsePage));
             }
 
-            RpcResponse rpcResponse = new RpcResponse(code,message,data);
-            logger.debug("返回值: {}",rpcResponse);
+            RpcResponse rpcResponse = new RpcResponse(code, message, data);
+            logger.debug("返回值: {}", rpcResponse);
 
             return dataBufferFactory.wrap(objectMapper.writeValueAsBytes(rpcResponse));
         } catch (Exception e) {
             throw new DecryptResponseBodyException();
         }
-
     }
 }

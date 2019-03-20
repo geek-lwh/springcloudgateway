@@ -35,7 +35,10 @@ public class ModifyResponseHeaderGatewayFilter implements GlobalFilter, Ordered 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         logger.debug("开始修改返回体报头信息网关过滤器");
-
+        if(exchange.getAttributes().get("ip_limiter") != null){
+            logger.info("asdasdasdasdas : {}",exchange.getAttributes().get("ip_limiter").toString());
+            chain.filter(exchange);
+        }
         httpRequestHandlerService.modifyResponseHeaders(exchange);
 
         return chain.filter(exchange);

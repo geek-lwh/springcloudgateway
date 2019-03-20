@@ -40,6 +40,7 @@ public class VariableRefreshEvent {
 
         runtimeConfigChangedService.routeApiUriChanged(changeEvent,changeKeys);
         runtimeConfigChangedService.routeApiWhiteListChanged(changeEvent,changeKeys);
+        runtimeConfigChangedService.ipRateLimiterChanged(changeEvent,changeKeys);
     }
 
 }

@@ -13,6 +13,8 @@ public class FallBackController {
 
     @RequestMapping(value = "/fallback")
     public RpcResponse fallBack(){
-        return RpcResponse.defaultHystrixFallbackResponse();
+        RpcResponse rpcResponse = RpcResponse.defaultFailureResponse();
+        rpcResponse.setMessage("接口访问超时,进行熔断!");
+        return rpcResponse;
     }
 }

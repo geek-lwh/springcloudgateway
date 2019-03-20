@@ -13,13 +13,16 @@ public class GatewayFilterProcessOrderedConstant {
 
     public static int STEP = 20;
 
-    // 重写请求路径过滤器 order = 0
-    public static int GLOBAL_REWRITE_REQUEST_PATH_FILTER_ORDER = 1;
+    // cpu使用率限流 order = 0
+    public static int GLOBAL_CPU_RATE_LIMITER_FILTER_ORDER = 0;
 
-    // 全新啊校验过滤器 order = 21
+    // 重写请求路径过滤器 order = 20
+    public static int GLOBAL_REWRITE_REQUEST_PATH_FILTER_ORDER = GLOBAL_CPU_RATE_LIMITER_FILTER_ORDER + STEP;
+
+    // 全新啊校验过滤器 order = 40
     public static int GLOBAL_AUTH_GATEWAY_FILTER_ORDER = GLOBAL_REWRITE_REQUEST_PATH_FILTER_ORDER + STEP;
 
-    // 修改请求报头过滤器 order = 41
+    // 修改请求报头过滤器 order = 60
     public static int GLOBAL_MODIFY_REQUEST_HEADER_GATEWAY_FILTER_ORDER = GLOBAL_AUTH_GATEWAY_FILTER_ORDER + STEP;
 
     // 修改请求返回体过滤器 order = -21
