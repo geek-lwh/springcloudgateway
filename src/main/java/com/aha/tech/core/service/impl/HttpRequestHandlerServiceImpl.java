@@ -2,9 +2,9 @@ package com.aha.tech.core.service.impl;
 
 import com.aha.tech.commons.response.RpcResponse;
 import com.aha.tech.core.exception.*;
-import com.aha.tech.core.model.dto.Params;
 import com.aha.tech.core.model.entity.AuthenticationEntity;
 import com.aha.tech.core.model.entity.PairEntity;
+import com.aha.tech.core.model.entity.ParamsEntity;
 import com.aha.tech.core.model.entity.RouteEntity;
 import com.aha.tech.core.service.*;
 import com.aha.tech.passportserver.facade.model.vo.UserVo;
@@ -108,20 +108,20 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
         String path = serverWebExchange.getAttribute(GATEWAY_REQUEST_VALID_PATH_ATTR).toString();
         String id = serverWebExchange.getAttribute(GATEWAY_REQUEST_ROUTE_ID_ATTR).toString();
         // 目前只有访客,用户 2种,其余报错
-        Params params;
+        ParamsEntity paramsEntity;
         switch (userName) {
             case VISITOR:
-                params = checkVisitorPermission(id, path, accessToken);
+                paramsEntity = checkVisitorPermission(id, path, accessToken);
                 break;
             case NEED_AUTHORIZATION:
-                params = checkUserPermission(accessToken);
+                paramsEntity = checkUserPermission(accessToken);
                 break;
             default:
                 throw new NoSuchUserNameException();
         }
 
         // 对于校验通过的请求添加参数
-        ServerHttpRequest newRequest = httpAuthorizationService.overwriteParams(serverHttpRequest, params);
+        ServerHttpRequest newRequest = httpAuthorizationService.overwriteParams(serverHttpRequest, paramsEntity);
 
         return newRequest;
     }
@@ -131,7 +131,7 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
      * @param accessToken
      * @return
      */
-    private Params checkVisitorPermission(String id, String path, String accessToken) {
+    private ParamsEntity checkVisitorPermission(String id, String path, String accessToken) {
         AuthenticationEntity authenticationEntity = httpAuthorizationService.verifyVisitorAccessToken(accessToken);
         Boolean verifyResult = authenticationEntity.getVerifyResult();
         if (!verifyResult) {
@@ -145,7 +145,7 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
             throw new VisitorNotInWhiteListException();
         }
 
-        return new Params(UserVo.anonymousUser());
+        return new ParamsEntity(UserVo.anonymousUser());
     }
 
     /**
@@ -153,7 +153,7 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
      * @param accessToken
      * @return
      */
-    private Params checkUserPermission(String accessToken) {
+    private ParamsEntity checkUserPermission(String accessToken) {
         logger.debug("访问令牌值 : {}", accessToken);
         AuthenticationEntity authenticationEntity = httpAuthorizationService.verifyUser(accessToken);
         Boolean verifyResult = authenticationEntity.getVerifyResult();
@@ -163,7 +163,7 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
         }
 
         UserVo userVo = authenticationEntity.getRpcResponse().getData();
-        return new Params(userVo);
+        return new ParamsEntity(userVo);
     }
 
     /**

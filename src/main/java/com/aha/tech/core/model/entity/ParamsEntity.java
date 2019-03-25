@@ -1,4 +1,4 @@
-package com.aha.tech.core.model.dto;
+package com.aha.tech.core.model.entity;
 
 import com.aha.tech.passportserver.facade.model.vo.UserVo;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
@@ -10,15 +10,15 @@ import org.apache.commons.lang3.builder.ToStringStyle;
  *
  * 网关拦截请求添加的参数信息
  */
-public class Params {
+public class ParamsEntity {
 
     private Long userId;
 
-    public Params(){
+    public ParamsEntity() {
         super();
     }
 
-    public Params(UserVo userVo) {
+    public ParamsEntity(UserVo userVo) {
         this.userId = userVo.getUserId();
     }
 

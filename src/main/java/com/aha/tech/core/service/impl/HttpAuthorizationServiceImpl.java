@@ -4,8 +4,8 @@ import com.aha.tech.commons.response.RpcResponse;
 import com.aha.tech.commons.symbol.Separator;
 import com.aha.tech.core.controller.resource.PassportResource;
 import com.aha.tech.core.exception.EmptyBodyException;
-import com.aha.tech.core.model.dto.Params;
 import com.aha.tech.core.model.entity.AuthenticationEntity;
+import com.aha.tech.core.model.entity.ParamsEntity;
 import com.aha.tech.core.service.AuthorizationService;
 import com.aha.tech.passportserver.facade.model.vo.UserVo;
 import com.alibaba.fastjson.JSON;
@@ -117,12 +117,12 @@ public class HttpAuthorizationServiceImpl implements AuthorizationService {
     /**
      * 根据httpMethod添加信息
      * @param serverHttpRequest
-     * @param params
+     * @param paramsEntity
      * @return
      */
-    public ServerHttpRequest overwriteParams(ServerHttpRequest serverHttpRequest, Params params) {
+    public ServerHttpRequest overwriteParams(ServerHttpRequest serverHttpRequest, ParamsEntity paramsEntity) {
         HttpMethod httpMethod = serverHttpRequest.getMethod();
-        if (params == null || params.getUserId() == null) {
+        if (paramsEntity == null || paramsEntity.getUserId() == null) {
             logger.error("没有找到正确的用户");
             return serverHttpRequest;
         }
@@ -131,11 +131,11 @@ public class HttpAuthorizationServiceImpl implements AuthorizationService {
         switch (httpMethod) {
             case GET:
             case DELETE:
-                newRequest = addQueryParams(serverHttpRequest, params.getUserId());
+                newRequest = addQueryParams(serverHttpRequest, paramsEntity.getUserId());
                 break;
             case POST:
             case PUT:
-                newRequest = modifyRequestBody(serverHttpRequest, params.getUserId());
+                newRequest = modifyRequestBody(serverHttpRequest, paramsEntity.getUserId());
                 break;
             default:
                 logger.error("授权认证通过,但是没有进行参数添加,http method : {}", httpMethod);

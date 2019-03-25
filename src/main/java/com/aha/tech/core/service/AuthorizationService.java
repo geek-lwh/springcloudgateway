@@ -1,7 +1,7 @@
 package com.aha.tech.core.service;
 
-import com.aha.tech.core.model.dto.Params;
 import com.aha.tech.core.model.entity.AuthenticationEntity;
+import com.aha.tech.core.model.entity.ParamsEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 
 /**
@@ -35,9 +35,9 @@ public interface AuthorizationService {
     /**
      * 覆盖请求参数
      * @param serverHttpRequest
-     * @param params
+     * @param paramsEntity
      * @return
      */
-    ServerHttpRequest overwriteParams(ServerHttpRequest serverHttpRequest, Params params);
+    ServerHttpRequest overwriteParams(ServerHttpRequest serverHttpRequest, ParamsEntity paramsEntity);
 
 }
