@@ -3,7 +3,9 @@ package com.aha.tech.core.filters.global;
 import com.aha.tech.commons.response.RpcResponse;
 import com.aha.tech.core.constant.GatewayFilterProcessOrderedConstant;
 import com.aha.tech.core.exception.GatewayException;
+import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.RequestHandlerService;
+import com.aha.tech.core.support.WriteResponseSupport;
 import com.alibaba.fastjson.JSON;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -73,14 +75,8 @@ public class AuthorizationGatewayFilterFactory implements GlobalFilter, Ordered 
      */
     private Mono<Void> writeWithGatewayError(ServerWebExchange exchange, String path, GatewayException e) {
         logger.warn("访问路径: {} 失败,原因 : 权限不足", path, e);
-        setResponseStatus(exchange, HttpStatus.UNAUTHORIZED);
-        final ServerHttpResponse resp = exchange.getResponse();
-        RpcResponse rpcResponse = new RpcResponse(e.getCode(), e.getMessage());
-        byte[] bytes = JSON.toJSONString(rpcResponse).getBytes(StandardCharsets.UTF_8);
-        DataBuffer buffer = resp.bufferFactory().wrap(bytes);
-        resp.getHeaders().setContentLength(buffer.readableByteCount());
-        resp.getHeaders().setContentType(MediaType.APPLICATION_JSON_UTF8);
-        return resp.writeWith(Flux.just(buffer));
+        ResponseVo rpcResponse = new ResponseVo(e.getCode(), e.getMessage());
+        return WriteResponseSupport.write(exchange,rpcResponse,HttpStatus.UNAUTHORIZED);
     }
 
     /**
@@ -91,9 +87,7 @@ public class AuthorizationGatewayFilterFactory implements GlobalFilter, Ordered 
      */
     private Mono<Void> writeWithError(ServerWebExchange exchange, Exception e) {
         logger.error("权限校验过滤器出现异常", e);
-        setResponseStatus(exchange, HttpStatus.BAD_GATEWAY);
-        final ServerHttpResponse resp = exchange.getResponse();
-        RpcResponse rpcResponse = RpcResponse.defaultFailureResponse();
+        ResponseVo rpcResponse = ResponseVo.defaultFailureResponseVo();
         String message = e.getMessage();
         if (StringUtils.isBlank(message) && e.getCause() != null) {
             message = e.getCause().toString();
@@ -102,11 +96,7 @@ public class AuthorizationGatewayFilterFactory implements GlobalFilter, Ordered 
         }
 
         rpcResponse.setMessage(message);
-        byte[] bytes = JSON.toJSONString(rpcResponse).getBytes(StandardCharsets.UTF_8);
-        DataBuffer buffer = resp.bufferFactory().wrap(bytes);
-        resp.getHeaders().setContentLength(buffer.readableByteCount());
-        resp.getHeaders().setContentType(MediaType.APPLICATION_JSON_UTF8);
-        return resp.writeWith(Flux.just(buffer));
+        return WriteResponseSupport.write(exchange,rpcResponse,HttpStatus.BAD_GATEWAY);
     }
 
 }

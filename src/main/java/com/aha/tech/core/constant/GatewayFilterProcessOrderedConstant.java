@@ -16,8 +16,14 @@ public class GatewayFilterProcessOrderedConstant {
     // cpu使用率限流 order = 0
     public static int GLOBAL_CPU_RATE_LIMITER_FILTER_ORDER = 0;
 
+    // qps限流 order = 0
+    public static int GLOBAL_QPS_RATE_LIMITER_FILTER_ORDER = GLOBAL_CPU_RATE_LIMITER_FILTER_ORDER + STEP;
+
+    // ip限流
+    public static int GLOBAL_IP_RATE_LIMITER_FILTER_ORDER = GLOBAL_QPS_RATE_LIMITER_FILTER_ORDER + STEP;
+
     // 重写请求路径过滤器 order = 20
-    public static int GLOBAL_REWRITE_REQUEST_PATH_FILTER_ORDER = GLOBAL_CPU_RATE_LIMITER_FILTER_ORDER + STEP;
+    public static int GLOBAL_REWRITE_REQUEST_PATH_FILTER_ORDER = GLOBAL_IP_RATE_LIMITER_FILTER_ORDER + STEP;
 
     // 全新啊校验过滤器 order = 40
     public static int GLOBAL_AUTH_GATEWAY_FILTER_ORDER = GLOBAL_REWRITE_REQUEST_PATH_FILTER_ORDER + STEP;
@@ -30,4 +36,5 @@ public class GatewayFilterProcessOrderedConstant {
 
     // 修改请求返回报头过滤器 order = -20
     public static int GLOBAL_MODIFY_RESPONSE_HEADER_GATEWAY_FILTER_ORDER = GLOBAL_MODIFY_RESPONSE_BODY_GATEWAY_FILTER_ORDER - STEP;
+
 }

@@ -8,6 +8,8 @@ public class HeaderFieldConstant {
 
     public static final String HEADER_TOKEN = "X-Token";
 
+    public static final String HEADER_X_FORWARDED_FOR = "X_forwarded_for";
+
     public static final String DEFAULT_X_TOKEN_VALUE = "28ad87ef9fdce5d12dea093b860e8772";
 
     public static final String HEADER_AUTHORIZATION = "Authorization";

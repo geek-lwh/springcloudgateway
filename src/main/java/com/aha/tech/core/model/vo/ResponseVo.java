@@ -18,6 +18,11 @@ public class ResponseVo<T> {
         super();
     }
 
+    public ResponseVo(int code,String message){
+        this.code = code;
+        this.message = message;
+    }
+
     public ResponseVo(int code, String message, String cursor, T data) {
         this.code = code;
         this.message = message;
