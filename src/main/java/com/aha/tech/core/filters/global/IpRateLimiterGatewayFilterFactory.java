@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
-import org.springframework.cloud.gateway.filter.ratelimit.KeyResolver;
 import org.springframework.core.Ordered;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -18,7 +17,7 @@ import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
 
-import static com.aha.tech.core.constant.GatewayFilterProcessOrderedConstant.GLOBAL_IP_RATE_LIMITER_FILTER_ORDER;
+import static com.aha.tech.core.constant.FilterProcessOrderedConstant.GLOBAL_IP_RATE_LIMITER_FILTER_ORDER;
 
 /**
  * @Author: luweihong

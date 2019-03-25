@@ -1,6 +1,6 @@
 package com.aha.tech.core.filters.global;
 
-import com.aha.tech.core.constant.GatewayFilterProcessOrderedConstant;
+import com.aha.tech.core.constant.FilterProcessOrderedConstant;
 import com.aha.tech.core.service.RequestHandlerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +31,7 @@ public class RewritePathGatewayFilter implements GlobalFilter, Ordered {
 
     @Override
     public int getOrder() {
-        return GatewayFilterProcessOrderedConstant.GLOBAL_REWRITE_REQUEST_PATH_FILTER_ORDER;
+        return FilterProcessOrderedConstant.GLOBAL_REWRITE_REQUEST_PATH_FILTER_ORDER;
     }
 
     @Override

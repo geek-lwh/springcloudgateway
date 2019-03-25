@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
 
-import static com.aha.tech.core.constant.GatewayFilterProcessOrderedConstant.GLOBAL_MODIFY_RESPONSE_BODY_GATEWAY_FILTER_ORDER;
+import static com.aha.tech.core.constant.FilterProcessOrderedConstant.GLOBAL_MODIFY_RESPONSE_BODY_GATEWAY_FILTER_ORDER;
 
 /**
  * @Author: luweihong

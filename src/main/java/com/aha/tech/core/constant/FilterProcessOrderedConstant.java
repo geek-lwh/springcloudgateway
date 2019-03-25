@@ -9,26 +9,26 @@ import static org.springframework.cloud.gateway.filter.NettyWriteResponseFilter.
  * @Date: 2019/2/20
  * 定义gateway的执行顺序
  */
-public class GatewayFilterProcessOrderedConstant {
+public class FilterProcessOrderedConstant {
 
     public static int STEP = 20;
 
     // cpu使用率限流 order = 0
     public static int GLOBAL_CPU_RATE_LIMITER_FILTER_ORDER = 0;
 
-    // qps限流 order = 0
+    // qps限流 order = 20
     public static int GLOBAL_QPS_RATE_LIMITER_FILTER_ORDER = GLOBAL_CPU_RATE_LIMITER_FILTER_ORDER + STEP;
 
-    // ip限流
+    // ip限流 order = 40
     public static int GLOBAL_IP_RATE_LIMITER_FILTER_ORDER = GLOBAL_QPS_RATE_LIMITER_FILTER_ORDER + STEP;
 
-    // 重写请求路径过滤器 order = 20
+    // 重写请求路径过滤器 order = 60
     public static int GLOBAL_REWRITE_REQUEST_PATH_FILTER_ORDER = GLOBAL_IP_RATE_LIMITER_FILTER_ORDER + STEP;
 
-    // 全新啊校验过滤器 order = 40
+    // 全新啊校验过滤器 order = 80
     public static int GLOBAL_AUTH_GATEWAY_FILTER_ORDER = GLOBAL_REWRITE_REQUEST_PATH_FILTER_ORDER + STEP;
 
-    // 修改请求报头过滤器 order = 60
+    // 修改请求报头过滤器 order = 100
     public static int GLOBAL_MODIFY_REQUEST_HEADER_GATEWAY_FILTER_ORDER = GLOBAL_AUTH_GATEWAY_FILTER_ORDER + STEP;
 
     // 修改请求返回体过滤器 order = -21
