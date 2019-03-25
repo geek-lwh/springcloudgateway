@@ -1,5 +1,8 @@
 package com.aha.tech.core.model.vo;
 
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+
 /**
  * @Author: luweihong
  * @Date: 2019/2/28
@@ -65,5 +68,10 @@ public class ResponseVo<T> {
 
     public void setData(T data) {
         this.data = data;
+    }
+
+    @Override
+    public String toString() {
+        return ReflectionToStringBuilder.toString(this, ToStringStyle.NO_CLASS_NAME_STYLE);
     }
 }

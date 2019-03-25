@@ -17,6 +17,7 @@ import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
 
+import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_ORIGINAL_URL_PATH_ATTR;
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.GLOBAL_QPS_RATE_LIMITER_FILTER_ORDER;
 
 /**
@@ -47,6 +48,8 @@ public class QpsRateLimiterGatewayFilterFactory implements GlobalFilter, Ordered
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         logger.info("开始执行qps限流过滤器");
+        // 设置exchange属性
+        exchange.getAttributes().put(GATEWAY_ORIGINAL_URL_PATH_ATTR, exchange.getRequest().getURI().getRawPath());
 
         if (!isEnable) {
             return chain.filter(exchange);

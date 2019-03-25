@@ -8,6 +8,8 @@ package com.aha.tech.core.constant;
  */
 public class ExchangeAttributeConstant {
 
+    public static final String GATEWAY_ORIGINAL_URL_PATH_ATTR = "GATEWAY_ORIGINAL_URL_PATH_ATTR";
+
     // 请求中有效的路径属性
     public static final String GATEWAY_REQUEST_VALID_PATH_ATTR = "GATEWAY_REQUEST_VALID_PATH_ATTR";
 

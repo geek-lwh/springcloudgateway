@@ -67,18 +67,17 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
     public ServerHttpRequest rewriteRequestPath(ServerWebExchange serverWebExchange) {
         ServerHttpRequest serverHttpRequest = serverWebExchange.getRequest();
         URI uri = serverHttpRequest.getURI();
-        String oldPath = uri.getRawPath();
-        logger.info("开始重写请求路径,原路由路径 : {}", oldPath);
+        String originalUrlPath = uri.getRawPath();
+        logger.info("开始重写请求路径,原路由路径 : {}", originalUrlPath);
 
         // 去除路径中无效的字符
-        String validPath = httpRewritePathService.excludeInvalidPath(oldPath, SKIP_STRIP_PREFIX_PART);
+        String validPath = httpRewritePathService.excludeInvalidPath(originalUrlPath, SKIP_STRIP_PREFIX_PART);
 
         // 重写请求路径
         RouteEntity routeEntity = httpRewritePathService.rewritePath(validPath);
         String rewritePath = routeEntity.getRewritePath();
         String id = routeEntity.getId();
 
-        // 设置exchange属性
         serverWebExchange.getAttributes().put(GATEWAY_REQUEST_VALID_PATH_ATTR, validPath);
         serverWebExchange.getAttributes().put(GATEWAY_REQUEST_REWRITE_PATH_ATTR, rewritePath);
         serverWebExchange.getAttributes().put(GATEWAY_REQUEST_ROUTE_ID_ATTR, id);
@@ -204,7 +203,7 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
     @Override
     public ServerHttpResponseDecorator modifyResponseBody(ServerWebExchange serverWebExchange) {
         ServerHttpResponse serverHttpResponse = serverWebExchange.getResponse();
-        return httpModifyResponseService.modifyBody(serverHttpResponse);
+        return httpModifyResponseService.modifyBody(serverWebExchange, serverHttpResponse);
     }
 
     /**

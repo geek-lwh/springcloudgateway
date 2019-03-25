@@ -1,7 +1,6 @@
 package com.aha.tech.core.handler;
 
 import com.aha.tech.commons.utils.DateUtil;
-import com.aha.tech.core.exception.CpuOverloadException;
 import com.aha.tech.core.exception.GatewayException;
 import com.google.common.collect.Maps;
 import org.springframework.boot.autoconfigure.web.ErrorProperties;

@@ -1,9 +1,9 @@
 package com.aha.tech.core.service;
 
-import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.http.server.reactive.ServerHttpResponseDecorator;
+import org.springframework.web.server.ServerWebExchange;
 
 /**
  * @Author: luweihong
@@ -16,7 +16,7 @@ public interface ModifyResponseService {
      * @param serverHttpResponse
      * @return
      */
-    ServerHttpResponseDecorator modifyBody(ServerHttpResponse serverHttpResponse);
+    ServerHttpResponseDecorator modifyBody(ServerWebExchange serverWebExchange, ServerHttpResponse serverHttpResponse);
 
     /**
      * 修改返回对象的报头

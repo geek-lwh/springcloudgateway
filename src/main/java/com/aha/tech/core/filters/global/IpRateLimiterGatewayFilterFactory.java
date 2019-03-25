@@ -35,7 +35,6 @@ public class IpRateLimiterGatewayFilterFactory implements GlobalFilter, Ordered 
     @Resource
     private LimiterService ipLimiterService;
 
-
     @Value("${ip.ratelimiter.enable:false}")
     private boolean isEnable;
 
