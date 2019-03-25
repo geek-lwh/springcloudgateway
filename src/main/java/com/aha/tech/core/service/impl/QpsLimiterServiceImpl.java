@@ -29,9 +29,6 @@ public class QpsLimiterServiceImpl implements LimiterService {
 
     private static final Long TIMEOUT = 1000L;
 
-//    @Resource
-//    private KeyResolver qpsKeyResolver;
-
     @Resource
     private QpsRateLimiter qpsRateLimiter;
 
@@ -43,7 +40,7 @@ public class QpsLimiterServiceImpl implements LimiterService {
     @Override
     public Boolean isAllowed(ServerWebExchange exchange) {
         Route route = exchange.getAttribute(ServerWebExchangeUtils.GATEWAY_ROUTE_ATTR);
-        String key = KeyGenerateUtil.GatewayLimiter.qpsLimiterKey();
+        String key = getKey();
         Mono<RateLimiter.Response> rateLimiterAllowed = qpsRateLimiter.isAllowed(route.getId(), key);
 
         Boolean isAllowed = Boolean.TRUE;
@@ -59,4 +56,13 @@ public class QpsLimiterServiceImpl implements LimiterService {
 
         return isAllowed;
     }
+
+    /**
+     * 获取限流器的key
+     * @return
+     */
+    private String getKey() {
+        return KeyGenerateUtil.GatewayLimiter.qpsLimiterKey();
+    }
+
 }

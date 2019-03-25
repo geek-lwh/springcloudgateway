@@ -30,7 +30,7 @@ import static com.aha.tech.core.support.LimiterAlgorithmSupport.getHeaders;
  * @Author: luweihong
  * @Date: 2019/3/20
  *
- * 自定义redis 限流的逻辑
+ *  ip限流器
  */
 @Component
 public class IpRateLimiter extends AbstractRateLimiter<IpRateLimiter.Config> implements ApplicationContextAware {
@@ -45,7 +45,6 @@ public class IpRateLimiter extends AbstractRateLimiter<IpRateLimiter.Config> imp
 
     private AtomicBoolean initialized = new AtomicBoolean(false);
 
-
     public IpRateLimiter(ReactiveRedisTemplate<String, String> redisTemplate,
                          RedisScript<List<Long>> script, Validator validator) {
         super(Config.class, CONFIGURATION_PROPERTY_NAME, validator);
@@ -53,7 +52,6 @@ public class IpRateLimiter extends AbstractRateLimiter<IpRateLimiter.Config> imp
         this.script = script;
         initialized.compareAndSet(false, true);
     }
-
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {

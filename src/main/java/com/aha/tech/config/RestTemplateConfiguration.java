@@ -40,7 +40,6 @@ public class RestTemplateConfiguration {
     public RestTemplate restTemplate() {
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.setMessageConverters(Collections.singletonList(mappingJackson2HttpMessageConverter));
-//        restTemplate.setInterceptors(Collections.singletonList(new HttpInterceptor()));
         restTemplate.setRequestFactory(new BufferingClientHttpRequestFactory(clientHttpRequestFactory()));
 
         return restTemplate;

@@ -50,19 +50,10 @@ public class IpLimiterServiceImpl implements LimiterService {
     @Override
     public Boolean isAllowed(ServerWebExchange exchange) {
         Route route = exchange.getAttribute(ServerWebExchangeUtils.GATEWAY_ROUTE_ATTR);
+
         HttpHeaders httpHeaders = exchange.getRequest().getHeaders();
-        List<String> forwardedList = httpHeaders.get(HEADER_X_FORWARDED_FOR);
-        if (CollectionUtils.isEmpty(forwardedList)) {
-            throw new MissHeaderXForwardedException();
-        }
+        String key = getKey(httpHeaders);
 
-        String keyResolver = forwardedList.get(0);
-        if (StringUtils.isBlank(keyResolver)) {
-            throw new XForwardedEmptyException();
-        }
-
-        Mono.just(forwardedList.get(0));
-        String key = forwardedList.get(0);
         Mono<RateLimiter.Response> rateLimiterAllowed = ipRateLimiter.isAllowed(route.getId(), key);
 
         Boolean isAllowed = Boolean.TRUE;
@@ -78,4 +69,24 @@ public class IpLimiterServiceImpl implements LimiterService {
 
         return isAllowed;
     }
+
+    /**
+     * 获取ip限流的key
+     * @param httpHeaders
+     * @return
+     */
+    private String getKey(HttpHeaders httpHeaders) {
+        List<String> forwardedList = httpHeaders.get(HEADER_X_FORWARDED_FOR);
+        if (CollectionUtils.isEmpty(forwardedList)) {
+            throw new MissHeaderXForwardedException();
+        }
+
+        String keyResolver = forwardedList.get(0);
+        if (StringUtils.isBlank(keyResolver)) {
+            throw new XForwardedEmptyException();
+        }
+
+        return forwardedList.get(0);
+    }
+
 }

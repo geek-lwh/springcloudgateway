@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.ratelimit.AbstractRateLimiter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Component;
@@ -29,14 +30,13 @@ import static com.aha.tech.core.support.LimiterAlgorithmSupport.getHeaders;
  * @Author: luweihong
  * @Date: 2019/3/20
  *
- * 自定义redis 限流的逻辑
+ * qps 限流器
  */
+@Primary
 @Component
 public class QpsRateLimiter extends AbstractRateLimiter<QpsRateLimiter.Config> implements ApplicationContextAware {
 
     public static final String CONFIGURATION_PROPERTY_NAME = "redis-rate-limiter";
-
-    public static final String REDIS_SCRIPT_NAME = "redisRequestRateLimiterScript";
 
     private Log log = LogFactory.getLog(getClass());
 
@@ -46,6 +46,17 @@ public class QpsRateLimiter extends AbstractRateLimiter<QpsRateLimiter.Config> i
 
     private AtomicBoolean initialized = new AtomicBoolean(false);
 
+    public QpsRateLimiter(ReactiveRedisTemplate<String, String> redisTemplate,
+                          RedisScript<List<Long>> script, Validator validator) {
+        super(Config.class, CONFIGURATION_PROPERTY_NAME, validator);
+        this.redisTemplate = redisTemplate;
+        this.script = script;
+        initialized.compareAndSet(false, true);
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+    }
 
     @Value("${qps.ratelimiter.replenish.rate:50}")
     private Integer replenishRate;
@@ -56,18 +67,6 @@ public class QpsRateLimiter extends AbstractRateLimiter<QpsRateLimiter.Config> i
     @Autowired
     private LimiterAlgorithmSupport limiterAlgorithmSupport;
 
-    public QpsRateLimiter(ReactiveRedisTemplate<String, String> redisTemplate,
-                          RedisScript<List<Long>> script, Validator validator) {
-        super(Config.class, CONFIGURATION_PROPERTY_NAME, validator);
-        this.redisTemplate = redisTemplate;
-        this.script = script;
-        initialized.compareAndSet(false, true);
-    }
-
-
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-    }
 
     /**
      * 重写限流逻辑
