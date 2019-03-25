@@ -35,8 +35,8 @@ public class KeyResolverConfiguration {
      * 全局限流
      * @return
      */
-    @Bean("qpsResolver")
-    public KeyResolver qpsResolver() {
+    @Bean("qpsKeyResolver")
+    public KeyResolver qpsKeyResolver() {
         return exchange -> Mono.just(KeyGenerateUtil.GatewayLimiter.qpsLimiterKey());
     }
 
@@ -48,7 +48,7 @@ public class KeyResolverConfiguration {
     @Bean("ipKeyResolver")
     public KeyResolver ipKeyResolver() {
         return exchange -> {
-            HttpHeaders httpHeaders = exchange.getResponse().getHeaders();
+            HttpHeaders httpHeaders = exchange.getRequest().getHeaders();
             List<String> forwardedList = httpHeaders.get(HEADER_X_FORWARDED_FOR);
             if(CollectionUtils.isEmpty(forwardedList)){
                 throw new MissHeaderXForwardedException();

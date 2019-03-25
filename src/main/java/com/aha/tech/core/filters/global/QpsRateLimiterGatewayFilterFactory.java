@@ -1,8 +1,10 @@
 package com.aha.tech.core.filters.global;
 
 import com.aha.tech.commons.response.RpcResponse;
+import com.aha.tech.core.exception.GatewayException;
 import com.aha.tech.core.limiter.QpsRateLimiter;
 import com.aha.tech.core.model.vo.ResponseVo;
+import com.aha.tech.core.service.LimiterService;
 import com.aha.tech.core.support.WriteResponseSupport;
 import com.alibaba.fastjson.JSON;
 import org.slf4j.Logger;
@@ -46,13 +48,8 @@ public class QpsRateLimiterGatewayFilterFactory implements GlobalFilter, Ordered
 
     public static final String QPS_RATE_LIMITER_ERROR_MSG = "qps限流策略生效";
 
-    private static final Long TIMEOUT = 2000L;
-
     @Resource
-    private KeyResolver qpsResolver;
-
-    @Resource
-    private QpsRateLimiter qpsRateLimiter;
+    private LimiterService qpsLimiterService;
 
 
     @Value("${qps.ratelimiter.enable:false}")
@@ -71,19 +68,15 @@ public class QpsRateLimiterGatewayFilterFactory implements GlobalFilter, Ordered
             return chain.filter(exchange);
         }
 
-        Route route = exchange.getAttribute(ServerWebExchangeUtils.GATEWAY_ROUTE_ATTR);
-        String key = qpsResolver.resolve(exchange).block();
-        Mono<RateLimiter.Response> rateLimiterAllowed = qpsRateLimiter.isAllowed(route.getId(), key);
         try {
-            if (rateLimiterAllowed.toFuture().get(TIMEOUT, TimeUnit.MILLISECONDS).isAllowed()) {
+            Boolean isAllowed = qpsLimiterService.isAllowed(exchange);
+            if (isAllowed) {
                 return chain.filter(exchange);
             }
-        } catch (InterruptedException e) {
-            logger.error("执行qps限流时线程中断", e);
-        } catch (ExecutionException e) {
-            logger.error("执行qps限流时出现异常", e);
-        } catch (TimeoutException e) {
-            logger.error("获取令牌桶超时", e);
+        } catch (GatewayException e) {
+            logger.error("qps限流出现异常", e);
+            final ResponseVo responseVo = new ResponseVo(e.getCode(), e.getMessage());
+            return Mono.defer(() -> WriteResponseSupport.write(exchange, responseVo, HttpStatus.BAD_GATEWAY));
         }
 
         logger.error("没有通过qps限流");
