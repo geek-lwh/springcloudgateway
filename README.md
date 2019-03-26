@@ -1,3 +1,17 @@
-### Refreshing the route cache
-To clear the routes cache, make a POST request to /actuator/gateway/refresh. The request returns a 200 without response body.
-    
+使用spring cloud 格林威治 版本
+
+全局过滤器执行顺序
+
+qps限流过滤器 动态开关,动态令牌桶容量配置
+ip限流过滤器 动态开关,动态令牌桶容量配置
+cpu限流过滤器 平均1m cpu负载 动态开关,默认关闭,动态值设定
+重写路由过滤器
+权限校验过滤器 -> 授权接口 | 白名单权限 -> 添加userId等参数
+修改请求头 -> 解析添加请求头,删除冗余请求头信息
+修改返回体 -> 加解码 分页参数
+熔断器过滤器 异常捕获返回
+
+压测性能
+
+
+
