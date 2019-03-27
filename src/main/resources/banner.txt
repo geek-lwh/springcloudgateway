@@ -1,5 +1,5 @@
 ------------------------------------------------------------------------
--   ${AnsiColor.RED}${AnsiStyle.ITALIC}Account System${AnsiStyle.NORMAL}${AnsiColor.DEFAULT}
+-   ${AnsiColor.RED}${AnsiStyle.ITALIC}Gateway System${AnsiStyle.NORMAL}${AnsiColor.DEFAULT}
 -   ${AnsiColor.GREEN}Powered by SpringBoot${spring-boot.formatted-version}${AnsiColor.DEFAULT}
 -   ${AnsiColor.YELLOW}Designed by Lu wei hong${AnsiColor.DEFAULT}
 ------------------------------------------------------------------------

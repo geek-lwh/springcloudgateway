@@ -6,38 +6,41 @@ import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
+import org.springframework.http.server.reactive.ServerHttpResponseDecorator;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
 
-import static com.aha.tech.core.constant.FilterProcessOrderedConstant.GLOBAL_MODIFY_RESPONSE_HEADER_GATEWAY_FILTER_ORDER;
+import static com.aha.tech.core.constant.FilterProcessOrderedConstant.MODIFY_RESPONSE_BODY_GATEWAY_FILTER_ORDER;
 
 /**
  * @Author: luweihong
  * @Date: 2019/2/21
- * 修改response header 网关过滤器
+ * 修改response body 网关过滤器
  */
 @Component
-public class ModifyResponseHeaderGatewayFilter implements GlobalFilter, Ordered {
+public class ModifyResponseBodyFilter implements GlobalFilter, Ordered {
 
-    private static final Logger logger = LoggerFactory.getLogger(ModifyResponseHeaderGatewayFilter.class);
+    private static final Logger logger = LoggerFactory.getLogger(ModifyResponseBodyFilter.class);
 
     @Resource
     private RequestHandlerService httpRequestHandlerService;
 
     @Override
     public int getOrder() {
-        return GLOBAL_MODIFY_RESPONSE_HEADER_GATEWAY_FILTER_ORDER;
+        return MODIFY_RESPONSE_BODY_GATEWAY_FILTER_ORDER;
     }
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        logger.debug("开始修改返回体报头信息网关过滤器");
-        httpRequestHandlerService.modifyResponseHeaders(exchange);
+        logger.debug("开始执行修改返回体网关过滤器");
+        ServerHttpResponseDecorator newResponse = httpRequestHandlerService.modifyResponseBody(exchange);
 
-        return chain.filter(exchange);
+        ServerWebExchange newExchange = exchange.mutate().response(newResponse).build();
+
+        return chain.filter(newExchange);
     }
 
 }

@@ -11,6 +11,7 @@ import org.springframework.cloud.gateway.support.NotFoundException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.server.*;
+import org.springframework.web.server.MethodNotAllowedException;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.net.URI;
@@ -44,6 +45,11 @@ public class JsonExceptionHandler extends DefaultErrorWebExceptionHandler {
         int code = 500;
         String message = "";
         Throwable error = super.getError(request);
+
+        if (error instanceof MethodNotAllowedException) {
+            code = HttpStatus.METHOD_NOT_ALLOWED.value();
+            message = "Request method  not supported";
+        }
 
         if (error instanceof NotFoundException || error instanceof ResponseStatusException) {
             code = NO_MATCHING_HANDLER_ERROR_CODE;

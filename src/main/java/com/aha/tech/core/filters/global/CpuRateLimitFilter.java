@@ -17,7 +17,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.Objects;
 
-import static com.aha.tech.core.constant.FilterProcessOrderedConstant.GLOBAL_CPU_RATE_LIMITER_FILTER_ORDER;
+import static com.aha.tech.core.constant.FilterProcessOrderedConstant.CPU_RATE_LIMITER_FILTER_ORDER;
 
 /**
  * @Author: luweihong
@@ -27,9 +27,9 @@ import static com.aha.tech.core.constant.FilterProcessOrderedConstant.GLOBAL_CPU
  *
  */
 @Component
-public class CpuRateLimitGatewayFilter implements GlobalFilter, Ordered {
+public class CpuRateLimitFilter implements GlobalFilter, Ordered {
 
-    private static final Logger logger = LoggerFactory.getLogger(CpuRateLimitGatewayFilter.class);
+    private static final Logger logger = LoggerFactory.getLogger(CpuRateLimitFilter.class);
 
     @Autowired
     private MetricsEndpoint metricsEndpoint;
@@ -47,7 +47,7 @@ public class CpuRateLimitGatewayFilter implements GlobalFilter, Ordered {
 
     @Override
     public int getOrder() {
-        return GLOBAL_CPU_RATE_LIMITER_FILTER_ORDER;
+        return CPU_RATE_LIMITER_FILTER_ORDER;
     }
 
     @Override
@@ -72,7 +72,8 @@ public class CpuRateLimitGatewayFilter implements GlobalFilter, Ordered {
 
         logger.error("cpu 负载过高当前值: {} 平均1分钟系统利用率设定的阈值 : {}", systemCpuUsage, systemCpuUsage);
 
-        ResponseVo responseVo = ResponseVo.defaultFailureResponseVo();
+        final ResponseVo responseVo = ResponseVo.defaultFailureResponseVo();
+        responseVo.setMessage(CPU_OVERLOAD_ERROR_MSG);
         return Mono.defer(() -> WriteResponseSupport.write(exchange,responseVo,HttpStatus.TOO_MANY_REQUESTS));
     }
 

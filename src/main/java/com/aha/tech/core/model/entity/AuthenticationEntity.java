@@ -1,6 +1,5 @@
 package com.aha.tech.core.model.entity;
 
-import com.aha.tech.commons.response.RpcResponse;
 import com.aha.tech.passportserver.facade.model.vo.UserVo;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -16,7 +15,7 @@ public class AuthenticationEntity {
     /**
      * 授权接口调用结果
      */
-    private RpcResponse<UserVo> rpcResponse;
+    private UserVo userVo;
 
     /**
      * basic 用户名
@@ -37,12 +36,12 @@ public class AuthenticationEntity {
         super();
     }
 
-    public RpcResponse<UserVo> getRpcResponse() {
-        return rpcResponse;
+    public UserVo getUserVo() {
+        return userVo;
     }
 
-    public void setRpcResponse(RpcResponse<UserVo> rpcResponse) {
-        this.rpcResponse = rpcResponse;
+    public void setUserVo(UserVo userVo) {
+        this.userVo = userVo;
     }
 
     public String getUserName() {

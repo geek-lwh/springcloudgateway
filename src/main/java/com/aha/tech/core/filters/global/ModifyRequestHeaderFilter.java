@@ -1,6 +1,5 @@
 package com.aha.tech.core.filters.global;
 
-import com.aha.tech.core.constant.FilterProcessOrderedConstant;
 import com.aha.tech.core.service.RequestHandlerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,33 +13,34 @@ import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
 
+import static com.aha.tech.core.constant.FilterProcessOrderedConstant.MODIFY_REQUEST_HEADER_GATEWAY_FILTER_ORDER;
 
 /**
  * @Author: luweihong
- * @Date: 2019/2/20
+ * @Date: 2019/2/21
  *
- * 重写请求路径网关过滤器
+ * 修改请求头网关过滤器
  */
 @Component
-public class RewritePathGatewayFilter implements GlobalFilter, Ordered {
+public class ModifyRequestHeaderFilter implements GlobalFilter, Ordered {
 
-    private static final Logger logger = LoggerFactory.getLogger(RewritePathGatewayFilter.class);
+    private static final Logger logger = LoggerFactory.getLogger(ModifyRequestHeaderFilter.class);
 
     @Resource
     private RequestHandlerService httpRequestHandlerService;
 
     @Override
     public int getOrder() {
-        return FilterProcessOrderedConstant.GLOBAL_REWRITE_REQUEST_PATH_FILTER_ORDER;
+        return MODIFY_REQUEST_HEADER_GATEWAY_FILTER_ORDER;
     }
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        logger.debug("进入重写请求路径网关过滤器");
+        logger.debug("开始进行修改请求头网关过滤器");
+        ServerHttpRequest newRequest = httpRequestHandlerService.modifyRequestHeaders(exchange);
 
-        ServerHttpRequest newRequest = httpRequestHandlerService.rewriteRequestPath(exchange);
-
-        return chain.filter(exchange.mutate().request(newRequest).build());
+        ServerWebExchange newExchange = exchange.mutate().request(newRequest).build();
+        return chain.filter(newExchange);
     }
 
 }

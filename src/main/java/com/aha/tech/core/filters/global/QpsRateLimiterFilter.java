@@ -17,7 +17,8 @@ import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
 
-import static com.aha.tech.core.constant.FilterProcessOrderedConstant.GLOBAL_IP_RATE_LIMITER_FILTER_ORDER;
+import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_ORIGINAL_URL_PATH_ATTR;
+import static com.aha.tech.core.constant.FilterProcessOrderedConstant.QPS_RATE_LIMITER_FILTER_ORDER;
 
 /**
  * @Author: luweihong
@@ -26,46 +27,50 @@ import static com.aha.tech.core.constant.FilterProcessOrderedConstant.GLOBAL_IP_
  * qps限流策略
  */
 @Component
-public class IpRateLimiterGatewayFilterFactory implements GlobalFilter, Ordered {
+public class QpsRateLimiterFilter implements GlobalFilter, Ordered {
 
-    private static final Logger logger = LoggerFactory.getLogger(IpRateLimiterGatewayFilterFactory.class);
+    private static final Logger logger = LoggerFactory.getLogger(QpsRateLimiterFilter.class);
 
-    public static final String IP_RATE_LIMITER_ERROR_MSG = "IP限流策略生效";
+    public static final String QPS_RATE_LIMITER_ERROR_MSG = "qps限流策略生效";
 
     @Resource
-    private LimiterService ipLimiterService;
+    private LimiterService qpsLimiterService;
 
-    @Value("${ip.ratelimiter.enable:false}")
+
+    @Value("${qps.ratelimiter.enable:false}")
     private boolean isEnable;
 
     @Override
     public int getOrder() {
-        return GLOBAL_IP_RATE_LIMITER_FILTER_ORDER;
+        return QPS_RATE_LIMITER_FILTER_ORDER;
     }
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        logger.info("开始执行ip限流过滤器");
+        logger.info("开始执行qps限流过滤器");
+        // 设置exchange属性
+        exchange.getAttributes().put(GATEWAY_ORIGINAL_URL_PATH_ATTR, exchange.getRequest().getURI().getRawPath());
 
         if (!isEnable) {
             return chain.filter(exchange);
         }
 
         try {
-            Boolean isAllowed = ipLimiterService.isAllowed(exchange);
+            Boolean isAllowed = qpsLimiterService.isAllowed(exchange);
             if (isAllowed) {
                 return chain.filter(exchange);
             }
         } catch (GatewayException e) {
-            logger.error("ip限流出现异常", e);
+            logger.error("qps限流出现异常", e);
             final ResponseVo responseVo = new ResponseVo(e.getCode(), e.getMessage());
             return Mono.defer(() -> WriteResponseSupport.write(exchange, responseVo, HttpStatus.BAD_GATEWAY));
         }
 
-        logger.warn("没有通过ip限流");
-        final ResponseVo responseVo = ResponseVo.defaultFailureResponseVo();
-        responseVo.setMessage(IP_RATE_LIMITER_ERROR_MSG);
-        return Mono.defer(() -> WriteResponseSupport.write(exchange, responseVo, HttpStatus.TOO_MANY_REQUESTS));
+        logger.error("没有通过qps限流");
+
+        ResponseVo responseVo = ResponseVo.defaultFailureResponseVo();
+        responseVo.setMessage(QPS_RATE_LIMITER_ERROR_MSG);
+        return Mono.defer(() -> WriteResponseSupport.write(exchange,responseVo,HttpStatus.TOO_MANY_REQUESTS));
     }
 
 }

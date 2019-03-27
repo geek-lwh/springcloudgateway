@@ -1,9 +1,6 @@
 package com.aha.tech.core.service;
 
-import com.aha.tech.core.model.entity.AuthenticationEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
-import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.http.server.reactive.ServerHttpResponseDecorator;
 import org.springframework.web.server.ServerWebExchange;
 
@@ -25,7 +22,7 @@ public interface RequestHandlerService {
      * @param serverWebExchange
      * @return
      */
-    ServerHttpRequest authorize(ServerWebExchange serverWebExchange);
+    Boolean authorize(ServerWebExchange serverWebExchange);
 
     /**
      * 修改请求头

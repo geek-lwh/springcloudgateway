@@ -64,7 +64,15 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
 
                                 byte[] stream = outputStream.getBytes();
                                 DataBuffer data = decryptBody(stream, bufferFactory);
-                                serverHttpResponse.getHeaders().setContentLength(data.readableByteCount());
+
+                                // 设置response 的 content-length
+                                HttpHeaders httpHeaders = serverHttpResponse.getHeaders();
+                                long contentLength = data.readableByteCount();
+                                if (contentLength > 0) {
+                                    httpHeaders.setContentLength(contentLength);
+                                } else {
+                                    httpHeaders.set(HttpHeaders.TRANSFER_ENCODING, "chunked");
+                                }
 
                                 return data;
                             }));
