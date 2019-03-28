@@ -25,10 +25,7 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * @Author: luweihong
- * @Date: 2019/2/13
- */
+
 @EnableApolloConfig
 @EnableWebFlux
 @EnableFeignClients
@@ -45,6 +42,8 @@ public class GatewayApplication {
         Assert.notNull(profile, "请指定 [-Dspring.profiles.active]");
         SpringApplication app = new SpringApplication(GatewayApplication.class);
         try {
+            String v = System.getProperty("reactor.netty.ioWorkerCount", "16");
+            System.setProperty("reactor.netty.ioWorkerCount", v);
             ConfigurableApplicationContext configurableApplicationContext = app.run(args);
             Environment env = configurableApplicationContext.getEnvironment();
             validateProfiles(env, profile);
