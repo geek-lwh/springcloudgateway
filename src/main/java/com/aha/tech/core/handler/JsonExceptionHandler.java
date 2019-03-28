@@ -121,7 +121,7 @@ public class JsonExceptionHandler extends DefaultErrorWebExceptionHandler {
         map.put("url", requestUrl);
         map.put("message", message);
         map.put("date", DateUtil.currentDateByDefaultFormat());
-        map.put("trace", ex.getStackTrace()[0]);
+//        map.put("trace", ex.getStackTrace());
 
         return map;
     }

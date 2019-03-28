@@ -52,7 +52,7 @@ public class RuntimeConfigChangedServiceImpl implements RuntimeConfigChangedServ
      * @param changeKeys
      */
     @Override
-    public void routeApiUriChanged(ConfigChangeEvent changeEvent, Set<String> changeKeys) {
+    public synchronized void routeApiUriChanged(ConfigChangeEvent changeEvent, Set<String> changeKeys) {
         changeKeys.forEach(changeKeyName -> {
             ConfigChange change = changeEvent.getChange(changeKeyName);
             if (changeKeyName.startsWith(ROUTE_API_URI_PREFIX)) {
@@ -78,7 +78,7 @@ public class RuntimeConfigChangedServiceImpl implements RuntimeConfigChangedServ
      * @param changeKeys
      */
     @Override
-    public void routeApiWhiteListChanged(ConfigChangeEvent changeEvent, Set<String> changeKeys) {
+    public synchronized void routeApiWhiteListChanged(ConfigChangeEvent changeEvent, Set<String> changeKeys) {
         changeKeys.forEach(changeKeyName -> {
             ConfigChange change = changeEvent.getChange(changeKeyName);
             if (changeKeyName.startsWith(ROUTE_API_WHITE_LIST_PREFIX)) {

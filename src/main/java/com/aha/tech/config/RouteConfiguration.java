@@ -40,11 +40,6 @@ public class RouteConfiguration implements RouteDefinitionLocator {
             Set<RouteDefinition> routeDefinitionSet = refreshRuntimeRoute();
             runtimeRouteCache.addAll(routeDefinitionSet);
             needToSyncLocal.compareAndSet(true, false);
-//            for (; ; ) {
-//                if (needToSyncLocal.compareAndSet(true, false)) {
-//                    break;
-//                }
-//            }
         }
 
         logger.info("运行时路由配置 : {}", runtimeRouteCache);
@@ -64,7 +59,6 @@ public class RouteConfiguration implements RouteDefinitionLocator {
 
         return routeDefinitionSet;
     }
-
 
     /**
      * 配置路由
