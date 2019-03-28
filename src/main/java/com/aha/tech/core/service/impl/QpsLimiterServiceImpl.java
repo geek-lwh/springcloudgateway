@@ -1,6 +1,5 @@
 package com.aha.tech.core.service.impl;
 
-import com.aha.tech.core.filters.global.IpRateLimiterFilter;
 import com.aha.tech.core.limiter.QpsRateLimiter;
 import com.aha.tech.core.service.LimiterService;
 import com.aha.tech.util.KeyGenerateUtil;
@@ -25,7 +24,7 @@ import java.util.concurrent.TimeoutException;
 @Service("qpsLimiterService")
 public class QpsLimiterServiceImpl implements LimiterService {
 
-    private static final Logger logger = LoggerFactory.getLogger(IpRateLimiterFilter.class);
+    private static final Logger logger = LoggerFactory.getLogger(QpsLimiterServiceImpl.class);
 
     private static final Long TIMEOUT = 1000L;
 

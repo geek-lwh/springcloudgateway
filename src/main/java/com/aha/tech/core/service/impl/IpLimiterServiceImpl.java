@@ -2,7 +2,6 @@ package com.aha.tech.core.service.impl;
 
 import com.aha.tech.core.exception.MissHeaderXForwardedException;
 import com.aha.tech.core.exception.XForwardedEmptyException;
-import com.aha.tech.core.filters.global.IpRateLimiterFilter;
 import com.aha.tech.core.limiter.IpRateLimiter;
 import com.aha.tech.core.service.LimiterService;
 import org.apache.commons.lang3.StringUtils;
@@ -32,12 +31,9 @@ import static com.aha.tech.core.constant.HeaderFieldConstant.HEADER_X_FORWARDED_
 @Service("ipLimiterService")
 public class IpLimiterServiceImpl implements LimiterService {
 
-    private static final Logger logger = LoggerFactory.getLogger(IpRateLimiterFilter.class);
+    private static final Logger logger = LoggerFactory.getLogger(IpLimiterServiceImpl.class);
 
     private static final Long TIMEOUT = 1000L;
-
-//    @Resource
-//    private KeyResolver ipKeyResolver;
 
     @Resource
     private IpRateLimiter ipRateLimiter;
