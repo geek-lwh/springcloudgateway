@@ -1,7 +1,6 @@
 package com.aha.tech.core.event;
 
 import com.aha.tech.core.service.RuntimeConfigChangedService;
-import com.ctrip.framework.apollo.model.ConfigChange;
 import com.ctrip.framework.apollo.model.ConfigChangeEvent;
 import com.ctrip.framework.apollo.spring.annotation.ApolloConfigChangeListener;
 import org.slf4j.Logger;

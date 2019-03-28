@@ -57,15 +57,19 @@ public class RuntimeConfigChangedServiceImpl implements RuntimeConfigChangedServ
             ConfigChange change = changeEvent.getChange(changeKeyName);
             if (changeKeyName.startsWith(ROUTE_API_URI_PREFIX)) {
                 refreshRouteApiUriConfig(change, ROUTE_API_URI_PREFIX, changeKeyName);
-                for (; ; ) {
-                    if (RouteConfiguration.needToSyncLocal.compareAndSet(false, true)) {
-                        break;
-                    }
-                }
             }
 
         });
 
+        for (; ; ) {
+            if (RouteConfiguration.needToSyncLocal.compareAndSet(false, true)) {
+                logger.info("路由更新变化,刷新缓存成功");
+                break;
+            }
+
+            logger.warn("路由参数变化,没有更新缓存,强制缓存更新!");
+            RouteConfiguration.needToSyncLocal.compareAndSet(true, false);
+        }
     }
 
     /**
@@ -78,7 +82,7 @@ public class RuntimeConfigChangedServiceImpl implements RuntimeConfigChangedServ
         changeKeys.forEach(changeKeyName -> {
             ConfigChange change = changeEvent.getChange(changeKeyName);
             if (changeKeyName.startsWith(ROUTE_API_WHITE_LIST_PREFIX)) {
-                refreshRouteApiWhiteListConfig(change,ROUTE_API_WHITE_LIST_PREFIX,changeKeyName);
+                refreshRouteApiWhiteListConfig(change, ROUTE_API_WHITE_LIST_PREFIX, changeKeyName);
             }
         });
     }
@@ -111,7 +115,6 @@ public class RuntimeConfigChangedServiceImpl implements RuntimeConfigChangedServ
 
         logger.info("更新 路由API资源地址 : {}", prefix + key);
     }
-
 
 
     /**
