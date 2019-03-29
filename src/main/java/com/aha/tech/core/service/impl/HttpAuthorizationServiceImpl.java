@@ -56,6 +56,7 @@ public class HttpAuthorizationServiceImpl implements AuthorizationService {
         }
 
         // 如果是访客 校验是否接口再白名单中,是则允许访问
+        // route.api.whitelist.mappings.products = products/share,products/yanxuan/get,products/form/get,products/supreme/get,products/xkl/get
         Boolean existWhiteList;
         List<String> list = whiteListMap.containsKey(id) ? whiteListMap.get(id) : Collections.emptyList();
         if (!CollectionUtils.isEmpty(list) && list.get(0).equals(Separator.ASTERISK_MARK)) {

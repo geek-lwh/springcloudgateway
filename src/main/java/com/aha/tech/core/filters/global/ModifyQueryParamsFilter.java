@@ -48,10 +48,16 @@ public class ModifyQueryParamsFilter implements GlobalFilter, Ordered {
         }
 
         if (!exchange.getAttributes().containsKey(GATEWAY_USER_VO_ATTR)) {
+            // todo 返回
             return chain.filter(exchange);
         }
 
-        UserVo userVo = (UserVo) exchange.getAttributes().get(GATEWAY_USER_VO_ATTR);
+        Object obj = exchange.getAttributes().get(GATEWAY_USER_VO_ATTR);
+        if (obj == null) {
+            // todo npe 抛出
+        }
+
+        UserVo userVo = (UserVo) obj;
 
         ServerHttpRequest serverHttpRequest = exchange.getRequest();
         URI uri = serverHttpRequest.getURI();

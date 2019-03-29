@@ -20,8 +20,6 @@ import java.util.List;
 import java.util.Map;
 
 import static com.aha.tech.core.constant.HeaderFieldConstant.*;
-import static com.aha.tech.core.constant.HeaderFieldConstant.HEADER_GUNIQID;
-import static com.aha.tech.core.constant.HeaderFieldConstant.X_ENV_FIELD_GUNIQID;
 
 /**
  * @Author: luweihong
@@ -49,6 +47,7 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
      */
     @Override
     public void initRequestHeader(HttpHeaders httpHeaders) {
+        // todo x-forward-for 取最左第一个
         httpHeaders.set(HEADER_TOKEN, DEFAULT_X_TOKEN_VALUE);
         httpHeaders.add(HEADER_OS, DEFAULT_OS);
         httpHeaders.add(HEADER_VERSION, DEFAULT_VERSION);
@@ -66,13 +65,14 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
         }
 
         try {
+            // ahaschool/ios/4.3.0/12.0/iPhone/757797D4-1282-4668-8AA3-FE4189AAED12
             String value = userAgent.get(0).toLowerCase();
             int index = value.indexOf(STR_PREFIX);
             if (index == -1) {
                 return;
             }
 
-            // 截图出现的prefix到末尾
+            // 截图出现的prefix到末尾 ios/4.3.0/12.0/iPhone/757797D4-1282-4668-8AA3-FE4189AAED12
             String subStr = value.substring(index);
             String[] arr = StringUtils.split(subStr, Separator.SLASH_MARK);
             String os = arr[1];
@@ -94,7 +94,7 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
     @Override
     public void setXEnv(HttpHeaders httpHeaders) {
         List<String> xEnv = httpHeaders.get(HEADER_X_ENV);
-
+        //  eyJ1dG1fc291cmNlIjoiIiwidXRtX21lZGl1bSI6IiIsInV0bV9jYW1wYWlnbiI6IiIsInV0bV90ZXJtIjoiIiwidXRtX2NvbnRlbnQiOiIiLCJwayI6Ikx6WTVOVE09IiwicGQiOiIiLCJwcyI6InVwNDY2MDhiMGZjMTA1MDBlNzgyYTVjYmJiZTg2M2E1YWUiLCJwcCI6IiIsImFwcF90eXBlIjoxLCJndW5pcWlkIjoiZWM3NjdhZjI5ZDY5Zjg0YjViYjEwZGFmOGNiZjk1OGIifQ==
         if (CollectionUtils.isEmpty(xEnv)) {
             return;
         }
@@ -136,9 +136,11 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
                     case X_ENV_FIELD_APP_TYPE:
                         httpHeaders.set(HEADER_APP_TYPE, value);
                         break;
-                    case X_ENV_FIELD_GUNIQID:
+                    case X_ENV_FIELD_G_UNIQID:
                         httpHeaders.set(HEADER_GUNIQID, value);
                         break;
+
+                    // todo X-Env-Channel/
                     default:
                         parseDefault(key, value, httpHeaders);
                         break;
@@ -160,7 +162,7 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
         httpHeaders.remove(HEADER_X_ENV);
         httpHeaders.remove(HEADER_REFERER);
         httpHeaders.remove(HEADER_ORIGIN);
-        httpHeaders.remove(HEADER_USER_AGENT);
+//        httpHeaders.remove(HEADER_USER_AGENT);
         httpHeaders.remove(HEADER_X_REQUEST_PAGE);
         httpHeaders.remove(HEADER_HOST);
         httpHeaders.remove(HEADER_DNT);
@@ -190,6 +192,8 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
 
     /**
      * 解析header 并且设置 header 头字段 pp
+     * var pp_raw = product_id:user_id:is_poster: group_id:open_group:poster_id
+     * pp = pp_raw + '$' + 'pp' +md5("hjm?" + md5(string({"pp":pp_raw}) + "Aha^_^")
      * @param encodePP
      * @param httpHeaders
      */
@@ -200,12 +204,13 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
         }
 
         String pp = new String(Base64.decodeBase64(encodePP), StandardCharsets.UTF_8);
-        if (StringUtils.isBlank(pp) || !pp.contains("!")) {
+        if (StringUtils.isBlank(pp) || !pp.contains(Separator.AND_MARK)) {
             httpHeaders.add(HEADER_PP, Strings.EMPTY);
             return;
         }
 
-        String v = pp.substring(0, pp.indexOf("!"));
+        // todo 算下是否一致 不对 -> null
+        String v = pp.substring(0, pp.indexOf(Separator.AND_MARK));
         httpHeaders.add(HEADER_PP, v);
     }
 

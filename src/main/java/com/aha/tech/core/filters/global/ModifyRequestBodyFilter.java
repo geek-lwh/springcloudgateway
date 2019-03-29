@@ -43,6 +43,7 @@ public class ModifyRequestBodyFilter implements GlobalFilter, Ordered {
         }
 
         if (!exchange.getAttributes().containsKey(GATEWAY_USER_VO_ATTR)) {
+            // todo
             return chain.filter(exchange);
         }
 

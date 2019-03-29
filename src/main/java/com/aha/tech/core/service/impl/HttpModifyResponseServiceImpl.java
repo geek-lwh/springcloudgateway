@@ -63,6 +63,7 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
                                 });
 
                                 byte[] stream = outputStream.getBytes();
+                                // todo
                                 DataBuffer data = decryptBody(stream, bufferFactory);
 
                                 // 设置response 的 content-length
@@ -92,6 +93,7 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
      */
     @Override
     public void modifyHeaders(HttpHeaders httpHeaders) {
+        // todo 跨域 放第一个
         httpHeaders.add(HEADER_ACCESS_CONTROL_ALLOW_ORIGIN, "*");
 
         // 表明服务器允许客户端使用 POST,PUT,GET,DELETE 发起请求
@@ -101,7 +103,11 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
         httpHeaders.add(HEADER_ACCESS_CONTROL_MAX_AGE, "10");
 
         // 表明服务器允许请求中携带字段 X-PINGOTHER 与 Content-Type x-requested-with
-        httpHeaders.add(HEADER_ACCESS_CONTROL_ALLOW_HEADERS, "x-requested-with,Content-Type");
+        // todo 方老师给我
+        httpHeaders.add(HEADER_ACCESS_CONTROL_ALLOW_HEADERS, "x-requested-with,Content-Type,HEADER_X_REQUEST_PAGE");
+
+        // todo 先判断options 如果是options 终止运行
+
     }
 
     /**

@@ -66,7 +66,7 @@ public class HeaderFieldConstant {
 
     public static final String HEADER_APP_TYPE = "X-Env-App-Type";
 
-    public static final String X_ENV_FIELD_GUNIQID = "guniqid";
+    public static final String X_ENV_FIELD_G_UNIQID = "guniqid";
 
     public static final String HEADER_GUNIQID = "X-Env-Guniqid";
 

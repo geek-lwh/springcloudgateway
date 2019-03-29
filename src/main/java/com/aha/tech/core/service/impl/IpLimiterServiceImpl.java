@@ -72,6 +72,7 @@ public class IpLimiterServiceImpl implements LimiterService {
      * @return
      */
     private String getKey(HttpHeaders httpHeaders) {
+        //todo ip,ip2
         List<String> forwardedList = httpHeaders.get(HEADER_X_FORWARDED_FOR);
         if (CollectionUtils.isEmpty(forwardedList)) {
             throw new MissHeaderXForwardedException();
