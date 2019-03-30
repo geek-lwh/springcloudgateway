@@ -34,17 +34,4 @@ public interface RequestHandlerService {
      */
     ServerHttpRequest modifyRequestHeaders(ServerWebExchange serverWebExchange);
 
-    /**
-     * 修改返回体信息
-     * @param serverWebExchange
-     * @return
-     */
-    ServerHttpResponseDecorator modifyResponseBody(ServerWebExchange serverWebExchange);
-
-    /**
-     * 修改返回报头信息
-     * @param serverWebExchange
-     */
-    void modifyResponseHeaders(ServerWebExchange serverWebExchange);
-
 }
