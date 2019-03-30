@@ -68,6 +68,8 @@ public class HeaderFieldConstant {
 
     public static final String X_ENV_FIELD_G_UNIQID = "guniqid";
 
+    public static final String X_ENV_CHANNEL = "X-Env-Channel";
+
     public static final String HEADER_GUNIQID = "X-Env-Guniqid";
 
     public static final String HEADER_PRAGMA = "Pragma";

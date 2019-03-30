@@ -48,6 +48,7 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
     @Override
     public void initRequestHeader(HttpHeaders httpHeaders) {
         // todo x-forward-for 取最左第一个
+        httpHeaders.set(HEADER_X_FORWARDED_FOR, "");
         httpHeaders.set(HEADER_TOKEN, DEFAULT_X_TOKEN_VALUE);
         httpHeaders.add(HEADER_OS, DEFAULT_OS);
         httpHeaders.add(HEADER_VERSION, DEFAULT_VERSION);
@@ -139,7 +140,6 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
                     case X_ENV_FIELD_G_UNIQID:
                         httpHeaders.set(HEADER_GUNIQID, value);
                         break;
-
                     // todo X-Env-Channel/
                     default:
                         parseDefault(key, value, httpHeaders);

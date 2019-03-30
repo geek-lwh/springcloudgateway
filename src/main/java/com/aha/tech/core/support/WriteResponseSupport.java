@@ -1,5 +1,6 @@
 package com.aha.tech.core.support;
 
+import com.aha.tech.core.exception.GatewayException;
 import com.aha.tech.core.model.vo.ResponseVo;
 import com.alibaba.fastjson.JSON;
 import org.springframework.core.io.buffer.DataBuffer;
@@ -23,6 +24,23 @@ import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.s
 public class WriteResponseSupport {
 
     /**
+     * 根据异常值返回
+     * @param exchange
+     * @param gatewayException
+     * @return
+     */
+    public static Mono<Void> writeError(ServerWebExchange exchange, GatewayException gatewayException){
+        final ServerHttpResponse resp = exchange.getResponse();
+        ResponseVo responseVo = new ResponseVo(gatewayException.getCode(),gatewayException.getMessage());
+        byte[] bytes = JSON.toJSONString(responseVo).getBytes(StandardCharsets.UTF_8);
+        DataBuffer buffer = resp.bufferFactory().wrap(bytes);
+        resp.getHeaders().setContentLength(buffer.readableByteCount());
+        resp.getHeaders().setContentType(MediaType.APPLICATION_JSON_UTF8);
+        setResponseStatus(exchange,HttpStatus.BAD_GATEWAY);
+        return resp.writeWith(Flux.just(buffer));
+    }
+
+    /**
      * 写入response body
      * @param exchange
      * @param responseVo
@@ -38,4 +56,17 @@ public class WriteResponseSupport {
         setResponseStatus(exchange,httpStatus);
         return resp.writeWith(Flux.just(buffer));
     }
+
+    /**
+     * post,get等请求添加参数时源数据为空
+     * @param exchange
+     * @return
+     */
+    public static Mono<Void> writeNpeParamsResponse(ServerWebExchange exchange){
+        ResponseVo rpcResponse = ResponseVo.defaultFailureResponseVo();
+        rpcResponse.setMessage("request add params attr is empty !");
+        return WriteResponseSupport.write(exchange, rpcResponse, HttpStatus.BAD_GATEWAY);
+    }
+
+
 }

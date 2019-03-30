@@ -1,13 +1,16 @@
 package com.aha.tech.core.filters.global;
 
+import com.aha.tech.core.model.dto.RequestAddParamsDto;
+import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.OverwriteParamService;
-import com.aha.tech.passportserver.facade.model.vo.UserVo;
+import com.aha.tech.core.support.WriteResponseSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
@@ -16,8 +19,9 @@ import reactor.core.publisher.Mono;
 import javax.annotation.Resource;
 import java.net.URI;
 
-import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_USER_VO_ATTR;
+import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_ADD_PARAMS_ATTR;
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.MODIFY_QUERY_PARAMS_FILTER_ORDER;
+import static com.aha.tech.core.support.WriteResponseSupport.writeNpeParamsResponse;
 
 /**
  * @Author: luweihong
@@ -31,7 +35,7 @@ public class ModifyQueryParamsFilter implements GlobalFilter, Ordered {
     private static final Logger logger = LoggerFactory.getLogger(ModifyQueryParamsFilter.class);
 
     @Resource
-    private OverwriteParamService overwriteParamService;
+    private OverwriteParamService httpOverwriteParamService;
 
     @Override
     public int getOrder() {
@@ -47,21 +51,17 @@ public class ModifyQueryParamsFilter implements GlobalFilter, Ordered {
             return chain.filter(exchange);
         }
 
-        if (!exchange.getAttributes().containsKey(GATEWAY_USER_VO_ATTR)) {
-            // todo 返回
-            return chain.filter(exchange);
-        }
-
-        Object obj = exchange.getAttributes().get(GATEWAY_USER_VO_ATTR);
+        Object obj = exchange.getAttributes().get(GATEWAY_REQUEST_ADD_PARAMS_ATTR);
         if (obj == null) {
-            // todo npe 抛出
+            logger.error("缺少需要在网关添加的参数");
+            return Mono.defer(() -> writeNpeParamsResponse(exchange));
         }
 
-        UserVo userVo = (UserVo) obj;
+        RequestAddParamsDto requestAddParamsDto = (RequestAddParamsDto) obj;
 
         ServerHttpRequest serverHttpRequest = exchange.getRequest();
         URI uri = serverHttpRequest.getURI();
-        URI newUri = overwriteParamService.modifyQueryParams(userVo, uri);
+        URI newUri = httpOverwriteParamService.modifyQueryParams(requestAddParamsDto, uri);
         ServerHttpRequest request = exchange.getRequest().mutate().uri(newUri).build();
 
         return chain.filter(exchange.mutate().request(request).build());

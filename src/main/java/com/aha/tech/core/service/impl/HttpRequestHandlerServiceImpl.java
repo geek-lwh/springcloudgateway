@@ -2,6 +2,8 @@ package com.aha.tech.core.service.impl;
 
 import com.aha.tech.core.exception.MissAuthorizationHeaderException;
 import com.aha.tech.core.exception.ParseAuthorizationHeaderException;
+import com.aha.tech.core.exception.RejectOptionsMethodException;
+import com.aha.tech.core.model.dto.RequestAddParamsDto;
 import com.aha.tech.core.model.entity.AuthenticationEntity;
 import com.aha.tech.core.model.entity.PairEntity;
 import com.aha.tech.core.model.entity.RouteEntity;
@@ -10,6 +12,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
 import org.springframework.http.server.reactive.ServerHttpResponse;
@@ -45,6 +48,9 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
     private static final String NEED_AUTHORIZATION = "serv-auth";
 
     @Resource
+    private CrossDomainAccessService httpCrossDomainAccessService;
+
+    @Resource
     private RewritePathService httpRewritePathService;
 
     @Resource
@@ -55,6 +61,22 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
 
     @Resource
     private ModifyResponseService httpModifyResponseService;
+
+    /**
+     * 跨域设置
+     * @param serverWebExchange
+     */
+    @Override
+    public void crossDomainAccessSetting(ServerWebExchange serverWebExchange) {
+        ServerHttpRequest request = serverWebExchange.getRequest();
+        HttpMethod httpMethod = request.getMethod();
+        if(httpMethod.equals(HttpMethod.OPTIONS)){
+            throw new RejectOptionsMethodException();
+        }
+
+        HttpHeaders httpHeaders = request.getHeaders();
+        httpCrossDomainAccessService.CrossDomainSetting(httpHeaders);
+    }
 
     /**
      * 重写请求路径
@@ -128,7 +150,9 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
             authenticationEntity = httpAuthorizationService.verifyUser(accessToken);
         }
 
-        serverWebExchange.getAttributes().put(GATEWAY_USER_VO_ATTR, authenticationEntity.getUserVo());
+        RequestAddParamsDto requestAddParamsDto = new RequestAddParamsDto();
+        requestAddParamsDto.setUserId(authenticationEntity.getUserVo().getUserId());
+        serverWebExchange.getAttributes().put(GATEWAY_REQUEST_ADD_PARAMS_ATTR, requestAddParamsDto);
 
         return Boolean.TRUE;
     }

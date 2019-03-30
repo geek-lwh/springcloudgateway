@@ -1,5 +1,6 @@
 package com.aha.tech.core.filters.global;
 
+import com.aha.tech.core.exception.GatewayException;
 import com.aha.tech.core.service.RequestHandlerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,30 +13,36 @@ import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
 
-import static com.aha.tech.core.constant.FilterProcessOrderedConstant.MODIFY_RESPONSE_HEADER_GATEWAY_FILTER_ORDER;
+import static com.aha.tech.core.constant.FilterProcessOrderedConstant.CROSS_DOMAIN_ACCESS_FILTER_ORDER;
+import static com.aha.tech.core.support.WriteResponseSupport.writeError;
 
 /**
- * @Author: luweihong
- * @Date: 2019/2/21
- * 修改response header 网关过滤器
+ * @Author: monkey
+ * @Date: 2019/3/30
  */
 @Component
-public class ModifyResponseHeaderFilter implements GlobalFilter, Ordered {
+public class CrossDomainAccessFilter implements GlobalFilter, Ordered {
 
-    private static final Logger logger = LoggerFactory.getLogger(ModifyResponseHeaderFilter.class);
+    private static final Logger logger = LoggerFactory.getLogger(CrossDomainAccessFilter.class);
 
     @Resource
     private RequestHandlerService httpRequestHandlerService;
 
+
     @Override
     public int getOrder() {
-        return MODIFY_RESPONSE_HEADER_GATEWAY_FILTER_ORDER;
+        return CROSS_DOMAIN_ACCESS_FILTER_ORDER;
     }
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        logger.debug("开始修改返回体报头信息网关过滤器");
-        httpRequestHandlerService.modifyResponseHeaders(exchange);
+        logger.debug("执行跨域访问过滤器");
+
+        try {
+            httpRequestHandlerService.crossDomainAccessSetting(exchange);
+        } catch (GatewayException e) {
+            return Mono.defer(() -> writeError(exchange, e));
+        }
 
         return chain.filter(exchange);
     }

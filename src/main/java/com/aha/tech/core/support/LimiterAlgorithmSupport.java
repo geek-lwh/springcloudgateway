@@ -26,20 +26,21 @@ public class LimiterAlgorithmSupport {
 
     private static final Logger logger = LoggerFactory.getLogger(LimiterAlgorithmSupport.class);
 
-    /**
-     * 每次减去1个
-     */
+    // 每次减去1个
     private static final String BUCKLE_VALUE = "1";
 
+    // 剩余多少流量
     public static final String REMAINING_HEADER = "X-RateLimit-Remaining";
 
+    // 限流速率
     public static final String REPLENISH_RATE_HEADER = "X-RateLimit-Replenish-Rate";
 
+    // 总流量
     public static final String BURST_CAPACITY_HEADER = "X-RateLimit-Burst-Capacity";
 
 
     /**
-     * 计算吸纳刘操作
+     * 执行全局限流算法
      * @param keys
      * @param replenishRate
      * @param burstCapacity
@@ -68,6 +69,7 @@ public class LimiterAlgorithmSupport {
 
     /**
      * 限流后设置返回头信息
+     *
      * @param replenishRate
      * @param burstCapacity
      * @param tokensLeft

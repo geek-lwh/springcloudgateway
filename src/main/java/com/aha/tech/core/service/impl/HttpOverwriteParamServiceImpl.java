@@ -1,5 +1,6 @@
 package com.aha.tech.core.service.impl;
 
+import com.aha.tech.core.model.dto.RequestAddParamsDto;
 import com.aha.tech.core.service.OverwriteParamService;
 import com.aha.tech.passportserver.facade.model.vo.UserVo;
 import com.alibaba.fastjson.JSON;
@@ -26,25 +27,25 @@ import java.net.URI;
  * @Author: luweihong
  * @Date: 2019/3/27
  */
-@Service("overwriteParamService")
-public class OverwriteParamServiceImpl implements OverwriteParamService {
+@Service("httpOverwriteParamService")
+public class HttpOverwriteParamServiceImpl implements OverwriteParamService {
 
     private static final String USER_ID_FIELD = "user_id";
 
     /**
      * 修改POST请求参数
-     * @param userVo
+     * @param requestAddParamsDto
      * @param chain
      * @param exchange
      * @return
      */
     @Override
-    public Mono<Void> modifyRequestBody(UserVo userVo, GatewayFilterChain chain, ServerWebExchange exchange) {
+    public Mono<Void> modifyRequestBody(RequestAddParamsDto requestAddParamsDto, GatewayFilterChain chain, ServerWebExchange exchange) {
         ServerRequest serverRequest = new DefaultServerRequest(exchange);
         Mono<String> modifiedBody = serverRequest.bodyToMono(String.class);
         modifiedBody.flatMap(body -> {
             JSONObject obj = JSON.parseObject(body);
-            obj.put(USER_ID_FIELD, userVo.getUserId());
+            obj.put(USER_ID_FIELD, requestAddParamsDto.getUserId());
             return Mono.just(obj.toJSONString());
         });
 
@@ -84,14 +85,14 @@ public class OverwriteParamServiceImpl implements OverwriteParamService {
 
     /**
      * 修改GET请求的参数
-     * @param userVo
+     * @param requestAddParamsDto
      * @param uri
      * @return
      */
     @Override
-    public URI modifyQueryParams(UserVo userVo, URI uri) {
+    public URI modifyQueryParams(RequestAddParamsDto requestAddParamsDto, URI uri) {
         return UriComponentsBuilder.fromUri(uri)
-                .replaceQueryParam(USER_ID_FIELD, userVo.getUserId())
+                .replaceQueryParam(USER_ID_FIELD, requestAddParamsDto.getUserId())
                 .build(true)
                 .toUri();
     }

@@ -1,5 +1,6 @@
 package com.aha.tech.core.service;
 
+import org.springframework.http.HttpMethod;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponseDecorator;
 import org.springframework.web.server.ServerWebExchange;
@@ -9,6 +10,8 @@ import org.springframework.web.server.ServerWebExchange;
  * @Date: 2019/3/15
  */
 public interface RequestHandlerService {
+
+    void crossDomainAccessSetting(ServerWebExchange serverWebExchange);
 
     /**
      * 重写请求路径

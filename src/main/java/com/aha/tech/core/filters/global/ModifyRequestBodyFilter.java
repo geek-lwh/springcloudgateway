@@ -1,5 +1,6 @@
 package com.aha.tech.core.filters.global;
 
+import com.aha.tech.core.model.dto.RequestAddParamsDto;
 import com.aha.tech.core.service.OverwriteParamService;
 import com.aha.tech.passportserver.facade.model.vo.UserVo;
 import org.slf4j.Logger;
@@ -14,8 +15,9 @@ import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
 
-import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_USER_VO_ATTR;
+import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_ADD_PARAMS_ATTR;
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.MODIFY_REQUEST_BODY_FILTER_ORDER;
+import static com.aha.tech.core.support.WriteResponseSupport.writeNpeParamsResponse;
 
 /**
  * @Author: luweihong
@@ -25,7 +27,7 @@ import static com.aha.tech.core.constant.FilterProcessOrderedConstant.MODIFY_REQ
 public class ModifyRequestBodyFilter implements GlobalFilter, Ordered {
 
     @Resource
-    private OverwriteParamService overwriteParamService;
+    private OverwriteParamService httpOverwriteParamService;
 
     private static final Logger logger = LoggerFactory.getLogger(ModifyRequestBodyFilter.class);
 
@@ -42,13 +44,14 @@ public class ModifyRequestBodyFilter implements GlobalFilter, Ordered {
             return chain.filter(exchange);
         }
 
-        if (!exchange.getAttributes().containsKey(GATEWAY_USER_VO_ATTR)) {
-            // todo
-            return chain.filter(exchange);
+        Object obj = exchange.getAttributes().get(GATEWAY_REQUEST_ADD_PARAMS_ATTR);
+        if (obj == null) {
+            logger.error("缺少需要在网关添加的参数");
+            return Mono.defer(() -> writeNpeParamsResponse(exchange));
         }
 
-        UserVo userVo = (UserVo) exchange.getAttributes().get(GATEWAY_USER_VO_ATTR);
-        return overwriteParamService.modifyRequestBody(userVo, chain, exchange);
+        RequestAddParamsDto requestAddParamsDto = (RequestAddParamsDto) obj;
+        return httpOverwriteParamService.modifyRequestBody(requestAddParamsDto, chain, exchange);
     }
 
 }

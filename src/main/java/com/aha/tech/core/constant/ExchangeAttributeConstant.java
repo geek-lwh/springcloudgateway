@@ -19,7 +19,7 @@ public class ExchangeAttributeConstant {
     // routeId 匹配路由资源映射的key
     public static final String GATEWAY_REQUEST_ROUTE_ID_ATTR = "GATEWAY_REQUEST_ROUTE_ID_ATTR";
 
-    // 用户对象
-    public static final String GATEWAY_USER_VO_ATTR = "GATEWAY_USER_VO_ATTR";
+    // 网关请求时添加的参数属性
+    public static final String GATEWAY_REQUEST_ADD_PARAMS_ATTR = "GATEWAY_REQUEST_ADD_PARAMS_ATTR";
 
 }
