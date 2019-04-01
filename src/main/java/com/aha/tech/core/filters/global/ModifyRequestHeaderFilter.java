@@ -1,5 +1,6 @@
 package com.aha.tech.core.filters.global;
 
+import com.aha.tech.core.exception.GatewayException;
 import com.aha.tech.core.service.RequestHandlerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +15,7 @@ import reactor.core.publisher.Mono;
 import javax.annotation.Resource;
 
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.MODIFY_REQUEST_HEADER_GATEWAY_FILTER_ORDER;
+import static com.aha.tech.core.support.WriteResponseSupport.writeError;
 
 /**
  * @Author: luweihong
@@ -37,7 +39,12 @@ public class ModifyRequestHeaderFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         logger.debug("开始进行修改请求头网关过滤器");
-        ServerHttpRequest newRequest = httpRequestHandlerService.modifyRequestHeaders(exchange);
+        ServerHttpRequest newRequest;
+        try {
+            newRequest = httpRequestHandlerService.modifyRequestHeaders(exchange);
+        } catch (GatewayException e) {
+            return Mono.defer(() -> writeError(exchange, e));
+        }
 
         ServerWebExchange newExchange = exchange.mutate().request(newRequest).build();
         return chain.filter(newExchange);

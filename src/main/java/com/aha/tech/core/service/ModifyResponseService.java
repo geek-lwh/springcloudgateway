@@ -22,6 +22,6 @@ public interface ModifyResponseService {
      * 修改返回对象的报头
      * @param httpHeaders
      */
-    void modifyHeaders(HttpHeaders httpHeaders);
+    void crossAccessSetting(HttpHeaders httpHeaders);
 
 }

@@ -1,7 +1,7 @@
 package com.aha.tech.core.service.impl;
 
+import com.aha.tech.commons.symbol.Separator;
 import com.aha.tech.core.exception.MissHeaderXForwardedException;
-import com.aha.tech.core.exception.XForwardedEmptyException;
 import com.aha.tech.core.limiter.IpRateLimiter;
 import com.aha.tech.core.service.LimiterService;
 import org.apache.commons.lang3.StringUtils;
@@ -12,12 +12,10 @@ import org.springframework.cloud.gateway.route.Route;
 import org.springframework.cloud.gateway.support.ServerWebExchangeUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -68,22 +66,20 @@ public class IpLimiterServiceImpl implements LimiterService {
 
     /**
      * 获取ip限流的key
+     *
+     * ip从头对象取出,获取最左一个
      * @param httpHeaders
      * @return
      */
     private String getKey(HttpHeaders httpHeaders) {
-        //todo ip,ip2
-        List<String> forwardedList = httpHeaders.get(HEADER_X_FORWARDED_FOR);
-        if (CollectionUtils.isEmpty(forwardedList)) {
+        String keyResolver = org.springframework.util.StringUtils.collectionToCommaDelimitedString(httpHeaders.get(HEADER_X_FORWARDED_FOR));
+        if (StringUtils.isBlank(keyResolver)) {
             throw new MissHeaderXForwardedException();
         }
 
-        String keyResolver = forwardedList.get(0);
-        if (StringUtils.isBlank(keyResolver)) {
-            throw new XForwardedEmptyException();
-        }
+        String findFirst = keyResolver.split(Separator.COMMA_MARK)[0];
 
-        return forwardedList.get(0);
+        return findFirst;
     }
 
 }

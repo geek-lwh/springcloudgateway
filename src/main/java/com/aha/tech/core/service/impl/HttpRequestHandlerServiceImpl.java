@@ -15,6 +15,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
+import org.springframework.http.server.reactive.ServerHttpResponse;
+import org.springframework.http.server.reactive.ServerHttpResponseDecorator;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.server.ServerWebExchange;
@@ -46,9 +48,6 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
     private static final String NEED_AUTHORIZATION = "serv-auth";
 
     @Resource
-    private CrossDomainAccessService httpCrossDomainAccessService;
-
-    @Resource
     private RewritePathService httpRewritePathService;
 
     @Resource
@@ -57,21 +56,8 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
     @Resource
     private ModifyHeaderService httpModifyHeaderService;
 
-    /**
-     * 跨域设置
-     * @param serverWebExchange
-     */
-    @Override
-    public void crossDomainAccessSetting(ServerWebExchange serverWebExchange) {
-        ServerHttpRequest request = serverWebExchange.getRequest();
-        HttpMethod httpMethod = request.getMethod();
-        if(httpMethod.equals(HttpMethod.OPTIONS)){
-            throw new RejectOptionsMethodException();
-        }
-
-        HttpHeaders httpHeaders = request.getHeaders();
-        httpCrossDomainAccessService.CrossDomainSetting(httpHeaders);
-    }
+    @Resource
+    private ModifyResponseService httpModifyResponseService;
 
     /**
      * 重写请求路径
@@ -81,6 +67,12 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
     @Override
     public ServerHttpRequest rewriteRequestPath(ServerWebExchange serverWebExchange) {
         ServerHttpRequest serverHttpRequest = serverWebExchange.getRequest();
+
+        HttpMethod httpMethod = serverHttpRequest.getMethod();
+        if (httpMethod.equals(HttpMethod.OPTIONS)) {
+            throw new RejectOptionsMethodException();
+        }
+
         URI uri = serverHttpRequest.getURI();
         // /v3/yanxuan/banner/get
         String originalUrlPath = uri.getRawPath();
@@ -180,6 +172,28 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
         };
 
         return serverHttpRequest;
+    }
+
+
+    /**
+     * 修改返回体
+     * @param serverWebExchange
+     * @return
+     */
+    @Override
+    public ServerHttpResponseDecorator modifyResponseBody(ServerWebExchange serverWebExchange) {
+        ServerHttpResponse serverHttpResponse = serverWebExchange.getResponse();
+        return httpModifyResponseService.modifyBody(serverWebExchange, serverHttpResponse);
+    }
+
+    /**
+     * 修改返回体报头
+     * @param serverWebExchange
+     */
+    @Override
+    public void modifyResponseHeaders(ServerWebExchange serverWebExchange) {
+        HttpHeaders httpHeaders = serverWebExchange.getResponse().getHeaders();
+        httpModifyResponseService.crossAccessSetting(httpHeaders);
     }
 
     /**
