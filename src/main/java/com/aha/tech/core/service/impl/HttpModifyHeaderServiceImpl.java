@@ -147,7 +147,9 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
                     case X_ENV_FIELD_G_UNIQID:
                         httpHeaders.set(HEADER_GUNIQID, value);
                         break;
-                    // todo X-Env-Channel/
+                    case X_ENV_FIELD_CHANNEL:
+                        httpHeaders.set(X_ENV_CHANNEL, value);
+                        break;
                     default:
                         parseDefault(key, value, httpHeaders);
                         break;
@@ -169,7 +171,6 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
         httpHeaders.remove(HEADER_X_ENV);
         httpHeaders.remove(HEADER_REFERER);
         httpHeaders.remove(HEADER_ORIGIN);
-//        httpHeaders.remove(HEADER_USER_AGENT);
         httpHeaders.remove(HEADER_X_REQUEST_PAGE);
         httpHeaders.remove(HEADER_HOST);
         httpHeaders.remove(HEADER_DNT);
@@ -218,6 +219,8 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
 
         // todo 算下是否一致 不对 -> null
         String v = pp.substring(0, pp.indexOf(Separator.AND_MARK));
+
+
         httpHeaders.add(HEADER_PP, v);
     }
 
