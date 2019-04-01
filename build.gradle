@@ -85,7 +85,7 @@ dependencies {
 
     // ahaschool
     compile('com.aha.spi:aha-passport-spi:1.0.2')
-    compile('com.aha.public:aha-commons-utils:1.2.6')
+    compile('com.aha.public:aha-commons-utils:1.2.7')
     // test dependency
     testCompile("org.springframework.boot:spring-boot-starter-test")
 }

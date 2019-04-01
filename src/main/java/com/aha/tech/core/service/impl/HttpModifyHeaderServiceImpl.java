@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.aha.tech.core.constant.HeaderFieldConstant.*;
+import static com.aha.tech.core.support.XEnvSupport.verifyPp;
 
 /**
  * @Author: luweihong
@@ -102,7 +103,6 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
     @Override
     public void setXEnv(HttpHeaders httpHeaders) {
         List<String> xEnv = httpHeaders.get(HEADER_X_ENV);
-        //  eyJ1dG1fc291cmNlIjoiIiwidXRtX21lZGl1bSI6IiIsInV0bV9jYW1wYWlnbiI6IiIsInV0bV90ZXJtIjoiIiwidXRtX2NvbnRlbnQiOiIiLCJwayI6Ikx6WTVOVE09IiwicGQiOiIiLCJwcyI6InVwNDY2MDhiMGZjMTA1MDBlNzgyYTVjYmJiZTg2M2E1YWUiLCJwcCI6IiIsImFwcF90eXBlIjoxLCJndW5pcWlkIjoiZWM3NjdhZjI5ZDY5Zjg0YjViYjEwZGFmOGNiZjk1OGIifQ==
         if (CollectionUtils.isEmpty(xEnv)) {
             return;
         }
@@ -217,9 +217,13 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
             return;
         }
 
-        // todo 算下是否一致 不对 -> null
         String v = pp.substring(0, pp.indexOf(Separator.AND_MARK));
 
+        if (!verifyPp(pp)) {
+            logger.error("pp验证不通过!");
+            httpHeaders.add(HEADER_PP, Strings.EMPTY);
+            return;
+        }
 
         httpHeaders.add(HEADER_PP, v);
     }

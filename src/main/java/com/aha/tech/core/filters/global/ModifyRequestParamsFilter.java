@@ -27,9 +27,9 @@ import static com.aha.tech.core.support.WriteResponseSupport.writeNpeParamsRespo
  * 修改GET,DELETE 等请求的参数
  */
 @Component
-public class ModifyParamsFilter implements GlobalFilter, Ordered {
+public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
 
-    private static final Logger logger = LoggerFactory.getLogger(ModifyParamsFilter.class);
+    private static final Logger logger = LoggerFactory.getLogger(ModifyRequestParamsFilter.class);
 
     @Resource
     private OverwriteParamService httpOverwriteParamService;

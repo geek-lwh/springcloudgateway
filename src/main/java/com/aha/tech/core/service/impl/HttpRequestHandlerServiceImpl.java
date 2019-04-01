@@ -209,10 +209,8 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
         }
         String[] arr;
         try {
-            // Basic asdasdasda
             String authorizationHeader = headersOfAuthorization.get(0).substring(6);
             String decodeAuthorization = new String(Base64.decodeBase64(authorizationHeader), StandardCharsets.UTF_8);
-            // username : password
             arr = decodeAuthorization.split(":");
             return new PairEntity(arr[0], arr[1]);
         } catch (Exception e) {
