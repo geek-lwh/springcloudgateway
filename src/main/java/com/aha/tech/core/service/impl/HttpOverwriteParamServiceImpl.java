@@ -62,7 +62,6 @@ public class HttpOverwriteParamServiceImpl implements OverwriteParamService {
         BodyInserter bodyInserter = BodyInserters.fromPublisher(modifiedBody, String.class);
         return bodyInserter.insert(outputMessage, new BodyInserterContext()).then(Mono.defer(() -> {
             ServerHttpRequestDecorator decorator = new ServerHttpRequestDecorator(exchange.getRequest()) {
-
                 @Override
                 public HttpHeaders getHeaders() {
                     long contentLength = length.get();
@@ -83,33 +82,6 @@ public class HttpOverwriteParamServiceImpl implements OverwriteParamService {
             };
             return chain.filter(exchange.mutate().request(decorator).build());
         }));
-
-//        ServerHttpRequest newRequest = new ServerHttpRequestDecorator(request) {
-//            @Override
-//            public HttpHeaders getHeaders() {
-//                long contentLength = headers.getContentLength();
-//                HttpHeaders httpHeaders = new HttpHeaders();
-//                httpHeaders.putAll(super.getHeaders());
-//                if (contentLength > 0) {
-//                    httpHeaders.setContentLength(contentLength);
-//                } else {
-//                    httpHeaders.set(HttpHeaders.TRANSFER_ENCODING, "chunked");
-//                }
-//
-//                return httpHeaders;
-//            }
-//
-//            @Override
-//            public Flux<DataBuffer> getBody() {
-//                NettyDataBufferFactory nettyDataBufferFactory = new NettyDataBufferFactory(new UnpooledByteBufAllocator(false));
-//                logger.debug("body is : {}", sb.toString());
-//                DataBuffer dataBuffer = nettyDataBufferFactory.wrap(sb.toString().getBytes());
-//                return Flux.just(dataBuffer);
-//            }
-//
-//        };
-//
-//        return newRequest;
     }
 
     /**
