@@ -16,7 +16,7 @@ public interface ModifyResponseService {
      * @param serverHttpResponse
      * @return
      */
-    ServerHttpResponseDecorator modifyBody(ServerWebExchange serverWebExchange, ServerHttpResponse serverHttpResponse);
+    ServerHttpResponseDecorator modifyBodyAndHeaders(ServerWebExchange serverWebExchange, ServerHttpResponse serverHttpResponse);
 
     /**
      * 修改返回对象的报头

@@ -36,7 +36,7 @@ public interface RequestHandlerService {
      * @param serverWebExchange
      * @return
      */
-    ServerHttpResponseDecorator modifyResponseBody(ServerWebExchange serverWebExchange);
+    ServerHttpResponseDecorator modifyResponseBodyAndHeaders(ServerWebExchange serverWebExchange);
 
     /**
      * 修改返回报头信息

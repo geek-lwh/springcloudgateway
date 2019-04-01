@@ -54,7 +54,7 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
      * @return
      */
     @Override
-    public ServerHttpResponseDecorator modifyBody(ServerWebExchange serverWebExchange, ServerHttpResponse serverHttpResponse) {
+    public ServerHttpResponseDecorator modifyBodyAndHeaders(ServerWebExchange serverWebExchange, ServerHttpResponse serverHttpResponse) {
         DataBufferFactory bufferFactory = serverHttpResponse.bufferFactory();
 
         ServerHttpResponseDecorator decoratedResponse = new ServerHttpResponseDecorator(serverHttpResponse) {
