@@ -36,7 +36,7 @@ public class ModifyResponseFilter implements GlobalFilter, Ordered {
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         logger.debug("开始修改返回值过滤器");
 
-        ServerHttpResponseDecorator serverHttpResponseDecorator = httpRequestHandlerService.modifyResponseBodyAndHeaders(exchange);
+        ServerHttpResponseDecorator serverHttpResponseDecorator = httpRequestHandlerService.renewResponse(exchange);
 
         return chain.filter(exchange.mutate().response(serverHttpResponseDecorator).build());
     }

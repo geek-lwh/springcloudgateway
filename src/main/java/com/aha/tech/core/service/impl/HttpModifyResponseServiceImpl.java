@@ -27,6 +27,7 @@ import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @Author: luweihong
@@ -65,26 +66,28 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
                     return super.writeWith(
                             flux.buffer().map(dataBuffers -> {
                                 ByteOutputStream outputStream = new ByteOutputStream();
-                                dataBuffers.forEach(i -> {
-                                    byte[] array = new byte[i.readableByteCount()];
-                                    i.read(array);
+                                AtomicInteger contentLength = new AtomicInteger();
+                                dataBuffers.forEach(dataBuffer -> {
+                                    int len = dataBuffer.readableByteCount();
+                                    contentLength.addAndGet(len);
+                                    byte[] array = new byte[len];
+                                    dataBuffer.read(array);
                                     outputStream.write(array);
                                 });
 
                                 byte[] stream = outputStream.getBytes();
-//                                DataBuffer data = decryptBody(stream, bufferFactory);
+                                DataBuffer data = bufferFactory.wrap(stream);
 
                                 // 设置response 的 content-length
                                 HttpHeaders httpHeaders = serverHttpResponse.getHeaders();
                                 crossAccessSetting(httpHeaders);
-//                                long contentLength = data.readableByteCount();
-//                                if (contentLength > 0) {
-//                                    httpHeaders.setContentLength(contentLength);
-//                                } else {
-//                                    httpHeaders.set(HttpHeaders.TRANSFER_ENCODING, "chunked");
-//                                }
+                                if (contentLength.get() > 0) {
+                                    httpHeaders.setContentLength(contentLength.get());
+                                } else {
+                                    httpHeaders.set(HttpHeaders.TRANSFER_ENCODING, "chunked");
+                                }
 
-                                return bufferFactory.wrap(stream);
+                                return data;
                             }));
                 }
 

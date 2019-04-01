@@ -2,9 +2,10 @@ package com.aha.tech.core.service.impl;
 
 import com.aha.tech.core.model.dto.RequestAddParamsDto;
 import com.aha.tech.core.service.OverwriteParamService;
-import com.aha.tech.passportserver.facade.model.vo.UserVo;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.support.BodyInserterContext;
 import org.springframework.cloud.gateway.support.CachedBodyOutputMessage;
@@ -22,6 +23,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.net.URI;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @Author: luweihong
@@ -29,6 +31,8 @@ import java.net.URI;
  */
 @Service("httpOverwriteParamService")
 public class HttpOverwriteParamServiceImpl implements OverwriteParamService {
+
+    private static final Logger logger = LoggerFactory.getLogger(HttpOverwriteParamServiceImpl.class);
 
     private static final String USER_ID_FIELD = "user_id";
 
@@ -42,45 +46,70 @@ public class HttpOverwriteParamServiceImpl implements OverwriteParamService {
     @Override
     public Mono<Void> modifyRequestBody(RequestAddParamsDto requestAddParamsDto, GatewayFilterChain chain, ServerWebExchange exchange) {
         ServerRequest serverRequest = new DefaultServerRequest(exchange);
-        Mono<String> modifiedBody = serverRequest.bodyToMono(String.class);
-        modifiedBody.flatMap(body -> {
+        AtomicInteger length = new AtomicInteger();
+        Mono<String> modifiedBody = serverRequest.bodyToMono(String.class).flatMap(body -> {
             JSONObject obj = JSON.parseObject(body);
             obj.put(USER_ID_FIELD, requestAddParamsDto.getUserId());
-            return Mono.just(obj.toJSONString());
+            String newBody = obj.toJSONString();
+            length.set(newBody.length());
+            return Mono.just(newBody);
         });
 
-        BodyInserter bodyInserter = BodyInserters.fromPublisher(modifiedBody, String.class);
         HttpHeaders headers = new HttpHeaders();
         headers.putAll(exchange.getRequest().getHeaders());
 
-        headers.remove(HttpHeaders.CONTENT_LENGTH);
-
         CachedBodyOutputMessage outputMessage = new CachedBodyOutputMessage(exchange, headers);
-        return bodyInserter.insert(outputMessage, new BodyInserterContext())
-                .then(Mono.defer(() -> {
-                    ServerHttpRequestDecorator decorator = new ServerHttpRequestDecorator(
-                            exchange.getRequest()) {
-                        @Override
-                        public HttpHeaders getHeaders() {
-                            long contentLength = headers.getContentLength();
-                            HttpHeaders httpHeaders = new HttpHeaders();
-                            httpHeaders.putAll(super.getHeaders());
-                            if (contentLength > 0) {
-                                httpHeaders.setContentLength(contentLength);
-                            } else {
-                                httpHeaders.set(HttpHeaders.TRANSFER_ENCODING, "chunked");
-                            }
-                            return httpHeaders;
-                        }
+        BodyInserter bodyInserter = BodyInserters.fromPublisher(modifiedBody, String.class);
+        return bodyInserter.insert(outputMessage, new BodyInserterContext()).then(Mono.defer(() -> {
+            ServerHttpRequestDecorator decorator = new ServerHttpRequestDecorator(exchange.getRequest()) {
 
-                        @Override
-                        public Flux<DataBuffer> getBody() {
-                            return outputMessage.getBody();
-                        }
-                    };
+                @Override
+                public HttpHeaders getHeaders() {
+                    long contentLength = length.get();
+                    HttpHeaders httpHeaders = new HttpHeaders();
+                    httpHeaders.putAll(super.getHeaders());
+                    if (contentLength > 0) {
+                        httpHeaders.setContentLength(contentLength);
+                    } else {
+                        httpHeaders.set(HttpHeaders.TRANSFER_ENCODING, "chunked");
+                    }
+                    return httpHeaders;
+                }
 
-                    return chain.filter(exchange.mutate().request(decorator).build());
-                }));
+                @Override
+                public Flux<DataBuffer> getBody() {
+                    return outputMessage.getBody();
+                }
+            };
+            return chain.filter(exchange.mutate().request(decorator).build());
+        }));
+
+//        ServerHttpRequest newRequest = new ServerHttpRequestDecorator(request) {
+//            @Override
+//            public HttpHeaders getHeaders() {
+//                long contentLength = headers.getContentLength();
+//                HttpHeaders httpHeaders = new HttpHeaders();
+//                httpHeaders.putAll(super.getHeaders());
+//                if (contentLength > 0) {
+//                    httpHeaders.setContentLength(contentLength);
+//                } else {
+//                    httpHeaders.set(HttpHeaders.TRANSFER_ENCODING, "chunked");
+//                }
+//
+//                return httpHeaders;
+//            }
+//
+//            @Override
+//            public Flux<DataBuffer> getBody() {
+//                NettyDataBufferFactory nettyDataBufferFactory = new NettyDataBufferFactory(new UnpooledByteBufAllocator(false));
+//                logger.debug("body is : {}", sb.toString());
+//                DataBuffer dataBuffer = nettyDataBufferFactory.wrap(sb.toString().getBytes());
+//                return Flux.just(dataBuffer);
+//            }
+//
+//        };
+//
+//        return newRequest;
     }
 
     /**

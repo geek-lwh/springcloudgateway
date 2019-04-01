@@ -176,12 +176,12 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
 
 
     /**
-     * 修改返回体
+     * 重新创建一个response对象
      * @param serverWebExchange
      * @return
      */
     @Override
-    public ServerHttpResponseDecorator modifyResponseBodyAndHeaders(ServerWebExchange serverWebExchange) {
+    public ServerHttpResponseDecorator renewResponse(ServerWebExchange serverWebExchange) {
         ServerHttpResponse serverHttpResponse = serverWebExchange.getResponse();
         return httpModifyResponseService.modifyBodyAndHeaders(serverWebExchange, serverHttpResponse);
     }

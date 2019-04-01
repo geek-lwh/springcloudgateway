@@ -32,11 +32,11 @@ public interface RequestHandlerService {
     ServerHttpRequest modifyRequestHeaders(ServerWebExchange serverWebExchange);
 
     /**
-     * 修改返回体信息
+     * 重新创建一个response对象
      * @param serverWebExchange
      * @return
      */
-    ServerHttpResponseDecorator modifyResponseBodyAndHeaders(ServerWebExchange serverWebExchange);
+    ServerHttpResponseDecorator renewResponse(ServerWebExchange serverWebExchange);
 
     /**
      * 修改返回报头信息
