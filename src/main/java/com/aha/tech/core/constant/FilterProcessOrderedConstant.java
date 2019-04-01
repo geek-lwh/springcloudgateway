@@ -11,11 +11,8 @@ public class FilterProcessOrderedConstant {
 
     public static int STEP = 20;
 
-    // 跨域访问
-    public static int CROSS_DOMAIN_ACCESS_FILTER_ORDER = 0;
-
     // cpu使用率限流
-    public static int CPU_RATE_LIMITER_FILTER_ORDER = CROSS_DOMAIN_ACCESS_FILTER_ORDER + STEP;
+    public static int CPU_RATE_LIMITER_FILTER_ORDER = 0;
 
     // qps限流
     public static int QPS_RATE_LIMITER_FILTER_ORDER = CPU_RATE_LIMITER_FILTER_ORDER + STEP;

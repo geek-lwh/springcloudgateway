@@ -40,11 +40,13 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private final String ALL_CONTROL_ALLOW_ORIGIN_ACCESS = "*";
+    private final static String ALL_CONTROL_ALLOW_ORIGIN_ACCESS = "*";
 
-    private final long MAX_AGE = 10l;
+    private final static long CROSS_ACCESS_ALLOW_MAX_AGE = 30l;
 
-    private final List<String> allowedHeaders = Lists.newArrayList("Authorization", "Origin", "X-Requested-With", "X-Env", "X-Request-Page", "Content-Type", "Accept");
+    private final static List<HttpMethod> CROSS_ACCESS_ALLOW_HTTP_METHODS = Lists.newArrayList(HttpMethod.GET, HttpMethod.POST, HttpMethod.DELETE, HttpMethod.PUT);
+
+    private final static List<String> CROSS_ACCESS_ALLOW_ALLOW_HEADERS = Lists.newArrayList("Authorization", "Origin", "X-Requested-With", "X-Env", "X-Request-Page", "Content-Type", "Accept");
 
     /**
      * 修改返回体
@@ -100,10 +102,9 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
     @Override
     public void crossAccessSetting(HttpHeaders httpHeaders) {
         httpHeaders.setAccessControlAllowOrigin(ALL_CONTROL_ALLOW_ORIGIN_ACCESS);
-        List<HttpMethod> httpMethodList = Lists.newArrayList(HttpMethod.GET, HttpMethod.POST, HttpMethod.DELETE, HttpMethod.PUT);
-        httpHeaders.setAccessControlAllowMethods(httpMethodList);
-        httpHeaders.setAccessControlMaxAge(MAX_AGE);
-        httpHeaders.setAccessControlAllowHeaders(allowedHeaders);
+        httpHeaders.setAccessControlAllowMethods(CROSS_ACCESS_ALLOW_HTTP_METHODS);
+        httpHeaders.setAccessControlMaxAge(CROSS_ACCESS_ALLOW_MAX_AGE);
+        httpHeaders.setAccessControlAllowHeaders(CROSS_ACCESS_ALLOW_ALLOW_HEADERS);
     }
 
     /**

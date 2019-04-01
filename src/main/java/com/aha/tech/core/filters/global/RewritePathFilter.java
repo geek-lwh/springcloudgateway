@@ -48,7 +48,6 @@ public class RewritePathFilter implements GlobalFilter, Ordered {
             return Mono.defer(() -> writeError(exchange, e));
         }
 
-
         return chain.filter(exchange.mutate().request(newRequest).build());
     }
 
