@@ -7,27 +7,36 @@ import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.ModifyResponseService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.gateway.filter.factory.rewrite.ModifyResponseBodyGatewayFilterFactory;
+import org.springframework.cloud.gateway.filter.factory.rewrite.ModifyResponseBodyGatewayFilterFactory.ResponseAdapter;
+import org.springframework.cloud.gateway.support.BodyInserterContext;
+import org.springframework.cloud.gateway.support.CachedBodyOutputMessage;
+import org.springframework.cloud.gateway.support.DefaultClientResponse;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.codec.ServerCodecConfigurer;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.http.server.reactive.ServerHttpResponseDecorator;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.BodyInserter;
+import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.ORIGINAL_RESPONSE_CONTENT_TYPE_ATTR;
 
 /**
  * @Author: luweihong
@@ -50,49 +59,77 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
     private final static List<String> CROSS_ACCESS_ALLOW_ALLOW_HEADERS = Lists.newArrayList("Authorization", "Origin", "X-Requested-With", "X-Env", "X-Request-Page", "Content-Type", "Accept");
 
     /**
-     * 修改返回体
+     * 修改返回体  todo 看看能不能改成新版的
      * @param serverHttpResponse
      * @return
      */
     @Override
     public ServerHttpResponseDecorator modifyBodyAndHeaders(ServerWebExchange serverWebExchange, ServerHttpResponse serverHttpResponse) {
         DataBufferFactory bufferFactory = serverHttpResponse.bufferFactory();
-
-        ServerHttpResponseDecorator decoratedResponse = new ServerHttpResponseDecorator(serverHttpResponse) {
+        ServerHttpResponse oldResponse = serverWebExchange.getResponse();
+        ServerHttpResponseDecorator decoratedResponse = new ServerHttpResponseDecorator(oldResponse) {
             @Override
             public Mono<Void> writeWith(Publisher<? extends DataBuffer> body) {
-                if (body instanceof Flux) {
-                    Flux<? extends DataBuffer> flux = (Flux<? extends DataBuffer>) body;
-                    return super.writeWith(
-                            flux.buffer().map(dataBuffers -> {
-                                ByteOutputStream outputStream = new ByteOutputStream();
-                                AtomicInteger contentLength = new AtomicInteger();
-                                dataBuffers.forEach(dataBuffer -> {
-                                    int len = dataBuffer.readableByteCount();
-                                    contentLength.addAndGet(len);
-                                    byte[] array = new byte[len];
-                                    dataBuffer.read(array);
-                                    outputStream.write(array);
-                                });
 
-                                byte[] stream = outputStream.getBytes();
-                                DataBuffer data = bufferFactory.wrap(stream);
+                ModifyResponseBodyGatewayFilterFactory m = new ModifyResponseBodyGatewayFilterFactory(ServerCodecConfigurer.create());
+                String originalResponseContentType = serverWebExchange.getAttribute(ORIGINAL_RESPONSE_CONTENT_TYPE_ATTR);
+                HttpHeaders httpHeaders = new HttpHeaders();
+                //explicitly add it in this way instead of 'httpHeaders.setContentType(originalResponseContentType)'
+                //this will prevent exception in case of using non-standard media types like "Content-Type: image"
+                httpHeaders.add(HttpHeaders.CONTENT_TYPE, originalResponseContentType);
+                ResponseAdapter responseAdapter = m.new ResponseAdapter(body,httpHeaders);
+                DefaultClientResponse clientResponse = new DefaultClientResponse(responseAdapter, ExchangeStrategies.withDefaults());
 
-                                // 设置response 的 content-length
-                                HttpHeaders httpHeaders = serverHttpResponse.getHeaders();
-                                crossAccessSetting(httpHeaders);
-                                if (contentLength.get() > 0) {
-                                    httpHeaders.setContentLength(contentLength.get());
-                                } else {
-                                    httpHeaders.set(HttpHeaders.TRANSFER_ENCODING, "chunked");
-                                }
+                //TODO: flux or mono
+                Mono modifiedBody = clientResponse.bodyToMono(String.class).flatMap(originalBody -> Mono.just(originalBody));
 
-                                return data;
-                            }));
-                }
-
-                return super.writeWith(body);
+                BodyInserter bodyInserter = BodyInserters.fromPublisher(modifiedBody, String.class);
+                CachedBodyOutputMessage outputMessage = new CachedBodyOutputMessage(serverWebExchange, serverWebExchange.getResponse().getHeaders());
+                return bodyInserter.insert(outputMessage, new BodyInserterContext())
+                        .then(Mono.defer(() -> {
+                            Flux<DataBuffer> messageBody = outputMessage.getBody();
+                            HttpHeaders headers = getDelegate().getHeaders();
+                            if (!headers.containsKey(HttpHeaders.TRANSFER_ENCODING)) {
+                                messageBody = messageBody.doOnNext(data -> headers.setContentLength(data.readableByteCount()));
+                            }
+                            //TODO: use isStreamingMediaType?
+                            return getDelegate().writeWith(messageBody);
+                        }));
             }
+//            @Override
+//            public Mono<Void> writeWith(Publisher<? extends DataBuffer> body) {
+//                if (body instanceof Flux) {
+//                    Flux<? extends DataBuffer> flux = (Flux<? extends DataBuffer>) body;
+//                    return super.writeWith(
+//                            flux.buffer().map(dataBuffers -> {
+//                                ByteOutputStream outputStream = new ByteOutputStream();
+//                                AtomicInteger contentLength = new AtomicInteger();
+//                                dataBuffers.forEach(dataBuffer -> {
+//                                    int len = dataBuffer.readableByteCount();
+//                                    contentLength.addAndGet(len);
+//                                    byte[] array = new byte[len];
+//                                    dataBuffer.read(array);
+//                                    outputStream.write(array);
+//                                });
+//
+//                                byte[] stream = outputStream.getBytes();
+//                                DataBuffer data = bufferFactory.wrap(stream);
+//
+//                                // 设置response 的 content-length
+//                                HttpHeaders httpHeaders = serverHttpResponse.getHeaders();
+//                                crossAccessSetting(httpHeaders);
+//                                if (contentLength.get() > 0) {
+//                                    httpHeaders.setContentLength(contentLength.get());
+//                                } else {
+//                                    httpHeaders.set(HttpHeaders.TRANSFER_ENCODING, "chunked");
+//                                }
+//
+//                                return data;
+//                            }));
+//                }
+//
+//                return super.writeWith(body);
+//            }
 
         };
 

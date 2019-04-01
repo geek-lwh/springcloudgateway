@@ -6,6 +6,8 @@ import org.springframework.util.DigestUtils;
 
 import java.nio.charset.StandardCharsets;
 
+import static com.aha.tech.core.constant.HeaderFieldConstant.X_ENV_FIELD_PP;
+
 /**
  * @Author: luweihong
  * @Date: 2019/4/1
@@ -13,6 +15,13 @@ import java.nio.charset.StandardCharsets;
  * 解析XEnv支持类
  */
 public class XEnvSupport {
+
+
+    private static final String PP_ENCODE_PREFIX = X_ENV_FIELD_PP;
+
+    private static final String PP_ENCODE_SUFFIX = "Aha^_^";
+
+    private static final String ENCODE_PREFIX = "hjm?";
 
     /**
      * 校验 pp值
@@ -28,18 +37,18 @@ public class XEnvSupport {
         String verifyTarget = arr[1];
         // 构建一个key是pp 值是 $ 前的 json
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("pp", verifySource);
+        jsonObject.put(PP_ENCODE_PREFIX, verifySource);
         String json = jsonObject.toJSONString();
 
-        String s = json + "Aha^_^";
+        String s = json + PP_ENCODE_SUFFIX;
         // 再将encodeJson md5
         String MD5Str = DigestUtils.md5DigestAsHex(s.getBytes(StandardCharsets.UTF_8));
 
         // 最后 再拼接hjm? + MD5Str + Aha^_^
-        String finalStr = String.format("hjm?%s", MD5Str);
+        String finalStr = String.format("%s%s",ENCODE_PREFIX, MD5Str);
 
         // 再对finalStr 进行 md5
-        String value = "pp" + DigestUtils.md5DigestAsHex(finalStr.getBytes(StandardCharsets.UTF_8));
+        String value = PP_ENCODE_PREFIX + DigestUtils.md5DigestAsHex(finalStr.getBytes(StandardCharsets.UTF_8));
 
         return verifyTarget.equals(value);
     }

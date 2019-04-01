@@ -48,7 +48,7 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
      * @param httpHeaders
      */
     @Override
-    public void initRequestHeader(HttpHeaders httpHeaders) {
+    public void initHeaders(HttpHeaders httpHeaders) {
         List<String> xForwardedForList = httpHeaders.get(HEADER_X_FORWARDED_FOR);
         String str = org.springframework.util.StringUtils.collectionToCommaDelimitedString(xForwardedForList);
         if (StringUtils.isBlank(str)) {
@@ -67,7 +67,7 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
      * @param httpHeaders
      */
     @Override
-    public void setVersion(HttpHeaders httpHeaders) {
+    public void versionSetting(HttpHeaders httpHeaders) {
         List<String> userAgent = httpHeaders.get(HEADER_USER_AGENT);
         if (CollectionUtils.isEmpty(userAgent)) {
             return;
@@ -101,7 +101,7 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
      * @param httpHeaders
      */
     @Override
-    public void setXEnv(HttpHeaders httpHeaders) {
+    public void xEnvSetting(HttpHeaders httpHeaders) {
         List<String> xEnv = httpHeaders.get(HEADER_X_ENV);
         if (CollectionUtils.isEmpty(xEnv)) {
             return;
@@ -113,50 +113,60 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
             for (Map.Entry<String, Object> entry : xEnvMap.entrySet()) {
                 String key = entry.getKey();
                 String value = String.valueOf(entry.getValue());
-                switch (key) {
-                    case X_ENV_FIELD_PK:
-                        parseAndSetPk(value, httpHeaders);
-                        break;
-                    case X_ENV_FIELD_PP:
-                        parseAndSetPp(value, httpHeaders);
-                        break;
-                    case X_ENV_FIELD_PD:
-                        httpHeaders.set(HEADER_PD, value);
-                        break;
-                    case X_ENV_FIELD_PS:
-                        httpHeaders.set(HEADER_PS, value);
-                        break;
-                    case X_ENV_FIELD_UTM_SOURCE:
-                        httpHeaders.set(HEADER_UTM_SOURCE, value);
-                        break;
-                    case X_ENV_FIELD_UTM_MEDIUM:
-                        httpHeaders.set(HEADER_UTM_MEDIUM, value);
-                        break;
-                    case X_ENV_FIELD_UTM_CAMPAIGN:
-                        httpHeaders.set(HEADER_UTM_CAMPAIGN, value);
-                        break;
-                    case X_ENV_FIELD_UTM_TERM:
-                        httpHeaders.set(HEADER_UTM_TERM, value);
-                        break;
-                    case X_ENV_FIELD_UTM_CONTENT:
-                        httpHeaders.set(HEADER_UTM_CONTENT, value);
-                        break;
-                    case X_ENV_FIELD_APP_TYPE:
-                        httpHeaders.set(HEADER_APP_TYPE, value);
-                        break;
-                    case X_ENV_FIELD_G_UNIQID:
-                        httpHeaders.set(HEADER_GUNIQID, value);
-                        break;
-                    case X_ENV_FIELD_CHANNEL:
-                        httpHeaders.set(X_ENV_CHANNEL, value);
-                        break;
-                    default:
-                        parseDefault(key, value, httpHeaders);
-                        break;
-                }
+                xEnvSetting(key,value,httpHeaders);
             }
         } catch (IOException e) {
-            logger.error("parse xEnv error", e);
+            logger.error("parse core error", e);
+        }
+    }
+
+    /**
+     * 设置xEnv
+     * @param key
+     * @param value
+     * @param httpHeaders
+     */
+    private void xEnvSetting(String key,String value,HttpHeaders httpHeaders){
+        switch (key) {
+            case X_ENV_FIELD_PK:
+                parseAndSetPk(value, httpHeaders);
+                break;
+            case X_ENV_FIELD_PP:
+                parseAndSetPp(value, httpHeaders);
+                break;
+            case X_ENV_FIELD_PD:
+                httpHeaders.set(HEADER_PD, value);
+                break;
+            case X_ENV_FIELD_PS:
+                httpHeaders.set(HEADER_PS, value);
+                break;
+            case X_ENV_FIELD_UTM_SOURCE:
+                httpHeaders.set(HEADER_UTM_SOURCE, value);
+                break;
+            case X_ENV_FIELD_UTM_MEDIUM:
+                httpHeaders.set(HEADER_UTM_MEDIUM, value);
+                break;
+            case X_ENV_FIELD_UTM_CAMPAIGN:
+                httpHeaders.set(HEADER_UTM_CAMPAIGN, value);
+                break;
+            case X_ENV_FIELD_UTM_TERM:
+                httpHeaders.set(HEADER_UTM_TERM, value);
+                break;
+            case X_ENV_FIELD_UTM_CONTENT:
+                httpHeaders.set(HEADER_UTM_CONTENT, value);
+                break;
+            case X_ENV_FIELD_APP_TYPE:
+                httpHeaders.set(HEADER_APP_TYPE, value);
+                break;
+            case X_ENV_FIELD_G_UNIQID:
+                httpHeaders.set(HEADER_GUNIQID, value);
+                break;
+            case X_ENV_FIELD_CHANNEL:
+                httpHeaders.set(X_ENV_CHANNEL, value);
+                break;
+            default:
+                parseDefault(key, value, httpHeaders);
+                break;
         }
     }
 
@@ -165,7 +175,7 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
      * @param httpHeaders
      */
     @Override
-    public void removeInvalidInfo(HttpHeaders httpHeaders) {
+    public void removeHeaders(HttpHeaders httpHeaders) {
         httpHeaders.remove(HEADER_PRAGMA);
         httpHeaders.remove(HEADER_CACHE_CONTROL);
         httpHeaders.remove(HEADER_X_ENV);

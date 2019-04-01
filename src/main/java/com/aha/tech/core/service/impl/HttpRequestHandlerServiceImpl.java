@@ -155,14 +155,13 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
         HttpHeaders oldHeaders = serverHttpRequest.getHeaders();
         HttpHeaders httpHeaders = new HttpHeaders();
 
-        logger.debug("处理请求头之前的头部信息 : {}", oldHeaders);
         copyMultiValueMap(oldHeaders, httpHeaders);
-        logger.debug("处理请求头之后的头部信息 : {}", httpHeaders);
+        logger.debug("old headers : {} ,new headers : {}", oldHeaders,httpHeaders);
 
-        httpModifyHeaderService.initRequestHeader(httpHeaders);
-        httpModifyHeaderService.setVersion(httpHeaders);
-        httpModifyHeaderService.setXEnv(httpHeaders);
-        httpModifyHeaderService.removeInvalidInfo(httpHeaders);
+        httpModifyHeaderService.initHeaders(httpHeaders);
+        httpModifyHeaderService.versionSetting(httpHeaders);
+        httpModifyHeaderService.xEnvSetting(httpHeaders);
+        httpModifyHeaderService.removeHeaders(httpHeaders);
 
         serverHttpRequest = new ServerHttpRequestDecorator(serverHttpRequest) {
             @Override
