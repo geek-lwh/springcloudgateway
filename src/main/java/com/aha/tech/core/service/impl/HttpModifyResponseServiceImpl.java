@@ -72,18 +72,19 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
                                 });
 
                                 byte[] stream = outputStream.getBytes();
-                                DataBuffer data = decryptBody(stream, bufferFactory);
+//                                DataBuffer data = decryptBody(stream, bufferFactory);
 
                                 // 设置response 的 content-length
                                 HttpHeaders httpHeaders = serverHttpResponse.getHeaders();
-                                long contentLength = data.readableByteCount();
-                                if (contentLength > 0) {
-                                    httpHeaders.setContentLength(contentLength);
-                                } else {
-                                    httpHeaders.set(HttpHeaders.TRANSFER_ENCODING, "chunked");
-                                }
+                                crossAccessSetting(httpHeaders);
+//                                long contentLength = data.readableByteCount();
+//                                if (contentLength > 0) {
+//                                    httpHeaders.setContentLength(contentLength);
+//                                } else {
+//                                    httpHeaders.set(HttpHeaders.TRANSFER_ENCODING, "chunked");
+//                                }
 
-                                return data;
+                                return bufferFactory.wrap(stream);
                             }));
                 }
 
@@ -109,9 +110,11 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
 
     /**
      * 对response body 进行解码
+     * 暂时不对response body做修改
      * @param stream
      * @return
      */
+    @Deprecated
     private DataBuffer decryptBody(byte[] stream, DataBufferFactory dataBufferFactory) {
         try {
             ResponseVo responseVo = objectMapper.readValue(stream, ResponseVo.class);
