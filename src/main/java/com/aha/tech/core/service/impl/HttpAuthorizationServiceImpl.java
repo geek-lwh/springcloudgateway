@@ -1,11 +1,9 @@
 package com.aha.tech.core.service.impl;
 
 import com.aha.tech.commons.response.RpcResponse;
-import com.aha.tech.commons.symbol.Separator;
 import com.aha.tech.core.controller.resource.PassportResource;
 import com.aha.tech.core.exception.AuthorizationFailedException;
 import com.aha.tech.core.exception.VisitorAccessTokenException;
-import com.aha.tech.core.exception.VisitorNotInWhiteListException;
 import com.aha.tech.core.model.entity.AuthenticationEntity;
 import com.aha.tech.core.service.AuthorizationService;
 import com.aha.tech.passportserver.facade.model.vo.UserVo;
@@ -13,10 +11,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -57,19 +53,19 @@ public class HttpAuthorizationServiceImpl implements AuthorizationService {
 
         // 如果是访客 校验是否接口再白名单中,是则允许访问
         // route.api.whitelist.mappings.products = products/share,products/yanxuan/get,products/form/get,products/supreme/get,products/xkl/get
-        Boolean existWhiteList;
-        List<String> list = whiteListMap.containsKey(id) ? whiteListMap.get(id) : Collections.emptyList();
-        if (!CollectionUtils.isEmpty(list) && list.get(0).equals(Separator.ASTERISK_MARK)) {
-            logger.debug("该列表配置的白名单为*,允许所有请求通过");
-            existWhiteList = Boolean.TRUE;
-        } else {
-            existWhiteList = list.contains(path);
-        }
-
-        if (!existWhiteList) {
-            logger.error("游客访问资源不在白名单列表中 : {}", path);
-            throw new VisitorNotInWhiteListException();
-        }
+//        Boolean existWhiteList;
+//        List<String> list = whiteListMap.containsKey(id) ? whiteListMap.get(id) : Collections.emptyList();
+//        if (!CollectionUtils.isEmpty(list) && list.get(0).equals(Separator.ASTERISK_MARK)) {
+//            logger.debug("该列表配置的白名单为*,允许所有请求通过");
+//            existWhiteList = Boolean.TRUE;
+//        } else {
+//            existWhiteList = list.contains(path);
+//        }
+//
+//        if (!existWhiteList) {
+//            logger.error("游客访问资源不在白名单列表中 : {}", path);
+//            throw new VisitorNotInWhiteListException();
+//        }
 
         authenticationEntity.setUserVo(UserVo.anonymousUser());
 

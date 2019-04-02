@@ -8,6 +8,7 @@ import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
@@ -50,13 +51,22 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
         }
 
         RequestAddParamsDto requestAddParamsDto = (RequestAddParamsDto) obj;
+        ServerHttpRequest serverHttpRequest = exchange.getRequest();
+        MediaType mediaType = serverHttpRequest.getHeaders().getContentType();
         HttpMethod httpMethod = exchange.getRequest().getMethod();
+
+        if (mediaType.isCompatibleWith(MediaType.APPLICATION_FORM_URLENCODED)) {
+            URI uri = serverHttpRequest.getURI();
+            URI newUri = httpOverwriteParamService.modifyParamsWithFormUrlencoded(requestAddParamsDto, uri);
+            ServerHttpRequest newRequest = exchange.getRequest().mutate().uri(newUri).build();
+            return chain.filter(exchange.mutate().request(newRequest).build());
+        }
+
         if (httpMethod.equals(HttpMethod.POST) || httpMethod.equals(HttpMethod.PUT)) {
             return httpOverwriteParamService.modifyRequestBody(requestAddParamsDto, chain, exchange);
         }
 
         if (httpMethod.equals(HttpMethod.GET) || httpMethod.equals(HttpMethod.DELETE)) {
-            ServerHttpRequest serverHttpRequest = exchange.getRequest();
             URI uri = serverHttpRequest.getURI();
             URI newUri = httpOverwriteParamService.modifyQueryParams(requestAddParamsDto, uri);
             ServerHttpRequest newRequest = exchange.getRequest().mutate().uri(newUri).build();

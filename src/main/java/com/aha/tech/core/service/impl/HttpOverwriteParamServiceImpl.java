@@ -100,4 +100,15 @@ public class HttpOverwriteParamServiceImpl implements OverwriteParamService {
         logger.debug("修改queryParams后,新的uri : {}", newURI);
         return newURI;
     }
+
+    /**
+     * 修改mediaType=application/x-www-form-urlencoded的请求参数
+     * @param requestAddParamsDto
+     * @param uri
+     * @return
+     */
+    @Override
+    public URI modifyParamsWithFormUrlencoded(RequestAddParamsDto requestAddParamsDto, URI uri) {
+        return this.modifyQueryParams(requestAddParamsDto, uri);
+    }
 }

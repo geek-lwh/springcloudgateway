@@ -30,4 +30,12 @@ public interface OverwriteParamService {
      */
     URI modifyQueryParams(RequestAddParamsDto requestAddParamsDto, URI uri);
 
+    /**
+     * 修改特殊的二进制body参数
+     * @param requestAddParamsDto
+     * @param uri
+     * @return
+     */
+    URI modifyParamsWithFormUrlencoded(RequestAddParamsDto requestAddParamsDto, URI uri);
+
 }
