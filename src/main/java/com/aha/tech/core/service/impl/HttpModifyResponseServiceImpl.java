@@ -65,22 +65,17 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
      */
     @Override
     public ServerHttpResponseDecorator modifyBodyAndHeaders(ServerWebExchange serverWebExchange, ServerHttpResponse serverHttpResponse) {
-        DataBufferFactory bufferFactory = serverHttpResponse.bufferFactory();
         ServerHttpResponse oldResponse = serverWebExchange.getResponse();
         ServerHttpResponseDecorator decoratedResponse = new ServerHttpResponseDecorator(oldResponse) {
             @Override
             public Mono<Void> writeWith(Publisher<? extends DataBuffer> body) {
-
                 ModifyResponseBodyGatewayFilterFactory m = new ModifyResponseBodyGatewayFilterFactory(ServerCodecConfigurer.create());
                 String originalResponseContentType = serverWebExchange.getAttribute(ORIGINAL_RESPONSE_CONTENT_TYPE_ATTR);
                 HttpHeaders httpHeaders = new HttpHeaders();
-                //explicitly add it in this way instead of 'httpHeaders.setContentType(originalResponseContentType)'
-                //this will prevent exception in case of using non-standard media types like "Content-Type: image"
                 httpHeaders.add(HttpHeaders.CONTENT_TYPE, originalResponseContentType);
-                ResponseAdapter responseAdapter = m.new ResponseAdapter(body,httpHeaders);
+                ResponseAdapter responseAdapter = m.new ResponseAdapter(body, httpHeaders);
                 DefaultClientResponse clientResponse = new DefaultClientResponse(responseAdapter, ExchangeStrategies.withDefaults());
 
-                //TODO: flux or mono
                 Mono modifiedBody = clientResponse.bodyToMono(String.class).flatMap(originalBody -> Mono.just(originalBody));
 
                 BodyInserter bodyInserter = BodyInserters.fromPublisher(modifiedBody, String.class);
@@ -89,48 +84,15 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
                         .then(Mono.defer(() -> {
                             Flux<DataBuffer> messageBody = outputMessage.getBody();
                             HttpHeaders headers = getDelegate().getHeaders();
+                            crossAccessSetting(headers);
                             if (!headers.containsKey(HttpHeaders.TRANSFER_ENCODING)) {
-                                messageBody = messageBody.doOnNext(data -> headers.setContentLength(data.readableByteCount()));
+                                messageBody = messageBody.doOnNext(data -> {
+                                    headers.setContentLength(data.readableByteCount());
+                                });
                             }
-                            //TODO: use isStreamingMediaType?
                             return getDelegate().writeWith(messageBody);
                         }));
             }
-//            @Override
-//            public Mono<Void> writeWith(Publisher<? extends DataBuffer> body) {
-//                if (body instanceof Flux) {
-//                    Flux<? extends DataBuffer> flux = (Flux<? extends DataBuffer>) body;
-//                    return super.writeWith(
-//                            flux.buffer().map(dataBuffers -> {
-//                                ByteOutputStream outputStream = new ByteOutputStream();
-//                                AtomicInteger contentLength = new AtomicInteger();
-//                                dataBuffers.forEach(dataBuffer -> {
-//                                    int len = dataBuffer.readableByteCount();
-//                                    contentLength.addAndGet(len);
-//                                    byte[] array = new byte[len];
-//                                    dataBuffer.read(array);
-//                                    outputStream.write(array);
-//                                });
-//
-//                                byte[] stream = outputStream.getBytes();
-//                                DataBuffer data = bufferFactory.wrap(stream);
-//
-//                                // 设置response 的 content-length
-//                                HttpHeaders httpHeaders = serverHttpResponse.getHeaders();
-//                                crossAccessSetting(httpHeaders);
-//                                if (contentLength.get() > 0) {
-//                                    httpHeaders.setContentLength(contentLength.get());
-//                                } else {
-//                                    httpHeaders.set(HttpHeaders.TRANSFER_ENCODING, "chunked");
-//                                }
-//
-//                                return data;
-//                            }));
-//                }
-//
-//                return super.writeWith(body);
-//            }
-
         };
 
         return decoratedResponse;

@@ -1,6 +1,5 @@
 package core.env;
 
-import cn.hutool.core.codec.Base64;
 import com.aha.tech.core.support.XEnvSupport;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;

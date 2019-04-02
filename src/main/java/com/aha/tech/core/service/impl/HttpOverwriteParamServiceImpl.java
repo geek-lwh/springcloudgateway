@@ -80,6 +80,7 @@ public class HttpOverwriteParamServiceImpl implements OverwriteParamService {
                     return outputMessage.getBody();
                 }
             };
+
             return chain.filter(exchange.mutate().request(decorator).build());
         }));
     }
@@ -92,9 +93,11 @@ public class HttpOverwriteParamServiceImpl implements OverwriteParamService {
      */
     @Override
     public URI modifyQueryParams(RequestAddParamsDto requestAddParamsDto, URI uri) {
-        return UriComponentsBuilder.fromUri(uri)
+        URI newURI = UriComponentsBuilder.fromUri(uri)
                 .replaceQueryParam(USER_ID_FIELD, requestAddParamsDto.getUserId())
                 .build(true)
                 .toUri();
+        logger.debug("修改queryParams后,新的uri : {}", newURI);
+        return newURI;
     }
 }
