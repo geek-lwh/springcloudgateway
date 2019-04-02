@@ -14,7 +14,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.server.reactive.ServerHttpRequest;
-import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.http.server.reactive.ServerHttpResponseDecorator;
 import org.springframework.stereotype.Service;
@@ -143,33 +142,22 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
 
     /**
      * 修改请求头信息
-     * @param serverWebExchange
+     * @param oldHeaders
      * @return
      */
     @Override
-    public ServerHttpRequest modifyRequestHeaders(ServerWebExchange serverWebExchange) {
-        ServerHttpRequest serverHttpRequest = serverWebExchange.getRequest();
-        HttpHeaders oldHeaders = serverHttpRequest.getHeaders();
-        HttpHeaders httpHeaders = new HttpHeaders();
+    public HttpHeaders modifyRequestHeaders(HttpHeaders oldHeaders) {
+        HttpHeaders newHeaders = new HttpHeaders();
+        copyMultiValueMap(oldHeaders, newHeaders);
+        logger.debug("old headers : {} ,new headers : {}", oldHeaders, newHeaders);
 
-        copyMultiValueMap(oldHeaders, httpHeaders);
-        logger.debug("old headers : {} ,new headers : {}", oldHeaders,httpHeaders);
+        httpModifyHeaderService.initHeaders(newHeaders);
+        httpModifyHeaderService.versionSetting(newHeaders);
+        httpModifyHeaderService.xEnvSetting(newHeaders);
+        httpModifyHeaderService.removeHeaders(newHeaders);
 
-        httpModifyHeaderService.initHeaders(httpHeaders);
-        httpModifyHeaderService.versionSetting(httpHeaders);
-        httpModifyHeaderService.xEnvSetting(httpHeaders);
-        httpModifyHeaderService.removeHeaders(httpHeaders);
-
-        serverHttpRequest = new ServerHttpRequestDecorator(serverHttpRequest) {
-            @Override
-            public HttpHeaders getHeaders() {
-                return httpHeaders;
-            }
-        };
-
-        return serverHttpRequest;
+        return newHeaders;
     }
-
 
     /**
      * 重新创建一个response对象

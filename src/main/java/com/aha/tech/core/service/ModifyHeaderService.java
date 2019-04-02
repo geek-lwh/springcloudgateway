@@ -17,7 +17,7 @@ public interface ModifyHeaderService {
     void versionSetting(HttpHeaders httpHeaders);
 
     /**
-     * 解析X-env 并且设置对应的值传递后端rs服务
+     * 解析X-unit 并且设置对应的值传递后端rs服务
      * @param httpHeaders
      */
     void xEnvSetting(HttpHeaders httpHeaders);

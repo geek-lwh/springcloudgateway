@@ -1,5 +1,6 @@
 package com.aha.tech.core.service;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponseDecorator;
 import org.springframework.web.server.ServerWebExchange;
@@ -26,10 +27,10 @@ public interface RequestHandlerService {
 
     /**
      * 修改请求头
-     * @param serverWebExchange
+     * @param httpHeaders
      * @return
      */
-    ServerHttpRequest modifyRequestHeaders(ServerWebExchange serverWebExchange);
+    HttpHeaders modifyRequestHeaders(HttpHeaders httpHeaders);
 
     /**
      * 重新创建一个response对象

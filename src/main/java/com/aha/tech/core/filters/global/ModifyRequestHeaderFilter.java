@@ -7,7 +7,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
@@ -41,7 +43,15 @@ public class ModifyRequestHeaderFilter implements GlobalFilter, Ordered {
         logger.debug("开始进行修改请求头网关过滤器");
         ServerHttpRequest newRequest;
         try {
-            newRequest = httpRequestHandlerService.modifyRequestHeaders(exchange);
+            ServerHttpRequest serverHttpRequest = exchange.getRequest();
+            HttpHeaders httpHeaders = serverHttpRequest.getHeaders();
+            HttpHeaders newHttpHeaders = httpRequestHandlerService.modifyRequestHeaders(httpHeaders);
+            newRequest = new ServerHttpRequestDecorator(serverHttpRequest) {
+                @Override
+                public HttpHeaders getHeaders() {
+                    return newHttpHeaders;
+                }
+            };
         } catch (GatewayException e) {
             return Mono.defer(() -> writeError(exchange, e));
         }
