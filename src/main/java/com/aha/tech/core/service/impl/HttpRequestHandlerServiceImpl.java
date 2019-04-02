@@ -74,18 +74,15 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
         }
 
         URI uri = serverHttpRequest.getURI();
-        // /v3/yanxuan/banner/get
         String originalUrlPath = uri.getRawPath();
         logger.info("开始重写请求路径,原路由路径 : {}", originalUrlPath);
-
-        // 去除路径中无效的字符 /yanxuan/banner/get
         String validPath = httpRewritePathService.excludeInvalidPath(originalUrlPath, SKIP_STRIP_PREFIX_PART);
 
         // 重写请求路径
         RouteEntity routeEntity = httpRewritePathService.rewritePath(validPath);
         String rewritePath = routeEntity.getRewritePath();
         String id = routeEntity.getId();
-        // orderserver/yanxuan/banner/get
+
         serverWebExchange.getAttributes().put(GATEWAY_ORIGINAL_URL_PATH_ATTR, originalUrlPath);
         serverWebExchange.getAttributes().put(GATEWAY_REQUEST_VALID_PATH_ATTR, validPath);
         serverWebExchange.getAttributes().put(GATEWAY_REQUEST_REWRITE_PATH_ATTR, rewritePath);

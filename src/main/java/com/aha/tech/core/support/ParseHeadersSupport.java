@@ -1,11 +1,17 @@
 package com.aha.tech.core.support;
 
 import cn.hutool.core.codec.Base64;
+import com.aha.tech.commons.symbol.Separator;
 import com.alibaba.fastjson.JSONObject;
+import org.springframework.http.HttpHeaders;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.DigestUtils;
+import org.springframework.util.StringUtils;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
+import static com.aha.tech.core.constant.HeaderFieldConstant.HEADER_X_FORWARDED_FOR;
 import static com.aha.tech.core.constant.HeaderFieldConstant.X_ENV_FIELD_PP;
 
 /**
@@ -14,7 +20,7 @@ import static com.aha.tech.core.constant.HeaderFieldConstant.X_ENV_FIELD_PP;
  *
  * 解析XEnv支持类
  */
-public class XEnvSupport {
+public class ParseHeadersSupport {
 
 
     private static final String PP_ENCODE_PREFIX = X_ENV_FIELD_PP;
@@ -51,6 +57,23 @@ public class XEnvSupport {
         String value = PP_ENCODE_PREFIX + DigestUtils.md5DigestAsHex(finalStr.getBytes(StandardCharsets.UTF_8));
 
         return verifyTarget.equals(value);
+    }
+
+    /**
+     * 解析http头里的ip
+     * @param httpHeaders
+     * @return
+     */
+    public static String parseHeaderIp(HttpHeaders httpHeaders) {
+        List<String> ipList = httpHeaders.get(HEADER_X_FORWARDED_FOR);
+        if (CollectionUtils.isEmpty(ipList)) {
+            return null;
+        }
+
+        String ips = ipList.get(0);
+        String[] ipArr = StringUtils.tokenizeToStringArray(ips, Separator.COMMA_MARK);
+
+        return ipArr[0];
     }
 
     public static void main(String[] args) {

@@ -10,10 +10,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.Arrays;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+
+import static com.aha.tech.core.support.UriSupport.buildRewritePath;
+import static com.aha.tech.core.support.UriSupport.excludeStrings;
 
 /**
  * @Author: luweihong
@@ -38,11 +38,7 @@ public class HttpRewritePathServiceImpl implements RewritePathService {
      */
     @Override
     public String excludeInvalidPath(String path, int skipPart) {
-        String[] arr = org.springframework.util.StringUtils.tokenizeToStringArray(path, Separator.SLASH_MARK);
-        Stream<String> validPathStream = Arrays.stream(arr).skip(skipPart);
-
-        String validPath = validPathStream.collect(Collectors.joining(Separator.SLASH_MARK));
-        return validPath;
+        return excludeStrings(path, Separator.SLASH_MARK, skipPart);
     }
 
     /**
@@ -60,10 +56,7 @@ public class HttpRewritePathServiceImpl implements RewritePathService {
 
         // 重写新的路由
         RouteEntity routeEntity = routeEntityMap.get(id);
-        String rewritePath = new StringBuilder()
-                .append(routeEntity.getContextPath())
-                .append(Separator.SLASH_MARK)
-                .append(validPath).toString();
+        String rewritePath = buildRewritePath(routeEntity.getContextPath(), validPath);
 
         routeEntity.setRewritePath(rewritePath);
         routeEntity.setId(id);

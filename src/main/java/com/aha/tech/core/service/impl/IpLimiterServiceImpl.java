@@ -1,6 +1,5 @@
 package com.aha.tech.core.service.impl;
 
-import com.aha.tech.commons.symbol.Separator;
 import com.aha.tech.core.exception.MissHeaderXForwardedException;
 import com.aha.tech.core.limiter.IpRateLimiter;
 import com.aha.tech.core.service.LimiterService;
@@ -20,7 +19,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import static com.aha.tech.core.constant.HeaderFieldConstant.HEADER_X_FORWARDED_FOR;
+import static com.aha.tech.core.support.ParseHeadersSupport.parseHeaderIp;
 
 /**
  * @Author: luweihong
@@ -72,14 +71,12 @@ public class IpLimiterServiceImpl implements LimiterService {
      * @return
      */
     private String getKey(HttpHeaders httpHeaders) {
-        String keyResolver = org.springframework.util.StringUtils.collectionToCommaDelimitedString(httpHeaders.get(HEADER_X_FORWARDED_FOR));
-        if (StringUtils.isBlank(keyResolver)) {
+        String realIp = parseHeaderIp(httpHeaders);
+        if (StringUtils.isBlank(realIp)) {
             throw new MissHeaderXForwardedException();
         }
 
-        String findFirst = keyResolver.split(Separator.COMMA_MARK)[0];
-
-        return findFirst;
+        return realIp;
     }
 
 }

@@ -21,7 +21,8 @@ import java.util.List;
 import java.util.Map;
 
 import static com.aha.tech.core.constant.HeaderFieldConstant.*;
-import static com.aha.tech.core.support.XEnvSupport.verifyPp;
+import static com.aha.tech.core.support.ParseHeadersSupport.parseHeaderIp;
+import static com.aha.tech.core.support.ParseHeadersSupport.verifyPp;
 
 /**
  * @Author: luweihong
@@ -49,13 +50,11 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
      */
     @Override
     public void initHeaders(HttpHeaders httpHeaders) {
-        List<String> xForwardedForList = httpHeaders.get(HEADER_X_FORWARDED_FOR);
-        String str = org.springframework.util.StringUtils.collectionToCommaDelimitedString(xForwardedForList);
-        if (StringUtils.isBlank(str)) {
+        String realIp = parseHeaderIp(httpHeaders);
+        if (StringUtils.isBlank(realIp)) {
             throw new MissHeaderXForwardedException();
         }
 
-        String realIp = org.springframework.util.StringUtils.commaDelimitedListToStringArray(str)[0];
         httpHeaders.set(HEADER_X_FORWARDED_FOR, realIp);
         httpHeaders.set(HEADER_TOKEN, DEFAULT_X_TOKEN_VALUE);
         httpHeaders.add(HEADER_OS, DEFAULT_OS);
