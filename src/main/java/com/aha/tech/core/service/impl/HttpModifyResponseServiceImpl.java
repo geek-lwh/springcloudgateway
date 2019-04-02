@@ -59,7 +59,7 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
     private final static List<String> CROSS_ACCESS_ALLOW_ALLOW_HEADERS = Lists.newArrayList("Authorization", "Origin", "X-Requested-With", "X-Env", "X-Request-Page", "Content-Type", "Accept");
 
     /**
-     * 修改返回体  todo 看看能不能改成新版的
+     * 修改返回体
      * @param serverHttpResponse
      * @return
      */
