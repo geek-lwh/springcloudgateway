@@ -1,6 +1,7 @@
 package core.unit;
 
 import com.aha.tech.commons.symbol.Separator;
+import com.aha.tech.commons.utils.DateUtil;
 import com.aha.tech.core.model.entity.RouteEntity;
 import com.aha.tech.core.support.UriSupport;
 import org.apache.commons.lang3.StringUtils;
@@ -8,6 +9,8 @@ import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.aha.tech.core.support.UriSupport.buildRewritePath;
 
@@ -17,6 +20,8 @@ import static com.aha.tech.core.support.UriSupport.buildRewritePath;
  */
 @DisplayName("模拟网关重写uri地址测试类目")
 public class RewritePathTest {
+
+    private static final Logger logger = LoggerFactory.getLogger(RewritePathTest.class);
 
     private RouteEntity routeEntity;
 
@@ -38,28 +43,36 @@ public class RewritePathTest {
     @Test
     @DisplayName("去除请求url中以下划线分割的第一个区位测试类目")
     public void excludeInvalidPath() {
-        System.out.println("请求进入的url : " + input);
+        logger.info("{} 开始 [去除请求url中以下划线分割的第一个区位测试类目]", DateUtil.currentDateByDefaultFormat());
         String validPath = UriSupport.excludeStrings(input, Separator.SLASH_MARK, 1);
         String verifyStr = "yanxuan/banner/get";
+
         System.out.println("入参 : " + validPath);
         System.out.println("期望值 : " + verifyStr);
         Assertions.assertThat(validPath).as("校验失败").isEqualTo(verifyStr);
-        System.out.println("去除无效路径后,url=" + validPath);
+
+        logger.info("{} 结束 [去除请求url中以下划线分割的第一个区位测试类目]", DateUtil.currentDateByDefaultFormat());
+        logger.info("测试成功");
     }
 
     @Test
     @DisplayName("重写uri测试类目")
     public void rewritePathTest() {
+        logger.info("{} 开始 [重写uri测试类目]", DateUtil.currentDateByDefaultFormat());
         String validPath = "yanxuan/banner/get";
         String id = StringUtils.substringBefore(validPath, Separator.SLASH_MARK);
-        System.out.println("入参 : " + id);
-        System.out.println("期望值 : " + routeEntity.getId());
+        logger.info("入参 : {}", id);
+        logger.info("期望值 : {}", routeEntity.getId());
         Assertions.assertThat(id).as("重写后与期望值不匹配").isEqualTo(routeEntity.getId());
+        logger.info("校验成功");
 
         String contextPath = routeEntity.getContextPath();
         String rewritePath = buildRewritePath(contextPath, validPath);
-        System.out.println("入参 : " + rewritePath);
-        System.out.println("期望值 : " + output);
+        logger.info("入参 : {}", rewritePath);
+        logger.info("期望值 : {}", output);
         Assertions.assertThat(rewritePath).as("重写后与期望值不匹配").isEqualTo(output);
+
+        logger.info("{} 结束 [重写uri测试类目]", DateUtil.currentDateByDefaultFormat());
+        logger.info("测试成功");
     }
 }
