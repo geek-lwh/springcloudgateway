@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -50,6 +51,10 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
      */
     @Override
     public void initHeaders(HttpHeaders httpHeaders) {
+        MediaType mediaType = httpHeaders.getContentType();
+        if(mediaType == null){
+            httpHeaders.setContentType(MediaType.APPLICATION_JSON_UTF8);
+        }
         String realIp = parseHeaderIp(httpHeaders);
         if (StringUtils.isBlank(realIp)) {
             throw new MissHeaderXForwardedException();

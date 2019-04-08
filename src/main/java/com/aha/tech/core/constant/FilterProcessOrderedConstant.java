@@ -26,14 +26,11 @@ public class FilterProcessOrderedConstant {
     // 全新啊校验过滤器
     public static int AUTH_GATEWAY_FILTER_ORDER = REWRITE_REQUEST_PATH_FILTER_ORDER + STEP;
 
-    // 修改POST请求参数过滤器
-//    public static int MODIFY_REQUEST_BODY_FILTER_ORDER = AUTH_GATEWAY_FILTER_ORDER + STEP;
-
-    // 修改GET请求的参数过滤器
-    public static int MODIFY_PARAMS_FILTER_ORDER = AUTH_GATEWAY_FILTER_ORDER + STEP;
-
     // 修改请求报头过滤器
-    public static int MODIFY_REQUEST_HEADER_GATEWAY_FILTER_ORDER = MODIFY_PARAMS_FILTER_ORDER + STEP;
+    public static int MODIFY_REQUEST_HEADER_GATEWAY_FILTER_ORDER = AUTH_GATEWAY_FILTER_ORDER + STEP;
+
+    // 修改GET|POST请求的参数过滤器
+    public static int MODIFY_PARAMS_FILTER_ORDER = MODIFY_REQUEST_HEADER_GATEWAY_FILTER_ORDER + STEP;
 
     // 修改请求返回体过滤器
     public static int MODIFY_RESPONSE_GATEWAY_FILTER_ORDER = WRITE_RESPONSE_FILTER_ORDER - STEP;
