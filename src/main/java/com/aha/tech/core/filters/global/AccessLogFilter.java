@@ -14,7 +14,6 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -56,21 +55,41 @@ public class AccessLogFilter implements GlobalFilter, Ordered {
 
         // cookies
         MultiValueMap<String, HttpCookie> cookieMultiValueMap = serverHttpRequest.getCookies();
-        List<String> userIdList = cookieMultiValueMap.getOrDefault("user_id", Collections.EMPTY_LIST);
-        List<String> gSsIdList = cookieMultiValueMap.getOrDefault("gssid", Collections.EMPTY_LIST);
-        List<String> gUserIdList = cookieMultiValueMap.getOrDefault("guserid", Collections.EMPTY_LIST);
-        List<String> gUniqIdList = cookieMultiValueMap.getOrDefault("guniqid", Collections.EMPTY_LIST);
+        String userId = getValueOrDefault(cookieMultiValueMap, "user_id");
+        String gSsId = getValueOrDefault(cookieMultiValueMap, "gssid");
+        String gUserId = getValueOrDefault(cookieMultiValueMap, "guserid");
+        String gUniqId = getValueOrDefault(cookieMultiValueMap, "guniqid");
 
-        String userId = CollectionUtils.isEmpty(userIdList) ? Strings.EMPTY : userIdList.get(0);
-        String gSsId = CollectionUtils.isEmpty(gSsIdList) ? Strings.EMPTY : gSsIdList.get(0);
-        String gUserId = CollectionUtils.isEmpty(gUserIdList) ? Strings.EMPTY : gUserIdList.get(0);
-        String gUniqId = CollectionUtils.isEmpty(gUniqIdList) ? Strings.EMPTY : gUniqIdList.get(0);
-
-        String cookieStr = String.format("user_id=%s-&gssid=%s-&guserid=%s-&guniqid=%s-", userId, gSsId, gUserId, gUniqId);
-        attributes.put(ACCESS_LOG_COOKIE_ATTR, cookieStr);
+        attributes.put(ACCESS_LOG_COOKIE_ATTR, formatCookieStr(userId, gSsId, gUserId, gUniqId));
 
         return chain.filter(exchange);
     }
 
+    /**
+     * 获取cookies的值
+     * @param cookieMultiValueMap
+     * @param field
+     * @return
+     */
+    private String getValueOrDefault(MultiValueMap<String, HttpCookie> cookieMultiValueMap, String field) {
+        HttpCookie source = cookieMultiValueMap.getFirst(field);
+        if (source == null) {
+            return Strings.EMPTY;
+        }
+
+        return source.getValue();
+    }
+
+    /**
+     * 格式化cookies
+     * @param userId
+     * @param gSsId
+     * @param gUserId
+     * @param gUniqId
+     * @return
+     */
+    private String formatCookieStr(String userId, String gSsId, String gUserId, String gUniqId) {
+        return String.format("user_id=%s-&gssid=%s-&guserid=%s-&guniqid=%s-", userId, gSsId, gUserId, gUniqId);
+    }
 
 }
