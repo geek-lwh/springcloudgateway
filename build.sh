@@ -7,7 +7,7 @@ PROJECT_NAME="gateway"
 FOLDER_PATH="aha-gateway-server"
 tar_file="aha-${PROJECT_NAME}-server.jar"
 
-gradle clean build
+gradle clean build -xtest
 
 echo $"copy ${tar_file} to [$1] environment ..."
 	scp ./build/libs/${tar_file} hjmrunning@$1:/opt/hjm/${FOLDER_PATH}
