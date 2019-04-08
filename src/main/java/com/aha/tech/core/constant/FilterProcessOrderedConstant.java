@@ -20,8 +20,10 @@ public class FilterProcessOrderedConstant {
     // ip限流
     public static int IP_RATE_LIMITER_FILTER_ORDER = QPS_RATE_LIMITER_FILTER_ORDER + STEP;
 
+    public static int ACCESS_LOG_FILTER_ORDER = IP_RATE_LIMITER_FILTER_ORDER + STEP;
+
     // 重写请求路径过滤器
-    public static int REWRITE_REQUEST_PATH_FILTER_ORDER = IP_RATE_LIMITER_FILTER_ORDER + STEP;
+    public static int REWRITE_REQUEST_PATH_FILTER_ORDER = ACCESS_LOG_FILTER_ORDER + STEP;
 
     // 全新啊校验过滤器
     public static int AUTH_GATEWAY_FILTER_ORDER = REWRITE_REQUEST_PATH_FILTER_ORDER + STEP;

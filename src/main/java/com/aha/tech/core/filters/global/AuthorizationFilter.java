@@ -18,7 +18,7 @@ import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
 
-import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_ORIGINAL_URL_PATH_ATTR;
+import static com.aha.tech.core.constant.ExchangeAttributeConstant.ACCESS_LOG_ORIGINAL_URL_PATH_ATTR;
 
 /**
  * @Author: luweihong
@@ -43,7 +43,7 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         logger.debug("开始执行权限校验网关过滤器");
 
-        String path = exchange.getAttribute(GATEWAY_ORIGINAL_URL_PATH_ATTR);
+        String path = exchange.getAttribute(ACCESS_LOG_ORIGINAL_URL_PATH_ATTR);
         try {
             httpRequestHandlerService.authorize(exchange);
         } catch (GatewayException ge) {

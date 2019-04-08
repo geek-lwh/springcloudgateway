@@ -82,7 +82,7 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
         String rewritePath = routeEntity.getRewritePath();
         String id = routeEntity.getId();
 
-        serverWebExchange.getAttributes().put(GATEWAY_ORIGINAL_URL_PATH_ATTR, originalUrlPath);
+        serverWebExchange.getAttributes().put(ACCESS_LOG_ORIGINAL_URL_PATH_ATTR, originalUrlPath);
         serverWebExchange.getAttributes().put(GATEWAY_REQUEST_VALID_PATH_ATTR, validPath);
         serverWebExchange.getAttributes().put(GATEWAY_REQUEST_REWRITE_PATH_ATTR, rewritePath);
         serverWebExchange.getAttributes().put(GATEWAY_REQUEST_ROUTE_ID_ATTR, id);
@@ -110,7 +110,7 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
         PairEntity<String> authorization = parseAuthorizationHeader(requestHeaders);
         String userName = authorization.getFirstEntity();
         String accessToken = authorization.getSecondEntity();
-
+        serverWebExchange.getAttributes().put(ACCESS_USER_NAME_ATTR,userName);
         return checkPermission(serverWebExchange, userName, accessToken);
     }
 

@@ -3,6 +3,8 @@ package com.aha.tech.core.controller;
 import com.aha.tech.commons.utils.DateUtil;
 import com.aha.tech.core.model.vo.HystrixDataVo;
 import com.aha.tech.core.model.vo.ResponseVo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.support.ServerWebExchangeUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -10,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
-import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_ORIGINAL_URL_PATH_ATTR;
+import static com.aha.tech.core.constant.ExchangeAttributeConstant.ACCESS_LOG_ORIGINAL_URL_PATH_ATTR;
 import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_REWRITE_PATH_ATTR;
 
 /**
@@ -22,6 +24,8 @@ import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUE
 @RestController
 public class FallBackController {
 
+    private static final Logger logger = LoggerFactory.getLogger(FallBackController.class);
+
     private static final String HYSTRIX_ERROR_MESSAGE_PREFIX = "接口熔断";
 
     /**
@@ -31,6 +35,7 @@ public class FallBackController {
      */
     @RequestMapping(value = "/fallback", method = RequestMethod.GET)
     public Mono<ResponseVo> fallBack(ServerWebExchange serverWebExchange) {
+        logger.info("出现额外异常,触发hystrix 降级策略");
         Object c = serverWebExchange.getAttributes().get(ServerWebExchangeUtils.HYSTRIX_EXECUTION_EXCEPTION_ATTR);
         if (c == null) {
             ResponseVo responseVo = ResponseVo.defaultFailureResponseVo();
@@ -60,7 +65,7 @@ public class FallBackController {
 
         hystrixDataVo.setTime(DateUtil.currentDateByDefaultFormat());
 
-        String originalUrlPath = serverWebExchange.getAttributes().get(GATEWAY_ORIGINAL_URL_PATH_ATTR).toString();
+        String originalUrlPath = serverWebExchange.getAttributes().get(ACCESS_LOG_ORIGINAL_URL_PATH_ATTR).toString();
         hystrixDataVo.setOriginalUrlPath(originalUrlPath);
 
         String uri = serverWebExchange.getAttributes().get(GATEWAY_REQUEST_REWRITE_PATH_ATTR).toString();

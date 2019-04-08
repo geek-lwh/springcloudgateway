@@ -3,6 +3,7 @@ package com.aha.tech.core.handler;
 import com.aha.tech.commons.utils.DateUtil;
 import com.aha.tech.core.exception.GatewayException;
 import com.google.common.collect.Maps;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.autoconfigure.web.ErrorProperties;
 import org.springframework.boot.autoconfigure.web.ResourceProperties;
 import org.springframework.boot.autoconfigure.web.reactive.error.DefaultErrorWebExceptionHandler;
@@ -119,7 +120,7 @@ public class JsonExceptionHandler extends DefaultErrorWebExceptionHandler {
         Map<String, Object> map = Maps.newHashMapWithExpectedSize(5);
         map.put("code", status);
         map.put("url", requestUrl);
-        map.put("message", message);
+        map.put("message", StringUtils.isBlank(message) ? ex.getClass() : message);
         map.put("date", DateUtil.currentDateByDefaultFormat());
 //        map.put("trace", ex.getStackTrace());
 
