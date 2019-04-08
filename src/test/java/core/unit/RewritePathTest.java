@@ -43,22 +43,23 @@ public class RewritePathTest {
     @Test
     @DisplayName("去除请求url中以下划线分割的第一个区位测试类目")
     public void excludeInvalidPath() {
-        logger.info("{} 开始 [去除请求url中以下划线分割的第一个区位测试类目]", DateUtil.currentDateByDefaultFormat());
+        logger.info("<<<< {} 开始 [去除请求url中以下划线分割的第一个区位测试类目]", DateUtil.currentDateByDefaultFormat());
         String validPath = UriSupport.excludeStrings(input, Separator.SLASH_MARK, 1);
         String verifyStr = "yanxuan/banner/get";
 
         System.out.println("入参 : " + validPath);
         System.out.println("期望值 : " + verifyStr);
-        Assertions.assertThat(validPath).as("校验失败").isEqualTo(verifyStr);
 
         logger.info("{} 结束 [去除请求url中以下划线分割的第一个区位测试类目]", DateUtil.currentDateByDefaultFormat());
-        logger.info("测试成功");
+        Assertions.assertThat(validPath).as("校验失败").isEqualTo(verifyStr);
+
+        logger.info("测试成功 >>>>");
     }
 
     @Test
     @DisplayName("重写uri测试类目")
     public void rewritePathTest() {
-        logger.info("{} 开始 [重写uri测试类目]", DateUtil.currentDateByDefaultFormat());
+        logger.info("<<<< {} 开始 [重写uri测试类目]", DateUtil.currentDateByDefaultFormat());
         String validPath = "yanxuan/banner/get";
         String id = StringUtils.substringBefore(validPath, Separator.SLASH_MARK);
         logger.info("入参 : {}", id);
@@ -70,9 +71,10 @@ public class RewritePathTest {
         String rewritePath = buildRewritePath(contextPath, validPath);
         logger.info("入参 : {}", rewritePath);
         logger.info("期望值 : {}", output);
-        Assertions.assertThat(rewritePath).as("重写后与期望值不匹配").isEqualTo(output);
 
         logger.info("{} 结束 [重写uri测试类目]", DateUtil.currentDateByDefaultFormat());
-        logger.info("测试成功");
+        Assertions.assertThat(rewritePath).as("重写后与期望值不匹配").isEqualTo(output);
+
+        logger.info("测试成功 >>>>");
     }
 }

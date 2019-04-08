@@ -63,6 +63,7 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
 
     /**
      * 设置后端rs需要的头部信息version
+     * @See junit demo ModifyRequestHeadersTest.java
      * @param httpHeaders
      */
     @Override
@@ -73,14 +74,12 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
         }
 
         try {
-            // ahaschool/ios/4.3.0/12.0/iPhone/757797D4-1282-4668-8AA3-FE4189AAED12
             String value = userAgent.get(0).toLowerCase();
             int index = value.indexOf(STR_PREFIX);
             if (index == -1) {
                 return;
             }
 
-            // 截图出现的prefix到末尾 ios/4.3.0/12.0/iPhone/757797D4-1282-4668-8AA3-FE4189AAED12
             String subStr = value.substring(index);
             String[] arr = StringUtils.split(subStr, Separator.SLASH_MARK);
             String os = arr[1];
