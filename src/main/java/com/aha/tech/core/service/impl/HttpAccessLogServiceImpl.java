@@ -1,5 +1,6 @@
 package com.aha.tech.core.service.impl;
 
+import com.aha.tech.commons.utils.DateUtil;
 import com.aha.tech.core.service.AccessLogService;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
@@ -16,6 +17,7 @@ import java.util.Map;
 
 import static com.aha.tech.core.constant.ExchangeAttributeConstant.ACCESS_REQUEST_ID_ATTR;
 import static com.aha.tech.core.constant.ExchangeAttributeConstant.ACCESS_REQUEST_TIME_ATTR;
+import static com.aha.tech.core.constant.HeaderFieldConstant.HEADER_USER_AGENT;
 import static com.aha.tech.core.constant.HeaderFieldConstant.HEADER_X_FORWARDED_FOR;
 
 /**
@@ -34,9 +36,10 @@ public class HttpAccessLogServiceImpl implements AccessLogService {
      * @param requestTime
      */
     @Override
-    public void printRequestInfo(ServerHttpRequest serverHttpRequest, String id, Long requestTime) {
+    public void printRequestInfo(ServerHttpRequest serverHttpRequest, Long id, Long requestTime) {
         String remoteIp = serverHttpRequest.getRemoteAddress().getAddress().getHostAddress();
         List<String> forwardedIps = serverHttpRequest.getHeaders().get(HEADER_X_FORWARDED_FOR);
+        List<String> userAgent = serverHttpRequest.getHeaders().get(HEADER_USER_AGENT);
 
         // cookies
         MultiValueMap<String, HttpCookie> cookieMultiValueMap = serverHttpRequest.getCookies();
@@ -46,10 +49,11 @@ public class HttpAccessLogServiceImpl implements AccessLogService {
         String gUniqId = getValueOrDefault(cookieMultiValueMap, "guniqid");
 
         String cookieString = formatCookieStr(userId, gSsId, gUserId, gUniqId);
+        String date = DateUtil.dateByDefaultFormat(new Date(requestTime));
+        String log = String.format("id=%s,time=%s,remote_ip=%s,forwarded_ip=%s,cookie_string=%s,user_agent=%s",
+                id, date, remoteIp, forwardedIps, cookieString, userAgent);
 
-        String log = String.format("id=%s,time=%s,remote_ip=%s,forwarded_ip=%s,cookie_string=%s", id, new Date(requestTime), remoteIp, forwardedIps, cookieString);
-
-        logger.info("access_log : {}", log);
+        logger.info("接收请求 : {}", log);
     }
 
     /**
@@ -59,12 +63,12 @@ public class HttpAccessLogServiceImpl implements AccessLogService {
      */
     @Override
     public void printResponseInfo(ServerHttpResponse serverHttpResponse, Map<String, Object> attributes) {
-        String id = attributes.getOrDefault(ACCESS_REQUEST_ID_ATTR, Strings.EMPTY).toString();
+        Object id = attributes.getOrDefault(ACCESS_REQUEST_ID_ATTR, 0L);
         Long requestTime = (Long) attributes.getOrDefault(ACCESS_REQUEST_TIME_ATTR, System.currentTimeMillis());
         Long endTime = System.currentTimeMillis();
         Long cost = endTime - requestTime;
 
-        logger.info("id={},status={},cost={}", id, serverHttpResponse.getStatusCode(), cost);
+        logger.info("完成请求 id={},status={},cost={}", id, serverHttpResponse.getStatusCode(), cost);
     }
 
     /**
@@ -91,6 +95,6 @@ public class HttpAccessLogServiceImpl implements AccessLogService {
      * @return
      */
     private String formatCookieStr(String userId, String gSsId, String gUserId, String gUniqId) {
-        return String.format("user_id=%s-&gssid=%s-&guserid=%s-&guniqid=%s-", userId, gSsId, gUserId, gUniqId);
+        return String.format("|user_id=%s|&gssid=%s|&guserid=%s|&guniqid=%s|", userId, gSsId, gUserId, gUniqId);
     }
 }

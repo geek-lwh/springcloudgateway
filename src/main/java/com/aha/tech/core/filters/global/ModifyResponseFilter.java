@@ -44,7 +44,6 @@ public class ModifyResponseFilter implements GlobalFilter, Ordered {
         return chain.filter(exchange).then(Mono.fromRunnable(() -> {
             ServerHttpResponse response = exchange.getResponse();
             httpRequestHandlerService.modifyResponseHeader(response.getHeaders());
-            httpRequestHandlerService.writeResultInfo(exchange);
             CompletableFuture.runAsync(() -> httpRequestHandlerService.writeResultInfo(exchange), printAccessLogThreadPool);
         }));
     }

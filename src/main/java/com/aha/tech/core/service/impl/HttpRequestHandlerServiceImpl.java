@@ -8,6 +8,7 @@ import com.aha.tech.core.model.entity.AuthenticationEntity;
 import com.aha.tech.core.model.entity.PairEntity;
 import com.aha.tech.core.model.entity.RouteEntity;
 import com.aha.tech.core.service.*;
+import com.aha.tech.util.IdWorker;
 import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,7 +71,7 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
     public void writeAccessInfo(ServerWebExchange serverWebExchange) {
         final ServerHttpRequest serverHttpRequest = serverWebExchange.getRequest();
         Map<String, Object> attributes = serverWebExchange.getAttributes();
-        String id = serverHttpRequest.getId();
+        Long id = IdWorker.getInstance().nextId();
         Long requestTime = System.currentTimeMillis();
         httpAccessLogService.printRequestInfo(serverHttpRequest, id, requestTime);
 

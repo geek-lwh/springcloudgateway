@@ -14,9 +14,9 @@ public interface AccessLogService {
     /**
      * 打印http请求信息
      * @param serverHttpRequest
-     * @param attributes
+     * @param Long
      */
-    void printRequestInfo(ServerHttpRequest serverHttpRequest, String id, Long requestTime);
+    void printRequestInfo(ServerHttpRequest serverHttpRequest, Long id, Long requestTime);
 
     void printResponseInfo(ServerHttpResponse serverHttpResponse, Map<String, Object> attributes);
 
