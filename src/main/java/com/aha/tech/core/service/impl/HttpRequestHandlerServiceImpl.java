@@ -24,6 +24,7 @@ import javax.annotation.Resource;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 
 import static com.aha.tech.core.constant.ExchangeAttributeConstant.*;
 import static com.aha.tech.core.constant.HeaderFieldConstant.HEADER_AUTHORIZATION;
@@ -47,6 +48,9 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
     private static final String NEED_AUTHORIZATION = "serv-auth";
 
     @Resource
+    private AccessLogService httpAccessLogService;
+
+    @Resource
     private RewritePathService httpRewritePathService;
 
     @Resource
@@ -57,6 +61,33 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
 
     @Resource
     private ModifyResponseService httpModifyResponseService;
+
+    /**
+     * 打印访问日志
+     * @param serverWebExchange
+     */
+    @Override
+    public void writeAccessInfo(ServerWebExchange serverWebExchange) {
+        final ServerHttpRequest serverHttpRequest = serverWebExchange.getRequest();
+        Map<String, Object> attributes = serverWebExchange.getAttributes();
+        String id = serverHttpRequest.getId();
+        Long requestTime = System.currentTimeMillis();
+        httpAccessLogService.printRequestInfo(serverHttpRequest, id, requestTime);
+
+        attributes.put(ACCESS_REQUEST_ID_ATTR, id);
+        attributes.put(ACCESS_REQUEST_TIME_ATTR, requestTime);
+    }
+
+    /**
+     * 打印结果
+     * @param serverWebExchange
+     */
+    @Override
+    public void writeResultInfo(ServerWebExchange serverWebExchange) {
+        ServerHttpResponse serverHttpResponse = serverWebExchange.getResponse();
+        Map<String, Object> attributes = serverWebExchange.getAttributes();
+        httpAccessLogService.printResponseInfo(serverHttpResponse, attributes);
+    }
 
     /**
      * 重写请求路径
@@ -177,7 +208,7 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
      * @return
      */
     @Override
-    public ServerHttpResponseDecorator modifyResponseBody(ServerWebExchange serverWebExchange,ServerHttpResponse serverHttpResponse) {
+    public ServerHttpResponseDecorator modifyResponseBody(ServerWebExchange serverWebExchange, ServerHttpResponse serverHttpResponse) {
         return httpModifyResponseService.renewResponse(serverWebExchange, serverHttpResponse);
     }
 
@@ -187,7 +218,7 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
      */
     @Override
     public void modifyResponseHeader(HttpHeaders httpHeaders) {
-         httpModifyResponseService.crossAccessSetting(httpHeaders);
+        httpModifyResponseService.crossAccessSetting(httpHeaders);
     }
 
     /**

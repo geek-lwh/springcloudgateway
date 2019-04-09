@@ -3,8 +3,6 @@ package com.aha.tech.core.model.entity;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-import java.util.List;
-
 /**
  * @Author: luweihong
  * @Date: 2019/4/8
@@ -31,7 +29,7 @@ public class AccessLogEntity {
     /**
      * x-forwarded-for
      */
-    private List<String> forwardedIp;
+    private String forwardedIp;
 
     /**
      * 是否是匿名用户
@@ -82,11 +80,11 @@ public class AccessLogEntity {
         this.remoteIp = remoteIp;
     }
 
-    public List<String> getForwardedIp() {
+    public String getForwardedIp() {
         return forwardedIp;
     }
 
-    public void setForwardedIp(List<String> forwardedIp) {
+    public void setForwardedIp(String forwardedIp) {
         this.forwardedIp = forwardedIp;
     }
 

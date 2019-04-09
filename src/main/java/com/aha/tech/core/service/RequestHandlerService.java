@@ -13,6 +13,18 @@ import org.springframework.web.server.ServerWebExchange;
 public interface RequestHandlerService {
 
     /**
+     * 打印访问日志
+     * @param serverWebExchange
+     */
+    void writeAccessInfo(ServerWebExchange serverWebExchange);
+
+    /**
+     * 打印结果
+     * @param serverWebExchange
+     */
+    void writeResultInfo(ServerWebExchange serverWebExchange);
+
+    /**
      * 重写请求路径
      * @param serverWebExchange
      * @return
