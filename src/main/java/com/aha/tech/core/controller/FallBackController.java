@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
-import static com.aha.tech.core.constant.ExchangeAttributeConstant.ACCESS_LOG_ORIGINAL_URL_PATH_ATTR;
+import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR;
 import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_REWRITE_PATH_ATTR;
 
 /**
@@ -65,7 +65,7 @@ public class FallBackController {
 
         hystrixDataVo.setTime(DateUtil.currentDateByDefaultFormat());
 
-        String originalUrlPath = serverWebExchange.getAttributes().get(ACCESS_LOG_ORIGINAL_URL_PATH_ATTR).toString();
+        String originalUrlPath = serverWebExchange.getAttributes().get(GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR).toString();
         hystrixDataVo.setOriginalUrlPath(originalUrlPath);
 
         String uri = serverWebExchange.getAttributes().get(GATEWAY_REQUEST_REWRITE_PATH_ATTR).toString();

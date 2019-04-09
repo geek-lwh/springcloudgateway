@@ -14,19 +14,8 @@ public class ExchangeAttributeConstant {
     // 访问请求时间
     public static final String ACCESS_REQUEST_TIME_ATTR = "ACCESS_REQUEST_TIME_ATTR";
 
-    // 访问请求remoteIp
-    public static final String ACCESS_REMOTE_IP_ATTR = "ACCESS_REMOTE_IP_ATTR";
-
-    // 访问请求X-Forwarded-For
-    public static final String ACCESS_X_FORWARDED_IP_ATTR = "ACCESS_X_FORWARDED_IP_ATTR";
-
-    // 访问请求userName
-    public static final String ACCESS_USER_NAME_ATTR = "ACCESS_USER_NAME_ATTR";
-
-    // 访问请求cookies
-    public static final String ACCESS_LOG_COOKIE_ATTR = "ACCESS_LOG_COOKIE_ATTR";
-
-    public static final String ACCESS_LOG_ORIGINAL_URL_PATH_ATTR = "ACCESS_LOG_ORIGINAL_URL_PATH_ATTR";
+    // 原始路径
+    public static final String GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR = "GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR";
 
     // 请求中有效的路径属性
     public static final String GATEWAY_REQUEST_VALID_PATH_ATTR = "GATEWAY_REQUEST_VALID_PATH_ATTR";
