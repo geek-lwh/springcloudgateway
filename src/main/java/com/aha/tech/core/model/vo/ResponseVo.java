@@ -1,5 +1,6 @@
 package com.aha.tech.core.model.vo;
 
+import com.aha.tech.commons.constants.ResponseConstants;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
@@ -17,11 +18,15 @@ public class ResponseVo<T> {
 
     private T data;
 
-    public ResponseVo(){
+    public ResponseVo() {
         super();
     }
 
-    public ResponseVo(int code,String message){
+    public ResponseVo(int code) {
+        this.code = code;
+    }
+
+    public ResponseVo(int code, String message) {
         this.code = code;
         this.message = message;
     }
@@ -33,9 +38,8 @@ public class ResponseVo<T> {
         this.data = data;
     }
 
-    public static ResponseVo defaultFailureResponseVo(){
-        ResponseVo responseVo = new ResponseVo();
-        return responseVo;
+    public static ResponseVo defaultFailureResponseVo() {
+        return new ResponseVo(ResponseConstants.FAILURE);
     }
 
     public int getCode() {
