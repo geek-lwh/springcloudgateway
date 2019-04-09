@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
-import org.springframework.http.server.reactive.ServerHttpResponseDecorator;
+import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
@@ -47,12 +47,19 @@ public class ModifyResponseFilter implements GlobalFilter, Ordered {
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         logger.debug("开始修改返回值过滤器");
 
-        ServerHttpResponseDecorator serverHttpResponseDecorator = httpRequestHandlerService.renewResponse(exchange);
+        return chain.filter(exchange).then(Mono.fromRunnable(() -> {
+            ServerHttpResponse response = exchange.getResponse();
+            // httpRequestHandlerService.modifyResponseBody(exchange,response);
+            httpRequestHandlerService.modifyResponseHeader(response.getHeaders());
+            CompletableFuture.runAsync(() -> printAccessLog(exchange, response.getStatusCode().value()),printAccessLogThreadPool);
+//            printAccessLog(exchange, 1);
+        }));
+
 
 //        int httpStatus = serverHttpResponseDecorator.getStatusCode().value();
-//        printAccessLog(exchange, httpStatus);
+//        printAccessLog(exchange, 1);
 //        CompletableFuture.runAsync(() -> printAccessLog(exchange, httpStatus), printAccessLogThreadPool);
-        return chain.filter(exchange.mutate().response(serverHttpResponseDecorator).build());
+//        return chain.filter(exchange.mutate().response(serverHttpResponseDecorator).build());
     }
 
     /**

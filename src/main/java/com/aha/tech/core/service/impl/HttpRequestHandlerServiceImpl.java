@@ -110,7 +110,7 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
         PairEntity<String> authorization = parseAuthorizationHeader(requestHeaders);
         String userName = authorization.getFirstEntity();
         String accessToken = authorization.getSecondEntity();
-        serverWebExchange.getAttributes().put(ACCESS_USER_NAME_ATTR,userName);
+//        serverWebExchange.getAttributes().put(ACCESS_USER_NAME_ATTR,userName);
         return checkPermission(serverWebExchange, userName, accessToken);
     }
 
@@ -165,19 +165,29 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
      * @return
      */
     @Override
-    public ServerHttpResponseDecorator renewResponse(ServerWebExchange serverWebExchange) {
+    public ServerHttpResponseDecorator modifyResponseBodyAndHeaders(ServerWebExchange serverWebExchange) {
         ServerHttpResponse serverHttpResponse = serverWebExchange.getResponse();
-        return httpModifyResponseService.modifyBodyAndHeaders(serverWebExchange, serverHttpResponse);
+        return httpModifyResponseService.renewResponse(serverWebExchange, serverHttpResponse);
     }
 
     /**
-     * 修改返回体报头
+     * 修改response body
      * @param serverWebExchange
+     * @param serverHttpResponse
+     * @return
      */
     @Override
-    public void modifyResponseHeaders(ServerWebExchange serverWebExchange) {
-        HttpHeaders httpHeaders = serverWebExchange.getResponse().getHeaders();
-        httpModifyResponseService.crossAccessSetting(httpHeaders);
+    public ServerHttpResponseDecorator modifyResponseBody(ServerWebExchange serverWebExchange,ServerHttpResponse serverHttpResponse) {
+        return httpModifyResponseService.renewResponse(serverWebExchange, serverHttpResponse);
+    }
+
+    /**
+     * 修改response header
+     * @param httpHeaders
+     */
+    @Override
+    public void modifyResponseHeader(HttpHeaders httpHeaders) {
+         httpModifyResponseService.crossAccessSetting(httpHeaders);
     }
 
     /**
@@ -201,7 +211,6 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
             logger.error("解析请求头Authorization字段出现异常,Authorization : {}", headersOfAuthorization);
             throw new ParseAuthorizationHeaderException();
         }
-
     }
 
 }

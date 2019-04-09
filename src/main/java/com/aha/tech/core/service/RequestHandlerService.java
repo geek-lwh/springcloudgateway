@@ -2,6 +2,7 @@ package com.aha.tech.core.service;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.http.server.reactive.ServerHttpResponseDecorator;
 import org.springframework.web.server.ServerWebExchange;
 
@@ -37,12 +38,20 @@ public interface RequestHandlerService {
      * @param serverWebExchange
      * @return
      */
-    ServerHttpResponseDecorator renewResponse(ServerWebExchange serverWebExchange);
+    ServerHttpResponseDecorator modifyResponseBodyAndHeaders(ServerWebExchange serverWebExchange);
 
     /**
-     * 修改返回报头信息
+     * 修改body
      * @param serverWebExchange
+     * @param serverHttpResponse
+     * @return
      */
-    void modifyResponseHeaders(ServerWebExchange serverWebExchange);
+    ServerHttpResponseDecorator modifyResponseBody(ServerWebExchange serverWebExchange,ServerHttpResponse serverHttpResponse);
 
+    /**
+     * 修改response header
+     * @param httpHeaders
+     * @return
+     */
+    void modifyResponseHeader(HttpHeaders httpHeaders);
 }

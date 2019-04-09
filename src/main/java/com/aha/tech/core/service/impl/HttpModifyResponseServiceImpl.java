@@ -60,13 +60,12 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
 
     /**
      * 修改返回体
-     * @param serverHttpResponse
+     * @param oldResponse
      * @return
      */
     @Override
-    public ServerHttpResponseDecorator modifyBodyAndHeaders(ServerWebExchange serverWebExchange, ServerHttpResponse serverHttpResponse) {
-        ServerHttpResponse oldResponse = serverWebExchange.getResponse();
-        ServerHttpResponseDecorator decoratedResponse = new ServerHttpResponseDecorator(oldResponse) {
+    public ServerHttpResponseDecorator renewResponse(ServerWebExchange serverWebExchange, ServerHttpResponse oldResponse) {
+        ServerHttpResponseDecorator serverHttpResponseDecorator = new ServerHttpResponseDecorator(oldResponse) {
             @Override
             public Mono<Void> writeWith(Publisher<? extends DataBuffer> body) {
                 ModifyResponseBodyGatewayFilterFactory m = new ModifyResponseBodyGatewayFilterFactory(ServerCodecConfigurer.create());
@@ -86,16 +85,14 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
                             HttpHeaders headers = getDelegate().getHeaders();
                             crossAccessSetting(headers);
                             if (!headers.containsKey(HttpHeaders.TRANSFER_ENCODING)) {
-                                messageBody = messageBody.doOnNext(data -> {
-                                    headers.setContentLength(data.readableByteCount());
-                                });
+                                messageBody = messageBody.doOnNext(data -> headers.setContentLength(data.readableByteCount()));
                             }
                             return getDelegate().writeWith(messageBody);
                         }));
             }
         };
 
-        return decoratedResponse;
+        return serverHttpResponseDecorator;
     }
 
     /**

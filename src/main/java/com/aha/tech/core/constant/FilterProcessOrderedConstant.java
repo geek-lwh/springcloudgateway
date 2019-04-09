@@ -9,7 +9,7 @@ import static org.springframework.cloud.gateway.filter.NettyWriteResponseFilter.
  */
 public class FilterProcessOrderedConstant {
 
-    public static int STEP = 20;
+    public static int STEP = 10;
 
     // cpu使用率限流
     public static int CPU_RATE_LIMITER_FILTER_ORDER = 0;
@@ -35,7 +35,7 @@ public class FilterProcessOrderedConstant {
     public static int MODIFY_PARAMS_FILTER_ORDER = MODIFY_REQUEST_HEADER_GATEWAY_FILTER_ORDER + STEP;
 
     // 修改请求返回体过滤器
-    public static int MODIFY_RESPONSE_GATEWAY_FILTER_ORDER = WRITE_RESPONSE_FILTER_ORDER - STEP;
+    public static int MODIFY_RESPONSE_GATEWAY_FILTER_ORDER = MODIFY_PARAMS_FILTER_ORDER + STEP;
 
 
 }
