@@ -35,7 +35,6 @@ public class FallBackController {
      */
     @RequestMapping(value = "/fallback", method = RequestMethod.GET)
     public Mono<ResponseVo> fallBack(ServerWebExchange serverWebExchange) {
-        logger.info("出现额外异常,触发hystrix 降级策略");
         Object c = serverWebExchange.getAttributes().get(ServerWebExchangeUtils.HYSTRIX_EXECUTION_EXCEPTION_ATTR);
         if (c == null) {
             ResponseVo responseVo = ResponseVo.defaultFailureResponseVo();
@@ -44,6 +43,7 @@ public class FallBackController {
         }
 
         Throwable executionException = (Throwable) c;
+        logger.error("出现额外异常,触发hystrix 降级策略", executionException);
         ResponseVo responseVo = buildHystrixResponse(executionException, serverWebExchange);
 
         return Mono.just(responseVo);

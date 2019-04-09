@@ -106,7 +106,7 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
 
         URI uri = serverHttpRequest.getURI();
         String originalUrlPath = uri.getRawPath();
-        logger.info("开始重写请求路径,原路由路径 : {}", originalUrlPath);
+        logger.debug("开始重写请求路径,原路由路径 : {}", originalUrlPath);
         String validPath = httpRewritePathService.excludeInvalidPath(originalUrlPath, SKIP_STRIP_PREFIX_PART);
 
         // 重写请求路径
@@ -123,7 +123,7 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
                 .path(rewritePath)
                 .build();
 
-        logger.info("结束重写请求路径,原路由路径 : {} , 新路由路径", rewritePath);
+        logger.debug("结束重写请求路径,原路由路径 : {} , 新路由路径", rewritePath);
 
         return newRequest;
     }

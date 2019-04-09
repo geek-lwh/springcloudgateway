@@ -46,7 +46,7 @@ public class QpsRateLimiterFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        logger.info("开始执行qps限流过滤器");
+        logger.debug("开始执行qps限流过滤器");
 
         if (!isEnable) {
             return chain.filter(exchange);
