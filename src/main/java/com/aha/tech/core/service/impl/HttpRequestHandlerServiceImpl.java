@@ -136,11 +136,9 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
 
         // 解析authorization
         PairEntity<String> authorization = parseAuthorizationHeader(requestHeaders);
-        logger.debug("authorization : {}", authorization);
         String userName = authorization.getFirstEntity();
         String accessToken = authorization.getSecondEntity();
-        logger.debug("user name : {}", userName);
-        logger.debug("access token : {}", accessToken);
+        logger.debug("user name : {},access token : {},authorization : {}", userName, accessToken, authorization);
 //        serverWebExchange.getAttributes().put(ACCESS_USER_NAME_ATTR,userName);
         return checkPermission(serverWebExchange, userName, accessToken);
     }
