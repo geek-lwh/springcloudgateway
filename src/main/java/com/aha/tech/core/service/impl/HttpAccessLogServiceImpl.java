@@ -11,6 +11,7 @@ import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
 
+import java.net.URI;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -48,10 +49,11 @@ public class HttpAccessLogServiceImpl implements AccessLogService {
         String gUserId = getValueOrDefault(cookieMultiValueMap, "guserid");
         String gUniqId = getValueOrDefault(cookieMultiValueMap, "guniqid");
 
+        URI uri = serverHttpRequest.getURI();
         String cookieString = formatCookieStr(userId, gSsId, gUserId, gUniqId);
         String date = DateUtil.dateByDefaultFormat(new Date(requestTime));
-        String log = String.format("id=%s,time=%s,remote_ip=%s,forwarded_ip=%s,cookie_string=%s,user_agent=%s",
-                id, date, remoteIp, forwardedIps, cookieString, userAgent);
+        String log = String.format("id=%s,time=%s,uri=%s,remote_ip=%s,forwarded_ip=%s,cookie_string=%s,user_agent=%s",
+                id, date, uri, remoteIp, forwardedIps, cookieString, userAgent);
 
         logger.info("接收请求 : {}", log);
     }

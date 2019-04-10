@@ -1,5 +1,6 @@
 package com.aha.tech.core.service.impl;
 
+import com.aha.tech.core.exception.AuthorizationFailedException;
 import com.aha.tech.core.exception.MissAuthorizationHeaderException;
 import com.aha.tech.core.exception.ParseAuthorizationHeaderException;
 import com.aha.tech.core.exception.RejectOptionsMethodException;
@@ -8,6 +9,7 @@ import com.aha.tech.core.model.entity.AuthenticationEntity;
 import com.aha.tech.core.model.entity.PairEntity;
 import com.aha.tech.core.model.entity.RouteEntity;
 import com.aha.tech.core.service.*;
+import com.aha.tech.passportserver.facade.model.vo.UserVo;
 import com.aha.tech.util.IdWorker;
 import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
@@ -166,7 +168,13 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
         }
 
         RequestAddParamsDto requestAddParamsDto = new RequestAddParamsDto();
-        requestAddParamsDto.setUserId(authenticationEntity.getUserVo().getUserId());
+        UserVo userVo = authenticationEntity.getUserVo();
+        if (userVo == null) {
+            logger.error("用户授权信息异常,获取的用户对象为空,access token : {}", accessToken);
+            throw new AuthorizationFailedException();
+        }
+
+        requestAddParamsDto.setUserId(userVo.getUserId());
         serverWebExchange.getAttributes().put(GATEWAY_REQUEST_ADD_PARAMS_ATTR, requestAddParamsDto);
 
         return Boolean.TRUE;

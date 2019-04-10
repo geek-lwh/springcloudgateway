@@ -14,6 +14,10 @@ public class AuthorizationFailedException extends GatewayException {
         super(AUTHORIZATION_FAILED_ERROR_MSG, AUTHORIZATION_FAILED_ERROR_CODE);
     }
 
+    public AuthorizationFailedException(String msg) {
+        super(msg, AUTHORIZATION_FAILED_ERROR_CODE);
+    }
+
     public AuthorizationFailedException(int code,String message){
         super(message,code);
     }
