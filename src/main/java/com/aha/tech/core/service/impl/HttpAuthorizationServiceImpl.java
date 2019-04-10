@@ -83,6 +83,7 @@ public class HttpAuthorizationServiceImpl implements AuthorizationService {
         RpcResponse<UserVo> rpcResponse = passportResource.verify(accessToken);
         int code = rpcResponse.getCode();
         if (code != SUCCESS) {
+            logger.error("访问令牌不合法 : {}", accessToken);
             throw new AuthorizationFailedException(code, rpcResponse.getMessage());
         }
 

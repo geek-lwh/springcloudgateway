@@ -52,7 +52,7 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
 
     private final static String ALL_CONTROL_ALLOW_ORIGIN_ACCESS = "*";
 
-    private final static long CROSS_ACCESS_ALLOW_MAX_AGE = 30l;
+    private final static long CROSS_ACCESS_ALLOW_MAX_AGE = 60l * 60 * 24 * 7;
 
     private final static List<HttpMethod> CROSS_ACCESS_ALLOW_HTTP_METHODS = Lists.newArrayList(HttpMethod.GET, HttpMethod.POST, HttpMethod.DELETE, HttpMethod.PUT);
 

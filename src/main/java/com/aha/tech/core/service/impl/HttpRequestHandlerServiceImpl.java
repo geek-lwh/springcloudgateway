@@ -3,7 +3,6 @@ package com.aha.tech.core.service.impl;
 import com.aha.tech.core.exception.AuthorizationFailedException;
 import com.aha.tech.core.exception.MissAuthorizationHeaderException;
 import com.aha.tech.core.exception.ParseAuthorizationHeaderException;
-import com.aha.tech.core.exception.RejectOptionsMethodException;
 import com.aha.tech.core.model.dto.RequestAddParamsDto;
 import com.aha.tech.core.model.entity.AuthenticationEntity;
 import com.aha.tech.core.model.entity.PairEntity;
@@ -15,7 +14,6 @@ import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.http.server.reactive.ServerHttpResponseDecorator;
@@ -100,11 +98,6 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
     @Override
     public ServerHttpRequest rewriteRequestPath(ServerWebExchange serverWebExchange) {
         ServerHttpRequest serverHttpRequest = serverWebExchange.getRequest();
-
-        HttpMethod httpMethod = serverHttpRequest.getMethod();
-        if (httpMethod.equals(HttpMethod.OPTIONS)) {
-            throw new RejectOptionsMethodException();
-        }
 
         URI uri = serverHttpRequest.getURI();
         String originalUrlPath = uri.getRawPath();
