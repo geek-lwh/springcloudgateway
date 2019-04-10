@@ -154,6 +154,7 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
      */
     private Boolean checkPermission(ServerWebExchange serverWebExchange, String userName, String accessToken) {
         AuthenticationEntity authenticationEntity;
+
         if (VISITOR.equals(userName)) {
             String path = serverWebExchange.getAttribute(GATEWAY_REQUEST_VALID_PATH_ATTR).toString();
             String id = serverWebExchange.getAttribute(GATEWAY_REQUEST_ROUTE_ID_ATTR).toString();
