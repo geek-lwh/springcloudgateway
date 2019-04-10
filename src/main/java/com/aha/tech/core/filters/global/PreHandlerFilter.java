@@ -6,7 +6,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
-import org.springframework.cloud.gateway.support.ServerWebExchangeUtils;
 import org.springframework.core.Ordered;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -21,6 +20,7 @@ import javax.annotation.Resource;
 import java.util.concurrent.CompletableFuture;
 
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.PRE_HANDLER_FILTER_ORDER;
+import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.setResponseStatus;
 
 /**
  * @Author: luweihong
@@ -56,7 +56,7 @@ public class PreHandlerFilter implements GlobalFilter, Ordered {
         HttpHeaders httpHeaders = response.getHeaders();
         httpModifyResponseService.crossAccessSetting(httpHeaders);
         if (httpMethod.equals(HttpMethod.OPTIONS)) {
-            ServerWebExchangeUtils.setResponseStatus(exchange, HttpStatus.OK);
+            setResponseStatus(exchange, HttpStatus.OK);
             return Mono.defer(() -> response.writeWith(Mono.empty()));
         }
 
