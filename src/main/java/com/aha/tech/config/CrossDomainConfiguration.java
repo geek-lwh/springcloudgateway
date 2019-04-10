@@ -19,7 +19,7 @@ public class CrossDomainConfiguration {
     @Bean
     public CorsWebFilter corsWebFilter() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(ALL_CONTROL_ALLOW_ORIGIN_ACCESS);
+        config.addAllowedOrigin(ALL_CONTROL_ALLOW_ORIGIN_ACCESS_2);
         config.setAllowedMethods(CROSS_ACCESS_ALLOW_HTTP_METHODS_2);
         config.setAllowedHeaders(CROSS_ACCESS_ALLOW_ALLOW_HEADERS);
         config.setMaxAge(CROSS_ACCESS_ALLOW_MAX_AGE);

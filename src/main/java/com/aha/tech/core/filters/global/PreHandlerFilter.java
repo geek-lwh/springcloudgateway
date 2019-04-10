@@ -1,13 +1,11 @@
 package com.aha.tech.core.filters.global;
 
-import com.aha.tech.core.service.ModifyResponseService;
 import com.aha.tech.core.service.RequestHandlerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpResponse;
@@ -39,9 +37,6 @@ public class PreHandlerFilter implements GlobalFilter, Ordered {
     @Resource
     private RequestHandlerService httpRequestHandlerService;
 
-    @Resource
-    private ModifyResponseService httpModifyResponseService;
-
     @Override
     public int getOrder() {
         return PRE_HANDLER_FILTER_ORDER;
@@ -53,8 +48,6 @@ public class PreHandlerFilter implements GlobalFilter, Ordered {
 
         HttpMethod httpMethod = exchange.getRequest().getMethod();
         ServerHttpResponse response = exchange.getResponse();
-        HttpHeaders httpHeaders = response.getHeaders();
-//        httpModifyResponseService.crossAccessSetting(httpHeaders);
         if (httpMethod.equals(HttpMethod.OPTIONS)) {
             setResponseStatus(exchange, HttpStatus.OK);
             return Mono.defer(() -> response.writeWith(Mono.empty()));
