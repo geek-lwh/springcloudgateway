@@ -42,7 +42,7 @@ public class RouteConfiguration implements RouteDefinitionLocator {
             needToSyncLocal.compareAndSet(true, false);
         }
 
-        logger.info("运行时路由配置 : {}", runtimeRouteCache);
+        logger.debug("运行时路由配置 : {}", runtimeRouteCache);
         return Flux.fromIterable(runtimeRouteCache);
     }
 

@@ -1,7 +1,5 @@
 package com.aha.tech.core.constant;
 
-import static org.springframework.cloud.gateway.filter.NettyWriteResponseFilter.WRITE_RESPONSE_FILTER_ORDER;
-
 /**
  * @Author: luweihong
  * @Date: 2019/2/20
@@ -11,8 +9,11 @@ public class FilterProcessOrderedConstant {
 
     public static int STEP = 10;
 
+    // 预处理过滤器
+    public static int PRE_HANDLER_FILTER_ORDER = 0;
+
     // cpu使用率限流
-    public static int CPU_RATE_LIMITER_FILTER_ORDER = 0;
+    public static int CPU_RATE_LIMITER_FILTER_ORDER = PRE_HANDLER_FILTER_ORDER + STEP;
 
     // qps限流
     public static int QPS_RATE_LIMITER_FILTER_ORDER = CPU_RATE_LIMITER_FILTER_ORDER + STEP;
@@ -20,10 +21,8 @@ public class FilterProcessOrderedConstant {
     // ip限流
     public static int IP_RATE_LIMITER_FILTER_ORDER = QPS_RATE_LIMITER_FILTER_ORDER + STEP;
 
-    public static int ACCESS_LOG_FILTER_ORDER = IP_RATE_LIMITER_FILTER_ORDER + STEP;
-
     // 重写请求路径过滤器
-    public static int REWRITE_REQUEST_PATH_FILTER_ORDER = ACCESS_LOG_FILTER_ORDER + STEP;
+    public static int REWRITE_REQUEST_PATH_FILTER_ORDER = IP_RATE_LIMITER_FILTER_ORDER + STEP;
 
     // 全新啊校验过滤器
     public static int AUTH_GATEWAY_FILTER_ORDER = REWRITE_REQUEST_PATH_FILTER_ORDER + STEP;

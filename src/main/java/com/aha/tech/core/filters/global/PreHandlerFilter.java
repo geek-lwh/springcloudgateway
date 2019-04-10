@@ -20,16 +20,18 @@ import reactor.core.publisher.Mono;
 import javax.annotation.Resource;
 import java.util.concurrent.CompletableFuture;
 
-import static com.aha.tech.core.constant.FilterProcessOrderedConstant.ACCESS_LOG_FILTER_ORDER;
+import static com.aha.tech.core.constant.FilterProcessOrderedConstant.PRE_HANDLER_FILTER_ORDER;
 
 /**
  * @Author: luweihong
  * @Date: 2019/4/8
+ *
+ * 预处理过滤器
  */
 @Component
-public class PreFilter implements GlobalFilter, Ordered {
+public class PreHandlerFilter implements GlobalFilter, Ordered {
 
-    private static final Logger logger = LoggerFactory.getLogger(PreFilter.class);
+    private static final Logger logger = LoggerFactory.getLogger(PreHandlerFilter.class);
 
     @Resource
     private ThreadPoolTaskExecutor printAccessLogThreadPool;
@@ -42,7 +44,7 @@ public class PreFilter implements GlobalFilter, Ordered {
 
     @Override
     public int getOrder() {
-        return ACCESS_LOG_FILTER_ORDER;
+        return PRE_HANDLER_FILTER_ORDER;
     }
 
     @Override
@@ -52,9 +54,9 @@ public class PreFilter implements GlobalFilter, Ordered {
         HttpMethod httpMethod = exchange.getRequest().getMethod();
         ServerHttpResponse response = exchange.getResponse();
         HttpHeaders httpHeaders = response.getHeaders();
+        httpModifyResponseService.crossAccessSetting(httpHeaders);
         if (httpMethod.equals(HttpMethod.OPTIONS)) {
             ServerWebExchangeUtils.setResponseStatus(exchange, HttpStatus.OK);
-            httpModifyResponseService.crossAccessSetting(httpHeaders);
             return Mono.defer(() -> response.writeWith(Mono.empty()));
         }
 
