@@ -54,7 +54,7 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
 
     private final static long CROSS_ACCESS_ALLOW_MAX_AGE = 60l * 60 * 24 * 7;
 
-    private final static List<HttpMethod> CROSS_ACCESS_ALLOW_HTTP_METHODS = Lists.newArrayList(HttpMethod.GET, HttpMethod.POST, HttpMethod.DELETE, HttpMethod.PUT);
+    private final static List<HttpMethod> CROSS_ACCESS_ALLOW_HTTP_METHODS = Lists.newArrayList(HttpMethod.GET, HttpMethod.POST, HttpMethod.DELETE, HttpMethod.PUT, HttpMethod.OPTIONS);
 
     private final static List<String> CROSS_ACCESS_ALLOW_ALLOW_HEADERS = Lists.newArrayList("Authorization", "Origin", "X-Requested-With", "X-Env", "X-Request-Page", "Content-Type", "Accept");
 
