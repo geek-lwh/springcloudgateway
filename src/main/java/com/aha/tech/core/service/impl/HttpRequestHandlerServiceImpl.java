@@ -2,6 +2,7 @@ package com.aha.tech.core.service.impl;
 
 import com.aha.tech.core.exception.AuthorizationFailedException;
 import com.aha.tech.core.exception.MissAuthorizationHeaderException;
+import com.aha.tech.core.exception.NoSuchUserNameException;
 import com.aha.tech.core.exception.ParseAuthorizationHeaderException;
 import com.aha.tech.core.model.dto.RequestAddParamsDto;
 import com.aha.tech.core.model.entity.AuthenticationEntity;
@@ -135,8 +136,11 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
 
         // 解析authorization
         PairEntity<String> authorization = parseAuthorizationHeader(requestHeaders);
+        logger.debug("authorization : {}", authorization);
         String userName = authorization.getFirstEntity();
         String accessToken = authorization.getSecondEntity();
+        logger.debug("user name : {}", userName);
+        logger.debug("access token : {}", accessToken);
 //        serverWebExchange.getAttributes().put(ACCESS_USER_NAME_ATTR,userName);
         return checkPermission(serverWebExchange, userName, accessToken);
     }
@@ -149,15 +153,16 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
      * @return
      */
     private Boolean checkPermission(ServerWebExchange serverWebExchange, String userName, String accessToken) {
-        AuthenticationEntity authenticationEntity = new AuthenticationEntity();
+        AuthenticationEntity authenticationEntity;
         if (VISITOR.equals(userName)) {
             String path = serverWebExchange.getAttribute(GATEWAY_REQUEST_VALID_PATH_ATTR).toString();
             String id = serverWebExchange.getAttribute(GATEWAY_REQUEST_ROUTE_ID_ATTR).toString();
             authenticationEntity = httpAuthorizationService.verifyVisitorAccessToken(id, path, accessToken);
-        }
-
-        if (NEED_AUTHORIZATION.equals(userName)) {
+        } else if (NEED_AUTHORIZATION.equals(userName)) {
             authenticationEntity = httpAuthorizationService.verifyUser(accessToken);
+        } else {
+            logger.error("无效的user_name : {}", userName);
+            throw new NoSuchUserNameException(String.format("无效的user_name对象 : %s", userName));
         }
 
         RequestAddParamsDto requestAddParamsDto = new RequestAddParamsDto();

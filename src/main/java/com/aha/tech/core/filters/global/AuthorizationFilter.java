@@ -62,6 +62,7 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
     private Mono<Void> writeWithGatewayError(ServerWebExchange exchange, String path, GatewayException e) {
         logger.warn("访问路径: {} 失败,原因 : 权限不足", path, e);
         ResponseVo rpcResponse = new ResponseVo(e.getCode(), e.getMessage());
+        logger.warn("权限异常 {}", rpcResponse);
         return WriteResponseSupport.write(exchange, rpcResponse, HttpStatus.UNAUTHORIZED);
     }
 

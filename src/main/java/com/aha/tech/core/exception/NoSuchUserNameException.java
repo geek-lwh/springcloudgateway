@@ -14,4 +14,8 @@ public class NoSuchUserNameException extends GatewayException {
         super(NO_SUCH_USER_NAME_ERROR_MSG, NO_SUCH_USER_NAME_ERROR_CODE);
     }
 
+    public NoSuchUserNameException(String msg) {
+        super(msg, NO_SUCH_USER_NAME_ERROR_CODE);
+    }
+
 }
