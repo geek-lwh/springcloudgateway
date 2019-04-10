@@ -54,7 +54,7 @@ public class PreHandlerFilter implements GlobalFilter, Ordered {
         HttpMethod httpMethod = exchange.getRequest().getMethod();
         ServerHttpResponse response = exchange.getResponse();
         HttpHeaders httpHeaders = response.getHeaders();
-        httpModifyResponseService.crossAccessSetting(httpHeaders);
+//        httpModifyResponseService.crossAccessSetting(httpHeaders);
         if (httpMethod.equals(HttpMethod.OPTIONS)) {
             setResponseStatus(exchange, HttpStatus.OK);
             return Mono.defer(() -> response.writeWith(Mono.empty()));

@@ -99,7 +99,9 @@ public class HeaderFieldConstant {
 
     public static final String HEADER_ACCESS_CONTROL_ALLOW_HEADERS = "Access-Control-Allow-Headers";
 
-    public static final String ALL_CONTROL_ALLOW_ORIGIN_ACCESS = "*";
+    public static final List<String> ALL_CONTROL_ALLOW_ORIGIN_ACCESS = Lists.newArrayList("*");
+
+    public static final String ALL_CONTROL_ALLOW_ORIGIN_ACCESS_2 = "*";
 
     public static final long CROSS_ACCESS_ALLOW_MAX_AGE = 60l * 60 * 24 * 7;
 

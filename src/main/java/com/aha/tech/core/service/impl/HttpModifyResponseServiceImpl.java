@@ -91,7 +91,7 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
      */
     @Override
     public void crossAccessSetting(HttpHeaders httpHeaders) {
-        httpHeaders.setAccessControlAllowOrigin(ALL_CONTROL_ALLOW_ORIGIN_ACCESS);
+        httpHeaders.setAccessControlAllowOrigin(ALL_CONTROL_ALLOW_ORIGIN_ACCESS_2);
         httpHeaders.setAccessControlAllowMethods(CROSS_ACCESS_ALLOW_HTTP_METHODS);
         httpHeaders.setAccessControlMaxAge(CROSS_ACCESS_ALLOW_MAX_AGE);
         httpHeaders.setAccessControlAllowHeaders(CROSS_ACCESS_ALLOW_ALLOW_HEADERS);
