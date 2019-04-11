@@ -3,6 +3,7 @@ package com.aha.tech.core.controller;
 import com.aha.tech.commons.utils.DateUtil;
 import com.aha.tech.core.model.vo.HystrixDataVo;
 import com.aha.tech.core.model.vo.ResponseVo;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.support.ServerWebExchangeUtils;
@@ -26,7 +27,7 @@ public class FallBackController {
 
     private static final Logger logger = LoggerFactory.getLogger(FallBackController.class);
 
-    private static final String HYSTRIX_ERROR_MESSAGE_PREFIX = "接口熔断";
+    private static final String HYSTRIX_ERROR_MESSAGE_PREFIX = "接口熔断,未捕获到具体错误!";
 
     /**
      * 降级策略
@@ -65,10 +66,10 @@ public class FallBackController {
 
         hystrixDataVo.setTime(DateUtil.currentDateByDefaultFormat());
 
-        String originalUrlPath = serverWebExchange.getAttributes().get(GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR).toString();
+        String originalUrlPath = serverWebExchange.getAttributes().getOrDefault(GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR, Strings.EMPTY).toString();
         hystrixDataVo.setOriginalUrlPath(originalUrlPath);
 
-        String uri = serverWebExchange.getAttributes().get(GATEWAY_REQUEST_REWRITE_PATH_ATTR).toString();
+        String uri = serverWebExchange.getAttributes().getOrDefault(GATEWAY_REQUEST_REWRITE_PATH_ATTR, Strings.EMPTY).toString();
         hystrixDataVo.setUri(uri);
 
         responseVo.setData(hystrixDataVo);

@@ -1,4 +1,4 @@
-package com.aha.tech.core.filters.normal;
+package com.aha.tech.core.filters.web;
 
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;

@@ -86,6 +86,10 @@ public class RouteConfiguration implements RouteDefinitionLocator {
         return routeDefinition;
     }
 
+    private static final String PREDICATE_PATH_TYPE_NAME = "Path";
+
+    private static final String PREDICATE_PATTERN_KEY = "pattern";
+
     /**
      * 配置路由的匹配模式和匹配表达式
      * @param pattern
@@ -93,25 +97,34 @@ public class RouteConfiguration implements RouteDefinitionLocator {
      */
     private PredicateDefinition predicateDefinition(String pattern) {
         PredicateDefinition predicate = new PredicateDefinition();
-        predicate.setName("Path");
+        predicate.setName(PREDICATE_PATH_TYPE_NAME);
         Map<String, String> predicateParams = new HashMap<>(8);
-        predicateParams.put("pattern", pattern);
+        predicateParams.put(PREDICATE_PATTERN_KEY, pattern);
         predicate.setArgs(predicateParams);
 
         return predicate;
     }
 
+    private static final String FALLBACK_GATEWAY_FILTER_FACTORY_NAME = "Fallback";
+
+    private static final String HYSTRIX_COMMAND_KEY = "name";
+
+    private static final String ON_ERROR_RESUME_ADDRESS_KEY = "fallbackUri";
+
+    private static final String ON_ERROR_RESUME_ADDRESS_VALUE = "forward:/fallback";
+
     /**
      * 配置路由的普通过滤器
+     * 特殊配置 fallback
      * @param name
      * @return
      */
     private FilterDefinition hystrixFilter(String name) {
         FilterDefinition filter1 = new FilterDefinition();
-        filter1.setName("Hystrix");
+        filter1.setName(FALLBACK_GATEWAY_FILTER_FACTORY_NAME);
         Map<String, String> filter1Params = Maps.newHashMapWithExpectedSize(2);
-        filter1Params.put("name", name);
-        filter1Params.put("fallbackUri", "forward:/fallback");
+        filter1Params.put(HYSTRIX_COMMAND_KEY, name);
+        filter1Params.put(ON_ERROR_RESUME_ADDRESS_KEY, ON_ERROR_RESUME_ADDRESS_VALUE);
         filter1.setArgs(filter1Params);
 
         return filter1;
