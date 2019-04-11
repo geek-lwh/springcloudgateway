@@ -90,8 +90,8 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
             String os = arr[1];
             String version = arr[2];
             if (os.equals(WebClientTypeEnum.ANDROID.getName()) || os.equals(WebClientTypeEnum.IOS.getName())) {
-                httpHeaders.add(HEADER_OS, os);
-                httpHeaders.add(HEADER_VERSION, version);
+                httpHeaders.set(HEADER_OS, os);
+                httpHeaders.set(HEADER_VERSION, version);
             }
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
