@@ -71,6 +71,7 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
      * @param e
      * @return
      */
+    @Deprecated
     private Mono<Void> writeWithError(ServerWebExchange exchange, Exception e) {
         logger.error("权限校验过滤器出现异常", e);
         ResponseVo rpcResponse = ResponseVo.defaultFailureResponseVo();
