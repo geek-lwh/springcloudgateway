@@ -45,9 +45,10 @@ public class ModifyRequestHeaderFilter implements GlobalFilter, Ordered {
         try {
             ServerHttpRequest serverHttpRequest = exchange.getRequest();
             HttpHeaders httpHeaders = serverHttpRequest.getHeaders();
-            logger.debug("原始报头信息 : {}", httpHeaders);
+
+            httpHeaders.forEach((key, value) -> logger.debug("原始报头信息 key : {},value : {}", key, value));
             HttpHeaders newHttpHeaders = httpRequestHandlerService.modifyRequestHeaders(httpHeaders);
-            logger.debug("新的报头信息 : {}", newHttpHeaders);
+            newHttpHeaders.forEach((key, value) -> logger.debug("新的报头信息 key : {},value : {}", key, value));
             newRequest = new ServerHttpRequestDecorator(serverHttpRequest) {
                 @Override
                 public HttpHeaders getHeaders() {

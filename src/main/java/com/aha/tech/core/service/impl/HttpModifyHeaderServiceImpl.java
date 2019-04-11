@@ -182,7 +182,7 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
         httpHeaders.remove(HEADER_PRAGMA);
         httpHeaders.remove(HEADER_CACHE_CONTROL);
         httpHeaders.remove(HEADER_X_ENV);
-        httpHeaders.remove(HEADER_REFERER);
+//        httpHeaders.remove(HEADER_REFERER);
         httpHeaders.remove(HEADER_ORIGIN);
         httpHeaders.remove(HEADER_X_REQUEST_PAGE);
         httpHeaders.remove(HEADER_HOST);

@@ -186,7 +186,6 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
     public HttpHeaders modifyRequestHeaders(HttpHeaders oldHeaders) {
         HttpHeaders newHeaders = new HttpHeaders();
         copyMultiValueMap(oldHeaders, newHeaders);
-        logger.debug("old headers : {} ,new headers : {}", oldHeaders, newHeaders);
 
         httpModifyHeaderService.initHeaders(newHeaders);
         httpModifyHeaderService.versionSetting(newHeaders);
