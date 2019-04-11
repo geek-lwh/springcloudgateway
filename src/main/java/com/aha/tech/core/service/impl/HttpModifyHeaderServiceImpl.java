@@ -198,17 +198,17 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
      */
     private void parseAndSetPk(String encodePK, HttpHeaders httpHeaders) {
         if (StringUtils.isBlank(encodePK)) {
-            httpHeaders.add(HEADER_PK, Strings.EMPTY);
+            httpHeaders.set(HEADER_PK, Strings.EMPTY);
             return;
         }
 
         String pk = new String(Base64.decodeBase64(encodePK), StandardCharsets.UTF_8);
         if (StringUtils.isBlank(pk) || !pk.startsWith(Separator.SLASH_MARK)) {
-            httpHeaders.add(HEADER_PK, Strings.EMPTY);
+            httpHeaders.set(HEADER_PK, Strings.EMPTY);
             return;
         }
 
-        httpHeaders.add(HEADER_PK, pk);
+        httpHeaders.set(HEADER_PK, pk);
     }
 
     /**
@@ -221,25 +221,25 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
      */
     private void parseAndSetPp(String encodePP, HttpHeaders httpHeaders) {
         if (StringUtils.isBlank(encodePP)) {
-            httpHeaders.add(HEADER_PP, Strings.EMPTY);
+            httpHeaders.set(HEADER_PP, Strings.EMPTY);
             return;
         }
 
         String pp = new String(Base64.decodeBase64(encodePP), StandardCharsets.UTF_8);
         if (!pp.contains(Separator.DOLLAR_MARK)) {
             logger.error("不合法的pp值,缺少'&'符号 pp : {},encode_pp : {}", pp, encodePP);
-            httpHeaders.add(HEADER_PP, Strings.EMPTY);
+            httpHeaders.set(HEADER_PP, Strings.EMPTY);
             return;
         }
 
         if (!verifyPp(pp)) {
             logger.error("pp验证不通过! pp : {},encode_pp : {}", pp, encodePP);
-            httpHeaders.add(HEADER_PP, Strings.EMPTY);
+            httpHeaders.set(HEADER_PP, Strings.EMPTY);
             return;
         }
 
         String v = pp.substring(0, pp.indexOf(Separator.DOLLAR_MARK));
-        httpHeaders.add(HEADER_PP, v);
+        httpHeaders.set(HEADER_PP, v);
     }
 
     /**
