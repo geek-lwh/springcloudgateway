@@ -30,7 +30,7 @@ public class ParseHeaderTest {
     @DisplayName("解析pp的测试类目")
     public void parsePp() {
         logger.info("<<<< {} 开始解析pp的测试类目", DateUtil.currentDateByDefaultFormat());
-        String input = "NTA1NjM3OjEwMDA3NzowOjEzOTczMjM6MjowJHBwOGIxMmIwZmFmNDA2NGZkMzZjMzMzZDdlM2ZhMWUzMzI=";
+        String input = "NTA1MDY5OjEwMDMyNTowOjYyODk6MTowJHBwOGVlZWU1ZGU5Mjc3MTcxNWY3NzgyZmY0Y2ZjODkxNDE=";
         String pp = new String(org.apache.commons.codec.binary.Base64.decodeBase64(input), StandardCharsets.UTF_8);
         boolean b = ParseHeadersSupport.verifyPp(pp);
         logger.info("入参 : {}", input);

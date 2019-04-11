@@ -52,7 +52,7 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
     @Override
     public void initHeaders(HttpHeaders httpHeaders) {
         MediaType mediaType = httpHeaders.getContentType();
-        if(mediaType == null){
+        if (mediaType == null) {
             httpHeaders.setContentType(MediaType.APPLICATION_JSON_UTF8);
         }
         String realIp = parseHeaderIp(httpHeaders);
@@ -116,7 +116,7 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
             for (Map.Entry<String, Object> entry : xEnvMap.entrySet()) {
                 String key = entry.getKey();
                 String value = String.valueOf(entry.getValue());
-                xEnvSetting(key,value,httpHeaders);
+                xEnvSetting(key, value, httpHeaders);
             }
         } catch (IOException e) {
             logger.error("parse core error", e);
@@ -129,7 +129,7 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
      * @param value
      * @param httpHeaders
      */
-    private void xEnvSetting(String key,String value,HttpHeaders httpHeaders){
+    private void xEnvSetting(String key, String value, HttpHeaders httpHeaders) {
         switch (key) {
             case X_ENV_FIELD_PK:
                 parseAndSetPk(value, httpHeaders);
@@ -215,6 +215,7 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
      * 解析header 并且设置 header 头字段 pp
      * var pp_raw = product_id:user_id:is_poster: group_id:open_group:poster_id
      * pp = pp_raw + '$' + 'pp' +md5("hjm?" + md5(string({"pp":pp_raw}) + "Aha^_^")
+     * pp = 505069:100325:0:6289:1:0$pp8eeee5de92771715f7782ff4cfc89141
      * @param encodePP
      * @param httpHeaders
      */
@@ -225,19 +226,19 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
         }
 
         String pp = new String(Base64.decodeBase64(encodePP), StandardCharsets.UTF_8);
-        if (StringUtils.isBlank(pp) || !pp.contains(Separator.AND_MARK)) {
+        if (!pp.contains(Separator.DOLLAR_MARK)) {
+            logger.error("不合法的pp值,缺少'&'符号 pp : {},encode_pp : {}", pp, encodePP);
             httpHeaders.add(HEADER_PP, Strings.EMPTY);
             return;
         }
-
-        String v = pp.substring(0, pp.indexOf(Separator.AND_MARK));
 
         if (!verifyPp(pp)) {
-            logger.error("pp验证不通过!");
+            logger.error("pp验证不通过! pp : {},encode_pp : {}", pp, encodePP);
             httpHeaders.add(HEADER_PP, Strings.EMPTY);
             return;
         }
 
+        String v = pp.substring(0, pp.indexOf(Separator.DOLLAR_MARK));
         httpHeaders.add(HEADER_PP, v);
     }
 
