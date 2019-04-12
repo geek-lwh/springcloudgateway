@@ -62,8 +62,8 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
 
         httpHeaders.set(HEADER_X_FORWARDED_FOR, realIp);
         httpHeaders.set(HEADER_TOKEN, DEFAULT_X_TOKEN_VALUE);
-        httpHeaders.add(HEADER_OS, DEFAULT_OS);
-        httpHeaders.add(HEADER_VERSION, DEFAULT_VERSION);
+        httpHeaders.set(HEADER_OS, DEFAULT_OS);
+        httpHeaders.set(HEADER_VERSION, DEFAULT_VERSION);
     }
 
     /**
