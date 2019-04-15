@@ -95,7 +95,7 @@ public class RedisConfiguration {
      * @param database redis 实例编号
      */
     RedisStandaloneConfiguration redisStandaloneConfiguration(String host, Integer port, String password, Integer database) {
-        logger.info(String.format("初始化公用redis ----> url : %s:%s,使用database [%s]", host, port, database));
+        logger.info(String.format("初始化公用redis ----> url : %s:%s,使用database [%s],password=%s", host, port, database, password));
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host, port);
         config.setPassword(RedisPassword.of(password));
         config.setDatabase(database);
