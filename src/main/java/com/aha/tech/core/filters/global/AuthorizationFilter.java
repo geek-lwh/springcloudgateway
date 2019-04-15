@@ -3,6 +3,7 @@ package com.aha.tech.core.filters.global;
 import com.aha.tech.core.constant.FilterProcessOrderedConstant;
 import com.aha.tech.core.exception.GatewayException;
 import com.aha.tech.core.model.vo.ResponseVo;
+import com.aha.tech.core.service.AccessLogService;
 import com.aha.tech.core.service.RequestHandlerService;
 import com.aha.tech.core.support.WriteResponseSupport;
 import org.apache.commons.lang3.StringUtils;
@@ -34,6 +35,9 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
     @Resource
     private RequestHandlerService httpRequestHandlerService;
 
+    @Resource
+    private AccessLogService httpAccessLogServiceImpl;
+
     @Override
     public int getOrder() {
         return FilterProcessOrderedConstant.AUTH_GATEWAY_FILTER_ORDER;
@@ -47,6 +51,7 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
         try {
             httpRequestHandlerService.authorize(exchange);
         } catch (GatewayException ge) {
+            httpAccessLogServiceImpl.printResponseInfo(exchange.getResponse(), exchange.getAttributes());
             return Mono.defer(() -> writeWithGatewayError(exchange, path, ge));
         }
 
