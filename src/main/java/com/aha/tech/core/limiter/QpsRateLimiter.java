@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.ratelimit.AbstractRateLimiter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Component;
@@ -32,8 +31,8 @@ import static com.aha.tech.core.support.LimiterAlgorithmSupport.getHeaders;
  *
  * qps 限流器
  */
-@Primary
-@Component
+//@Primary
+@Component("qpsRateLimiter")
 public class QpsRateLimiter extends AbstractRateLimiter<QpsRateLimiter.Config> implements ApplicationContextAware {
 
     public static final String CONFIGURATION_PROPERTY_NAME = "redis-rate-limiter";

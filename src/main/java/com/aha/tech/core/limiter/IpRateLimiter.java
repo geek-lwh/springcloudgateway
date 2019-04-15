@@ -12,6 +12,7 @@ import org.springframework.cloud.gateway.filter.ratelimit.AbstractRateLimiter;
 import org.springframework.cloud.gateway.filter.ratelimit.RateLimiter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Component;
@@ -32,7 +33,8 @@ import static com.aha.tech.core.support.LimiterAlgorithmSupport.getHeaders;
  *
  *  ip限流器
  */
-@Component
+@Primary
+@Component("ipRateLimiter")
 public class IpRateLimiter extends AbstractRateLimiter<IpRateLimiter.Config> implements ApplicationContextAware {
 
     public static final String CONFIGURATION_PROPERTY_NAME = "redis-rate-limiter";
