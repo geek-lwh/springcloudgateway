@@ -66,7 +66,7 @@ dependencies {
 
     // redis dependency
     compile('org.springframework.boot:spring-boot-starter-data-redis-reactive')
-    compile('org.springframework.boot:spring-boot-starter-data-redis')
+//    compile('org.springframework.boot:spring-boot-starter-data-redis')
     compile('org.apache.commons:commons-pool2')
 
     // http
