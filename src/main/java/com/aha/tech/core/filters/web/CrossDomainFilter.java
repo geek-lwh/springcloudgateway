@@ -31,10 +31,10 @@ public class CrossDomainFilter implements WebFilter {
             if (request.getMethod() == HttpMethod.OPTIONS) {
                 ServerHttpResponse response = serverWebExchange.getResponse();
                 HttpHeaders httpHeaders = response.getHeaders();
-                httpHeaders.setAccessControlAllowOrigin(ALL_CONTROL_ALLOW_ORIGIN_ACCESS_2);
-                httpHeaders.setAccessControlAllowMethods(CROSS_ACCESS_ALLOW_HTTP_METHODS);
-                httpHeaders.setAccessControlMaxAge(CROSS_ACCESS_ALLOW_MAX_AGE);
-                httpHeaders.setAccessControlAllowHeaders(CROSS_ACCESS_ALLOW_ALLOW_HEADERS);
+                httpHeaders.setAccessControlAllowOrigin(HEADER_ALL_CONTROL_ALLOW_ORIGIN_ACCESS);
+                httpHeaders.setAccessControlAllowMethods(HEADER_CROSS_ACCESS_ALLOW_HTTP_METHODS);
+                httpHeaders.setAccessControlMaxAge(HEADER_CROSS_ACCESS_ALLOW_MAX_AGE);
+                httpHeaders.setAccessControlAllowHeaders(HEADER_CROSS_ACCESS_ALLOW_ALLOW_HEADERS);
                 response.setStatusCode(HttpStatus.OK);
                 return Mono.empty();
             }

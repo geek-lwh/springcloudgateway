@@ -41,14 +41,14 @@ public class RewritePathFilter implements GlobalFilter, Ordered {
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         logger.debug("进入重写请求路径网关过滤器");
 
-        ServerHttpRequest newRequest;
         try {
-            newRequest = httpRequestHandlerService.rewriteRequestPath(exchange);
+            ServerHttpRequest newRequest = httpRequestHandlerService.rewriteRequestPath(exchange);
+            return chain.filter(exchange.mutate().request(newRequest).build());
         } catch (GatewayException e) {
+            httpRequestHandlerService.writeResultInfo(exchange);
             return Mono.defer(() -> writeError(exchange, e));
         }
 
-        return chain.filter(exchange.mutate().request(newRequest).build());
     }
 
 }

@@ -19,6 +19,14 @@ public interface RequestHandlerService {
     void writeAccessInfo(ServerWebExchange serverWebExchange);
 
     /**
+     * 校验请求合法性
+     * @param serverHttpRequest
+     * @param httpHeaders
+     * @return
+     */
+    boolean verifyRequestValid(ServerHttpRequest serverHttpRequest, HttpHeaders httpHeaders, String originalPath);
+
+    /**
      * 打印结果
      * @param serverWebExchange
      */

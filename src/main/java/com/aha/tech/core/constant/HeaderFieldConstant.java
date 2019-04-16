@@ -91,24 +91,27 @@ public class HeaderFieldConstant {
 
     public static final String HEADER_OS = "os";
 
-    public static final String HEADER_ACCESS_CONTROL_ALLOW_ORIGIN = "Access-Control-Allow-Origin";
+    public static final String HEADER_ALL_CONTROL_ALLOW_ORIGIN_ACCESS = "*";
 
-    public static final String HEADER_ACCESS_CONTROL_ALLOW_METHODS = "Access-Control-Allow-Methods";
+    public static final long HEADER_CROSS_ACCESS_ALLOW_MAX_AGE = 60l * 60 * 24 * 7;
 
-    public static final String HEADER_ACCESS_CONTROL_MAX_AGE = "Access-Control-Max-Age";
+    public static final List<HttpMethod> HEADER_CROSS_ACCESS_ALLOW_HTTP_METHODS = Lists.newArrayList(HttpMethod.GET, HttpMethod.POST, HttpMethod.DELETE, HttpMethod.PUT);
 
-    public static final String HEADER_ACCESS_CONTROL_ALLOW_HEADERS = "Access-Control-Allow-Headers";
+    public static final List<String> HEADER_CROSS_ACCESS_ALLOW_ALLOW_HEADERS = Lists.newArrayList("Authorization", "Origin", "X-Requested-With", "X-Env", "X-Request-Page", "Content-Type", "Accept");
 
-    public static final List<String> ALL_CONTROL_ALLOW_ORIGIN_ACCESS = Lists.newArrayList("*");
+    // 时间错
+    public static final String HEADER_X_CA_TIMESTAMP = "X-Ca-Timestamp";
 
-    public static final String ALL_CONTROL_ALLOW_ORIGIN_ACCESS_2 = "*";
+    // 签名
+    public static final String HEADER_X_CA_SIGNATURE = "X-Ca-Signature";
 
-    public static final long CROSS_ACCESS_ALLOW_MAX_AGE = 60l * 60 * 24 * 7;
+    // 版本
+    public static final String HEADER_X_CA_VERSION = "X-Ca-Version";
 
-    public static final List<HttpMethod> CROSS_ACCESS_ALLOW_HTTP_METHODS = Lists.newArrayList(HttpMethod.GET, HttpMethod.POST, HttpMethod.DELETE, HttpMethod.PUT);
+    // body签名
+    public static final String HEADER_X_CA_CONTENT = "X-Ca-Content";
 
-    public static final List<String> CROSS_ACCESS_ALLOW_HTTP_METHODS_2 = Lists.newArrayList("GET", "POST", "DELETE", "PUT");
-
-    public static final List<String> CROSS_ACCESS_ALLOW_ALLOW_HEADERS = Lists.newArrayList("Authorization", "Origin", "X-Requested-With", "X-Env", "X-Request-Page", "Content-Type", "Accept");
+    // X-Ca-Version 中的值 代表版本号
+    public static final String VERSION_FROYO = "Froyo";
 
 }

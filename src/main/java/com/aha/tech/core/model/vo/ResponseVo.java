@@ -3,6 +3,7 @@ package com.aha.tech.core.model.vo;
 import com.aha.tech.commons.constants.ResponseConstants;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.springframework.http.HttpStatus;
 
 /**
  * @Author: luweihong
@@ -40,6 +41,18 @@ public class ResponseVo<T> {
 
     public static ResponseVo defaultFailureResponseVo() {
         return new ResponseVo(ResponseConstants.FAILURE);
+    }
+
+    /**
+     * 构建一个校验请求失败的返回体
+     * @return
+     */
+    public static ResponseVo getFailEncryptResponseVo() {
+        ResponseVo responseVo = new ResponseVo();
+        responseVo.setCode(HttpStatus.FORBIDDEN.value());
+        responseVo.setMessage("");
+
+        return responseVo;
     }
 
     public int getCode() {

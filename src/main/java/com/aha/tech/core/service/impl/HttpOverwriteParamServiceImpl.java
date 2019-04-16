@@ -2,6 +2,7 @@ package com.aha.tech.core.service.impl;
 
 import com.aha.tech.core.model.dto.RequestAddParamsDto;
 import com.aha.tech.core.service.OverwriteParamService;
+import com.aha.tech.core.service.VerifyRequestService;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import org.slf4j.Logger;
@@ -22,8 +23,11 @@ import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import javax.annotation.Resource;
 import java.net.URI;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static com.aha.tech.core.constant.HeaderFieldConstant.HEADER_X_CA_TIMESTAMP;
 
 /**
  * @Author: luweihong
@@ -36,6 +40,9 @@ public class HttpOverwriteParamServiceImpl implements OverwriteParamService {
 
     private static final String USER_ID_FIELD = "user_id";
 
+    @Resource
+    private VerifyRequestService httpVerifyRequestService;
+
     /**
      * 修改POST请求参数
      * @param requestAddParamsDto
@@ -46,8 +53,20 @@ public class HttpOverwriteParamServiceImpl implements OverwriteParamService {
     @Override
     public Mono<Void> modifyRequestBody(RequestAddParamsDto requestAddParamsDto, GatewayFilterChain chain, ServerWebExchange exchange) {
         ServerRequest serverRequest = new DefaultServerRequest(exchange);
+        HttpHeaders headers = new HttpHeaders();
+        headers.putAll(exchange.getRequest().getHeaders());
+
         AtomicInteger length = new AtomicInteger();
         Mono<String> modifiedBody = serverRequest.bodyToMono(String.class).flatMap(body -> {
+            // todo 校验body,如果不正确则抛出异常
+            String timestamp = headers.getFirst(HEADER_X_CA_TIMESTAMP);
+            Boolean valid = httpVerifyRequestService.verifyBody(body, timestamp);
+            if (!valid) {
+//                logger.error("url校验不通过,uri={},timestamp={},",originalPath,httpHeaders.getFirst(HEADER_X_CA_TIMESTAMP));
+//                httpRequestHandlerService.writeResultInfo(exchange);
+//                ResponseVo responseVo = ResponseVo.getFailEncryptResponseVo();
+//                return Mono.defer(() -> write(exchange, responseVo, HttpStatus.FORBIDDEN));
+            }
             JSONObject obj = JSON.parseObject(body);
             obj.put(USER_ID_FIELD, requestAddParamsDto.getUserId());
             String newBody = obj.toJSONString();
@@ -55,8 +74,6 @@ public class HttpOverwriteParamServiceImpl implements OverwriteParamService {
             return Mono.just(newBody);
         });
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.putAll(exchange.getRequest().getHeaders());
 
         CachedBodyOutputMessage outputMessage = new CachedBodyOutputMessage(exchange, headers);
         BodyInserter bodyInserter = BodyInserters.fromPublisher(modifiedBody, String.class);

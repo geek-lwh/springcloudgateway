@@ -6,6 +6,7 @@ import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpCookie;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Service;
@@ -69,8 +70,12 @@ public class HttpAccessLogServiceImpl implements AccessLogService {
         Long requestTime = (Long) attributes.getOrDefault(ACCESS_REQUEST_TIME_ATTR, System.currentTimeMillis());
         Long endTime = System.currentTimeMillis();
         Long cost = endTime - requestTime;
+        HttpStatus status = serverHttpResponse.getStatusCode();
+        if (status == null) {
+            status = HttpStatus.BAD_REQUEST;
+        }
 
-        logger.info("完成请求 id={},status={},cost={}", id, serverHttpResponse.getStatusCode(), cost);
+        logger.info("完成请求 id={},status={},cost={}", id, status, cost);
     }
 
     /**

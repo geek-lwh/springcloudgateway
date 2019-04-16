@@ -12,6 +12,7 @@ import com.aha.tech.core.service.*;
 import com.aha.tech.passportserver.facade.model.vo.UserVo;
 import com.aha.tech.util.IdWorker;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -29,7 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.aha.tech.core.constant.ExchangeAttributeConstant.*;
-import static com.aha.tech.core.constant.HeaderFieldConstant.HEADER_AUTHORIZATION;
+import static com.aha.tech.core.constant.HeaderFieldConstant.*;
 import static com.aha.tech.core.tools.BeanUtil.copyMultiValueMap;
 
 /**
@@ -51,6 +52,9 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
 
     @Resource
     private AccessLogService httpAccessLogService;
+
+    @Resource
+    private VerifyRequestService httpVerifyRequestService;
 
     @Resource
     private RewritePathService httpRewritePathService;
@@ -78,6 +82,34 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
 
         attributes.put(ACCESS_REQUEST_ID_ATTR, id);
         attributes.put(ACCESS_REQUEST_TIME_ATTR, requestTime);
+    }
+
+    /**
+     * 校验请求合法性
+     * version (Froyo, Gingerbread,IceCreamSandwich,JellyBean,KitKat,Lollipop)
+     * @param serverHttpRequest
+     * @param httpHeaders
+     * @param originalPath
+     * @return
+     */
+    @Override
+    public boolean verifyRequestValid(ServerHttpRequest serverHttpRequest, HttpHeaders httpHeaders, String originalPath) {
+        String version = httpHeaders.getFirst(HEADER_X_CA_VERSION);
+
+        URI uri = URI.create(originalPath);
+        String timestamp = httpHeaders.getFirst(HEADER_X_CA_TIMESTAMP);
+        String signature = httpHeaders.getFirst(HEADER_X_CA_SIGNATURE);
+        String encryptStr = Strings.EMPTY;
+        switch (version) {
+            case VERSION_FROYO:
+                encryptStr = httpVerifyRequestService.verifyUrl(uri, timestamp);
+                break;
+            default:
+                break;
+        }
+
+        return encryptStr.equals(signature);
+
     }
 
     /**
