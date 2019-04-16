@@ -99,6 +99,7 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
         URI uri = URI.create(originalPath);
         String timestamp = httpHeaders.getFirst(HEADER_X_CA_TIMESTAMP);
         String signature = httpHeaders.getFirst(HEADER_X_CA_SIGNATURE);
+//        HttpMethod httpMethod = serverHttpRequest.getMethod();
         String encryptStr = Strings.EMPTY;
         switch (version) {
             case VERSION_FROYO:

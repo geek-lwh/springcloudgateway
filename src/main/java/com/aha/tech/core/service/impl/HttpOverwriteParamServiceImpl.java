@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR;
-import static com.aha.tech.core.constant.HeaderFieldConstant.HEADER_X_CA_TIMESTAMP;
+import static com.aha.tech.core.constant.HeaderFieldConstant.*;
 import static com.aha.tech.core.support.WriteResponseSupport.writeInvalidUrl;
 
 /**
@@ -66,7 +66,9 @@ public class HttpOverwriteParamServiceImpl implements OverwriteParamService {
 
         Mono<String> modifiedBody = serverRequest.bodyToMono(String.class).flatMap(body -> {
             String timestamp = headers.getFirst(HEADER_X_CA_TIMESTAMP);
-            Boolean valid = httpVerifyRequestService.verifyBody(body, timestamp);
+            String version = headers.getFirst(HEADER_X_CA_VERSION);
+            String content = headers.getFirst(HEADER_X_CA_CONTENT);
+            Boolean valid = httpVerifyRequestService.verifyBody(body, timestamp, version, content);
             if (!valid) {
                 atomicBoolean.set(valid);
                 return Mono.justOrEmpty(null);

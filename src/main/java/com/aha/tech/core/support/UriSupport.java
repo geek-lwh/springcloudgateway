@@ -2,6 +2,7 @@ package com.aha.tech.core.support;
 
 import com.aha.tech.commons.symbol.Separator;
 import com.google.common.collect.Maps;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.util.DigestUtils;
 import org.springframework.util.StringUtils;
 
@@ -127,6 +128,9 @@ public class UriSupport {
      */
     public static String encryptBody(String body, String timestamp, String secretKey) {
         String str1 = body + timestamp;
+        if (StringUtils.isEmpty(str1)) {
+            return Strings.EMPTY;
+        }
         String firstMd5 = DigestUtils.md5DigestAsHex(str1.getBytes());
 
         String str2 = firstMd5 + secretKey;

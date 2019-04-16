@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 
 import java.net.URI;
 
+import static com.aha.tech.core.constant.HeaderFieldConstant.VERSION_FROYO;
+import static com.aha.tech.core.support.UriSupport.encryptBody;
 import static com.aha.tech.core.support.UriSupport.encryptUrl;
 
 /**
@@ -49,7 +51,16 @@ public class HttpVerifyRequestServiceImpl implements VerifyRequestService {
      * @return
      */
     @Override
-    public Boolean verifyBody(String body, String timestamp) {
-        return null;
+    public Boolean verifyBody(String body, String timestamp, String version, String content) {
+        switch (version) {
+            case VERSION_FROYO:
+                String encryptBody = encryptBody(body, timestamp, secretKey);
+                return encryptBody.equals(content);
+            default:
+                break;
+        }
+
+        logger.error("缺失校验body的版本号");
+        return Boolean.FALSE;
     }
 }
