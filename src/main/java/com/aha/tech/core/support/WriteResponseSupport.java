@@ -18,6 +18,7 @@ import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
 
+import static com.aha.tech.core.constant.HeaderFieldConstant.HEADER_X_CA_TIMESTAMP;
 import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.setResponseStatus;
 
 /**
@@ -100,4 +101,9 @@ public class WriteResponseSupport {
         return WriteResponseSupport.write(exchange, rpcResponse, HttpStatus.BAD_GATEWAY);
     }
 
+    public static Mono<Void> writeInvalidUrl(String originalPath, HttpHeaders httpHeaders, ServerWebExchange exchange) {
+        logger.error("url校验不通过,uri={},timestamp={},", originalPath, httpHeaders.getFirst(HEADER_X_CA_TIMESTAMP));
+        ResponseVo responseVo = ResponseVo.getFailEncryptResponseVo();
+        return Mono.defer(() -> write(exchange, responseVo, HttpStatus.FORBIDDEN));
+    }
 }

@@ -25,13 +25,17 @@ import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
 import java.net.URI;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR;
 import static com.aha.tech.core.constant.HeaderFieldConstant.HEADER_X_CA_TIMESTAMP;
+import static com.aha.tech.core.support.WriteResponseSupport.writeInvalidUrl;
 
 /**
  * @Author: luweihong
  * @Date: 2019/3/27
+ * 重写参数业务类
  */
 @Service("httpOverwriteParamService")
 public class HttpOverwriteParamServiceImpl implements OverwriteParamService {
@@ -57,16 +61,17 @@ public class HttpOverwriteParamServiceImpl implements OverwriteParamService {
         headers.putAll(exchange.getRequest().getHeaders());
 
         AtomicInteger length = new AtomicInteger();
+        AtomicBoolean atomicBoolean = new AtomicBoolean();
+        String originalPath = exchange.getAttributes().get(GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR).toString();
+
         Mono<String> modifiedBody = serverRequest.bodyToMono(String.class).flatMap(body -> {
-            // todo 校验body,如果不正确则抛出异常
             String timestamp = headers.getFirst(HEADER_X_CA_TIMESTAMP);
             Boolean valid = httpVerifyRequestService.verifyBody(body, timestamp);
             if (!valid) {
-//                logger.error("url校验不通过,uri={},timestamp={},",originalPath,httpHeaders.getFirst(HEADER_X_CA_TIMESTAMP));
-//                httpRequestHandlerService.writeResultInfo(exchange);
-//                ResponseVo responseVo = ResponseVo.getFailEncryptResponseVo();
-//                return Mono.defer(() -> write(exchange, responseVo, HttpStatus.FORBIDDEN));
+                atomicBoolean.set(valid);
+                return Mono.justOrEmpty(null);
             }
+
             JSONObject obj = JSON.parseObject(body);
             obj.put(USER_ID_FIELD, requestAddParamsDto.getUserId());
             String newBody = obj.toJSONString();
@@ -74,6 +79,9 @@ public class HttpOverwriteParamServiceImpl implements OverwriteParamService {
             return Mono.just(newBody);
         });
 
+        if (atomicBoolean.get() == false) {
+            return writeInvalidUrl(originalPath, headers, exchange);
+        }
 
         CachedBodyOutputMessage outputMessage = new CachedBodyOutputMessage(exchange, headers);
         BodyInserter bodyInserter = BodyInserters.fromPublisher(modifiedBody, String.class);

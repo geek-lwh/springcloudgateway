@@ -1,7 +1,6 @@
 package com.aha.tech.core.filters.global;
 
 import com.aha.tech.core.model.dto.RequestAddParamsDto;
-import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.OverwriteParamService;
 import com.aha.tech.core.service.RequestHandlerService;
 import org.slf4j.Logger;
@@ -11,7 +10,6 @@ import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
@@ -24,8 +22,7 @@ import java.net.URI;
 import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_ADD_PARAMS_ATTR;
 import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR;
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.MODIFY_PARAMS_FILTER_ORDER;
-import static com.aha.tech.core.constant.HeaderFieldConstant.HEADER_X_CA_TIMESTAMP;
-import static com.aha.tech.core.support.WriteResponseSupport.write;
+import static com.aha.tech.core.support.WriteResponseSupport.writeInvalidUrl;
 import static com.aha.tech.core.support.WriteResponseSupport.writeNpeParamsResponse;
 
 /**
@@ -69,10 +66,7 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
 
         Boolean valid = httpRequestHandlerService.verifyRequestValid(serverHttpRequest, httpHeaders, originalPath);
         if (!valid) {
-            logger.error("url校验不通过,uri={},timestamp={},", originalPath, httpHeaders.getFirst(HEADER_X_CA_TIMESTAMP));
-            httpRequestHandlerService.writeResultInfo(exchange);
-            ResponseVo responseVo = ResponseVo.getFailEncryptResponseVo();
-            return Mono.defer(() -> write(exchange, responseVo, HttpStatus.FORBIDDEN));
+            return writeInvalidUrl(originalPath, httpHeaders, exchange);
         }
 
         if (mediaType.isCompatibleWith(MediaType.APPLICATION_FORM_URLENCODED)) {
