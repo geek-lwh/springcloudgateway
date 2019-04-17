@@ -8,14 +8,11 @@ import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.codec.HttpMessageReader;
 import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.server.HandlerStrategies;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
-import java.nio.charset.Charset;
-import java.util.List;
+import java.nio.charset.StandardCharsets;
 
 import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_CACHED_REQUEST_BODY_ATTR;
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.PRE_HANDLER_FILTER_ORDER;
@@ -30,9 +27,6 @@ import static com.aha.tech.core.constant.FilterProcessOrderedConstant.PRE_HANDLE
 public class CacheRequestFilter implements GlobalFilter, Ordered {
 
     private static final Logger logger = LoggerFactory.getLogger(CacheRequestFilter.class);
-
-    private static final List<HttpMessageReader<?>> messageReaders = HandlerStrategies.withDefaults().messageReaders();
-
 
     @Override
     public int getOrder() {
@@ -64,7 +58,7 @@ public class CacheRequestFilter implements GlobalFilter, Ordered {
                     DataBufferUtils.retain(dataBuffer);
                     byte[] content = new byte[dataBuffer.readableByteCount()];
                     dataBuffer.read(content);
-                    String s = new String(content, Charset.forName("UTF-8"));
+                    String s = new String(content, StandardCharsets.UTF_8);
                     cacheRequestEntity.setData(s);
                     exchange.getAttributes().put(GATEWAY_REQUEST_CACHED_REQUEST_BODY_ATTR, cacheRequestEntity);
                     return chain.filter(exchange);
