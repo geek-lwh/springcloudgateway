@@ -13,13 +13,13 @@ import java.util.concurrent.ThreadPoolExecutor;
 @Configuration
 public class ThreadPoolConfiguration {
 
-    @Bean("printAccessLogThreadPool")
-    public ThreadPoolTaskExecutor printAccessLogThreadPool() {
+    @Bean("writeLoggingThreadPool")
+    public ThreadPoolTaskExecutor writeLoggingThreadPool() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(100);
-        executor.setMaxPoolSize(200);
+        executor.setCorePoolSize(10);
+        executor.setMaxPoolSize(20);
         executor.setQueueCapacity(50);
-        executor.setThreadNamePrefix("print-access-log-");
+        executor.setThreadNamePrefix("write-logging-");
         executor.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardPolicy());
         return executor;
     }

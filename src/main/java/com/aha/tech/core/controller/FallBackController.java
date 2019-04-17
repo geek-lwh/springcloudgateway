@@ -3,6 +3,7 @@ package com.aha.tech.core.controller;
 import com.aha.tech.commons.utils.DateUtil;
 import com.aha.tech.core.model.vo.HystrixDataVo;
 import com.aha.tech.core.model.vo.ResponseVo;
+import com.aha.tech.core.service.AccessLogService;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
+
+import javax.annotation.Resource;
 
 import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR;
 import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_REWRITE_PATH_ATTR;
@@ -29,6 +32,9 @@ public class FallBackController {
 
     private static final String HYSTRIX_ERROR_MESSAGE_PREFIX = "接口熔断,未捕获到具体错误!";
 
+    @Resource
+    private AccessLogService httpAccessLogService;
+
     /**
      * 降级策略
      * @param serverWebExchange
@@ -38,12 +44,16 @@ public class FallBackController {
     public Mono<ResponseVo> fallBack(ServerWebExchange serverWebExchange) {
         Object c = serverWebExchange.getAttributes().get(ServerWebExchangeUtils.HYSTRIX_EXECUTION_EXCEPTION_ATTR);
         if (c == null) {
+            httpAccessLogService.printWhenError(serverWebExchange, new Exception("未知异常"));
             ResponseVo responseVo = ResponseVo.defaultFailureResponseVo();
             responseVo.setMessage(HYSTRIX_ERROR_MESSAGE_PREFIX);
             return Mono.just(responseVo);
         }
 
         Throwable executionException = (Throwable) c;
+        Exception e = (Exception) executionException;
+        httpAccessLogService.printWhenError(serverWebExchange, e);
+
         logger.error("出现额外异常,触发hystrix 降级策略", executionException);
         ResponseVo responseVo = buildHystrixResponse(executionException, serverWebExchange);
 

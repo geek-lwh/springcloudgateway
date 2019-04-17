@@ -22,7 +22,6 @@ import java.net.URI;
 import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_ADD_PARAMS_ATTR;
 import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR;
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.MODIFY_PARAMS_FILTER_ORDER;
-import static com.aha.tech.core.support.WriteResponseSupport.writeInvalidUrl;
 import static com.aha.tech.core.support.WriteResponseSupport.writeNpeParamsResponse;
 
 /**
@@ -64,10 +63,10 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
         HttpMethod httpMethod = exchange.getRequest().getMethod();
         String originalPath = exchange.getAttributes().get(GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR).toString();
 
-        Boolean valid = httpRequestHandlerService.verifyRequestValid(serverHttpRequest, httpHeaders, originalPath);
-        if (!valid) {
-            return writeInvalidUrl(originalPath, httpHeaders, exchange);
-        }
+//        Boolean valid = httpRequestHandlerService.verifyRequestValid(serverHttpRequest, httpHeaders, originalPath);
+//        if (!valid) {
+//            return writeInvalidUrl(originalPath, httpHeaders, exchange);
+//        }
 
         if (mediaType.isCompatibleWith(MediaType.APPLICATION_FORM_URLENCODED)) {
             URI uri = serverHttpRequest.getURI();

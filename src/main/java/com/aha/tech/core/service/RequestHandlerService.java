@@ -16,7 +16,7 @@ public interface RequestHandlerService {
      * 打印访问日志
      * @param serverWebExchange
      */
-    void writeAccessInfo(ServerWebExchange serverWebExchange);
+//    void writeAccessInfo(ServerWebExchange serverWebExchange);
 
     /**
      * 校验请求合法性
@@ -27,10 +27,10 @@ public interface RequestHandlerService {
     boolean verifyRequestValid(ServerHttpRequest serverHttpRequest, HttpHeaders httpHeaders, String originalPath);
 
     /**
-     * 打印结果
-     * @param serverWebExchange
-     */
-    void writeResultInfo(ServerWebExchange serverWebExchange);
+     //     * 打印结果
+     //     * @param serverWebExchange
+     //     */
+//    void writeResultInfo(ServerWebExchange serverWebExchange);
 
     /**
      * 重写请求路径

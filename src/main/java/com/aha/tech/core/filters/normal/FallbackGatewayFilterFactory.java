@@ -1,6 +1,7 @@
 package com.aha.tech.core.filters.normal;
 
 import com.aha.tech.core.model.vo.ResponseVo;
+import com.aha.tech.core.service.AccessLogService;
 import com.aha.tech.core.support.WriteResponseSupport;
 import com.netflix.hystrix.HystrixCommandGroupKey;
 import com.netflix.hystrix.HystrixCommandKey;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
+import org.springframework.cloud.gateway.support.ServerWebExchangeUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
@@ -26,6 +28,7 @@ import rx.Observable;
 import rx.RxReactiveStreams;
 import rx.Subscription;
 
+import javax.annotation.Resource;
 import java.net.URI;
 import java.util.List;
 import java.util.function.Consumer;
@@ -46,6 +49,9 @@ public class FallbackGatewayFilterFactory extends AbstractGatewayFilterFactory<F
 
     private static final Logger logger = LoggerFactory.getLogger(FallbackGatewayFilterFactory.class);
 
+    @Resource
+    private AccessLogService httpAccessLogService;
+
     private final ObjectProvider<DispatcherHandler> dispatcherHandler;
 
     public FallbackGatewayFilterFactory(ObjectProvider<DispatcherHandler> dispatcherHandler) {
@@ -57,7 +63,6 @@ public class FallbackGatewayFilterFactory extends AbstractGatewayFilterFactory<F
     public List<String> shortcutFieldOrder() {
         return singletonList(NAME_KEY);
     }
-
 
     public GatewayFilter apply(String routeId, Consumer<FallbackGatewayFilterFactory.Config> consumer) {
         FallbackGatewayFilterFactory.Config config = newConfig();
@@ -88,17 +93,17 @@ public class FallbackGatewayFilterFactory extends AbstractGatewayFilterFactory<F
                 Subscription sub = command.toObservable().subscribe(s::success, s::error, s::success);
                 s.onCancel(sub::unsubscribe);
             }).onErrorResume((Function<Throwable, Mono<Void>>) throwable -> {
-                // 执行降级逻辑出现异常,resume方法
                 if (throwable instanceof HystrixRuntimeException) {
                     HystrixRuntimeException e = (HystrixRuntimeException) throwable;
                     HystrixRuntimeException.FailureType failureType = e.getFailureType();
-
+                    httpAccessLogService.printWhenError(exchange, e);
+                    String error = exchange.getAttributes().getOrDefault(ServerWebExchangeUtils.HYSTRIX_EXECUTION_EXCEPTION_ATTR, e.getMessage()).toString();
                     switch (failureType) {
                         case TIMEOUT:
                             return Mono.defer(() -> {
                                 logger.error("降级出现超时");
                                 ResponseVo responseVo = ResponseVo.defaultFailureResponseVo();
-                                responseVo.setMessage("执行降级算法出现超时");
+                                responseVo.setMessage("降级方法超时");
                                 return WriteResponseSupport.write(exchange, responseVo, HttpStatus.GATEWAY_TIMEOUT);
                             });
 
@@ -106,7 +111,7 @@ public class FallbackGatewayFilterFactory extends AbstractGatewayFilterFactory<F
                             return Mono.defer(() -> {
                                 logger.error("降级出现异常 : {}", e);
                                 ResponseVo responseVo = ResponseVo.defaultFailureResponseVo();
-                                responseVo.setMessage("执行降级算法出现异常 : " + e.getMessage());
+                                responseVo.setMessage("降级方法异常 : " + error);
                                 return WriteResponseSupport.write(exchange, responseVo, HttpStatus.BAD_GATEWAY);
                             });
                         }
@@ -119,7 +124,6 @@ public class FallbackGatewayFilterFactory extends AbstractGatewayFilterFactory<F
             }).then();
         };
     }
-
 
     private class RouteHystrixCommand extends HystrixObservableCommand<Void> {
 

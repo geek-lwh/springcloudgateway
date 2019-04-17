@@ -10,7 +10,6 @@ import com.aha.tech.core.model.entity.PairEntity;
 import com.aha.tech.core.model.entity.RouteEntity;
 import com.aha.tech.core.service.*;
 import com.aha.tech.passportserver.facade.model.vo.UserVo;
-import com.aha.tech.util.IdWorker;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
@@ -27,7 +26,6 @@ import javax.annotation.Resource;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Map;
 
 import static com.aha.tech.core.constant.ExchangeAttributeConstant.*;
 import static com.aha.tech.core.constant.HeaderFieldConstant.*;
@@ -68,21 +66,21 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
     @Resource
     private ModifyResponseService httpModifyResponseService;
 
-    /**
-     * 打印访问日志
-     * @param serverWebExchange
-     */
-    @Override
-    public void writeAccessInfo(ServerWebExchange serverWebExchange) {
-        final ServerHttpRequest serverHttpRequest = serverWebExchange.getRequest();
-        Map<String, Object> attributes = serverWebExchange.getAttributes();
-        Long id = IdWorker.getInstance().nextId();
-        Long requestTime = System.currentTimeMillis();
-        httpAccessLogService.printRequestInfo(serverHttpRequest, id, requestTime);
-
-        attributes.put(ACCESS_REQUEST_ID_ATTR, id);
-        attributes.put(ACCESS_REQUEST_TIME_ATTR, requestTime);
-    }
+//    /**
+//     * 打印访问日志
+//     * @param serverWebExchange
+//     */
+//    @Override
+//    public void writeAccessInfo(ServerWebExchange serverWebExchange) {
+//        final ServerHttpRequest serverHttpRequest = serverWebExchange.getRequest();
+//        Map<String, Object> attributes = serverWebExchange.getAttributes();
+//        Long id = IdWorker.getInstance().nextId();
+//        Long requestTime = System.currentTimeMillis();
+//        httpAccessLogService.printRequestInfo(serverHttpRequest, id, requestTime);
+//
+//        attributes.put(ACCESS_REQUEST_ID_ATTR, id);
+//        attributes.put(ACCESS_REQUEST_TIME_ATTR, requestTime);
+//    }
 
     /**
      * 校验请求合法性
@@ -115,14 +113,14 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
 
     /**
      * 打印结果
-     * @param serverWebExchange
-     */
-    @Override
-    public void writeResultInfo(ServerWebExchange serverWebExchange) {
-        ServerHttpResponse serverHttpResponse = serverWebExchange.getResponse();
-        Map<String, Object> attributes = serverWebExchange.getAttributes();
-        httpAccessLogService.printResponseInfo(serverHttpResponse, attributes);
-    }
+     //     * @param serverWebExchange
+     //     */
+//    @Override
+//    public void writeResultInfo(ServerWebExchange serverWebExchange) {
+//        ServerHttpResponse serverHttpResponse = serverWebExchange.getResponse();
+//        Map<String, Object> attributes = serverWebExchange.getAttributes();
+//        httpAccessLogService.printWhenError(serverHttpResponse, attributes);
+//    }
 
     /**
      * 重写请求路径

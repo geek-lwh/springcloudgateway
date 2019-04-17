@@ -1,9 +1,8 @@
 package com.aha.tech.core.service;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
-import org.springframework.http.server.reactive.ServerHttpResponse;
-
-import java.util.Map;
+import org.springframework.web.server.ServerWebExchange;
 
 /**
  * @Author: luweihong
@@ -11,13 +10,12 @@ import java.util.Map;
  */
 public interface AccessLogService {
 
+    void printAccessLogging(ServerHttpRequest serverHttpRequest, Long startTime, Long endTime, HttpStatus status);
     /**
-     * 打印http请求信息
-     * @param serverHttpRequest
-     * @param Long
+     * 当遇到错误时,打印详细信息
+     *
+     * httpHeaders
      */
-    void printRequestInfo(ServerHttpRequest serverHttpRequest, Long id, Long requestTime);
-
-    void printResponseInfo(ServerHttpResponse serverHttpResponse, Map<String, Object> attributes);
+    void printWhenError(ServerWebExchange serverWebExchange, Exception e);
 
 }

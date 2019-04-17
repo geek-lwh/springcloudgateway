@@ -51,7 +51,7 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
         try {
             httpRequestHandlerService.authorize(exchange);
         } catch (GatewayException ge) {
-            httpAccessLogServiceImpl.printResponseInfo(exchange.getResponse(), exchange.getAttributes());
+//            httpAccessLogServiceImpl.printWhenError(exchange.getResponse(), exchange.getAttributes());
             return Mono.defer(() -> writeWithGatewayError(exchange, path, ge));
         }
 

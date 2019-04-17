@@ -101,6 +101,13 @@ public class WriteResponseSupport {
         return WriteResponseSupport.write(exchange, rpcResponse, HttpStatus.BAD_GATEWAY);
     }
 
+    /**
+     * 回写无效url
+     * @param originalPath
+     * @param httpHeaders
+     * @param exchange
+     * @return
+     */
     public static Mono<Void> writeInvalidUrl(String originalPath, HttpHeaders httpHeaders, ServerWebExchange exchange) {
         logger.error("url校验不通过,uri={},timestamp={},", originalPath, httpHeaders.getFirst(HEADER_X_CA_TIMESTAMP));
         ResponseVo responseVo = ResponseVo.getFailEncryptResponseVo();

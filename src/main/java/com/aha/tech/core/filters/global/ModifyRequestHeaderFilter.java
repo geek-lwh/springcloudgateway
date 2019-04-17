@@ -1,6 +1,5 @@
 package com.aha.tech.core.filters.global;
 
-import com.aha.tech.core.exception.GatewayException;
 import com.aha.tech.core.service.RequestHandlerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +16,6 @@ import reactor.core.publisher.Mono;
 import javax.annotation.Resource;
 
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.MODIFY_REQUEST_HEADER_GATEWAY_FILTER_ORDER;
-import static com.aha.tech.core.support.WriteResponseSupport.writeError;
 
 /**
  * @Author: luweihong
@@ -41,26 +39,26 @@ public class ModifyRequestHeaderFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         logger.debug("开始进行修改请求头网关过滤器");
-        ServerHttpRequest newRequest;
-        try {
-            ServerHttpRequest serverHttpRequest = exchange.getRequest();
-            HttpHeaders httpHeaders = serverHttpRequest.getHeaders();
+//        ServerHttpRequest newRequest;
 
-            httpHeaders.forEach((key, value) -> logger.debug("原始报头信息 key : {},value : {}", key, value));
-            HttpHeaders newHttpHeaders = httpRequestHandlerService.modifyRequestHeaders(httpHeaders);
-            newHttpHeaders.forEach((key, value) -> logger.debug("新的报头信息 key : {},value : {}", key, value));
-            newRequest = new ServerHttpRequestDecorator(serverHttpRequest) {
-                @Override
-                public HttpHeaders getHeaders() {
-                    return newHttpHeaders;
-                }
-            };
-        } catch (GatewayException e) {
-            return Mono.defer(() -> writeError(exchange, e));
-        }
+//        try {
+//
+//        } catch (GatewayException e) {
+//            return Mono.defer(() -> writeError(exchange, e));
+//        }
+        ServerHttpRequest serverHttpRequest = exchange.getRequest();
+        HttpHeaders httpHeaders = serverHttpRequest.getHeaders();
 
-        ServerWebExchange newExchange = exchange.mutate().request(newRequest).build();
-        return chain.filter(newExchange);
+        HttpHeaders newHttpHeaders = httpRequestHandlerService.modifyRequestHeaders(httpHeaders);
+        ServerHttpRequest newRequest = new ServerHttpRequestDecorator(serverHttpRequest) {
+            @Override
+            public HttpHeaders getHeaders() {
+                return newHttpHeaders;
+            }
+        };
+
+//        ServerWebExchange newExchange = exchange.mutate().request(newRequest).build();
+        return chain.filter(exchange.mutate().request(newRequest).build());
     }
 
 }

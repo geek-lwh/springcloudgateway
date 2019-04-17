@@ -1,8 +1,8 @@
 package com.aha.tech.core.service.impl;
 
 import com.aha.tech.core.model.dto.RequestAddParamsDto;
+import com.aha.tech.core.model.entity.CacheRequestEntity;
 import com.aha.tech.core.service.OverwriteParamService;
-import com.aha.tech.core.service.VerifyRequestService;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import org.slf4j.Logger;
@@ -10,27 +10,20 @@ import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.support.BodyInserterContext;
 import org.springframework.cloud.gateway.support.CachedBodyOutputMessage;
-import org.springframework.cloud.gateway.support.DefaultServerRequest;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserter;
 import org.springframework.web.reactive.function.BodyInserters;
-import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import javax.annotation.Resource;
 import java.net.URI;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR;
-import static com.aha.tech.core.constant.HeaderFieldConstant.*;
-import static com.aha.tech.core.support.WriteResponseSupport.writeInvalidUrl;
+import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_CACHED_REQUEST_BODY_ATTR;
 
 /**
  * @Author: luweihong
@@ -44,9 +37,6 @@ public class HttpOverwriteParamServiceImpl implements OverwriteParamService {
 
     private static final String USER_ID_FIELD = "user_id";
 
-    @Resource
-    private VerifyRequestService httpVerifyRequestService;
-
     /**
      * 修改POST请求参数
      * @param requestAddParamsDto
@@ -56,42 +46,23 @@ public class HttpOverwriteParamServiceImpl implements OverwriteParamService {
      */
     @Override
     public Mono<Void> modifyRequestBody(RequestAddParamsDto requestAddParamsDto, GatewayFilterChain chain, ServerWebExchange exchange) {
-        ServerRequest serverRequest = new DefaultServerRequest(exchange);
         HttpHeaders headers = new HttpHeaders();
         headers.putAll(exchange.getRequest().getHeaders());
 
-        AtomicInteger length = new AtomicInteger();
-        AtomicBoolean atomicBoolean = new AtomicBoolean();
-        String originalPath = exchange.getAttributes().get(GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR).toString();
-
-        Mono<String> modifiedBody = serverRequest.bodyToMono(String.class).flatMap(body -> {
-            String timestamp = headers.getFirst(HEADER_X_CA_TIMESTAMP);
-            String version = headers.getFirst(HEADER_X_CA_VERSION);
-            String content = headers.getFirst(HEADER_X_CA_CONTENT);
-            Boolean valid = httpVerifyRequestService.verifyBody(body, timestamp, version, content);
-            if (!valid) {
-                atomicBoolean.set(valid);
-                return Mono.justOrEmpty(null);
-            }
-
-            JSONObject obj = JSON.parseObject(body);
-            obj.put(USER_ID_FIELD, requestAddParamsDto.getUserId());
-            String newBody = obj.toJSONString();
-            length.set(newBody.length());
-            return Mono.just(newBody);
-        });
-
-        if (atomicBoolean.get() == false) {
-            return writeInvalidUrl(originalPath, headers, exchange);
-        }
+        CacheRequestEntity cacheRequestEntity = (CacheRequestEntity) exchange.getAttributes().get(GATEWAY_REQUEST_CACHED_REQUEST_BODY_ATTR);
+        JSONObject obj = JSON.parseObject(cacheRequestEntity.getData());
+        obj.put(USER_ID_FIELD, requestAddParamsDto.getUserId());
+        String newBody = obj.toJSONString();
+        Mono<String> modifiedBody = Mono.justOrEmpty(newBody);
 
         CachedBodyOutputMessage outputMessage = new CachedBodyOutputMessage(exchange, headers);
         BodyInserter bodyInserter = BodyInserters.fromPublisher(modifiedBody, String.class);
+
         return bodyInserter.insert(outputMessage, new BodyInserterContext()).then(Mono.defer(() -> {
             ServerHttpRequestDecorator decorator = new ServerHttpRequestDecorator(exchange.getRequest()) {
                 @Override
                 public HttpHeaders getHeaders() {
-                    long contentLength = length.get();
+                    long contentLength = newBody.length();
                     HttpHeaders httpHeaders = new HttpHeaders();
                     httpHeaders.putAll(super.getHeaders());
                     if (contentLength > 0) {

@@ -7,13 +7,11 @@ import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.http.server.reactive.ServerHttpResponse;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
-import java.util.concurrent.CompletableFuture;
 
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.MODIFY_RESPONSE_GATEWAY_FILTER_ORDER;
 
@@ -22,12 +20,12 @@ import static com.aha.tech.core.constant.FilterProcessOrderedConstant.MODIFY_RES
  * @Date: 2019/4/1
  */
 @Component
-public class PostHandlerFilter implements GlobalFilter, Ordered {
+public class ModifyResponseFilter implements GlobalFilter, Ordered {
 
-    private static final Logger logger = LoggerFactory.getLogger(PostHandlerFilter.class);
+    private static final Logger logger = LoggerFactory.getLogger(ModifyResponseFilter.class);
 
-    @Resource
-    private ThreadPoolTaskExecutor printAccessLogThreadPool;
+//    @Resource
+//    private ThreadPoolTaskExecutor writeLoggingThreadPool;
 
     @Override
     public int getOrder() {
@@ -44,7 +42,7 @@ public class PostHandlerFilter implements GlobalFilter, Ordered {
         return chain.filter(exchange).then(Mono.fromRunnable(() -> {
             ServerHttpResponse response = exchange.getResponse();
             httpRequestHandlerService.modifyResponseHeader(response.getHeaders());
-            CompletableFuture.runAsync(() -> httpRequestHandlerService.writeResultInfo(exchange), printAccessLogThreadPool);
+//            CompletableFuture.runAsync(() -> httpRequestHandlerService.writeResultInfo(exchange), writeLoggingThreadPool);
         }));
     }
 

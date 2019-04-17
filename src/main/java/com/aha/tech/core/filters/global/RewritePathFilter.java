@@ -1,7 +1,6 @@
 package com.aha.tech.core.filters.global;
 
 import com.aha.tech.core.constant.FilterProcessOrderedConstant;
-import com.aha.tech.core.exception.GatewayException;
 import com.aha.tech.core.service.RequestHandlerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,8 +13,6 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
-
-import static com.aha.tech.core.support.WriteResponseSupport.writeError;
 
 
 /**
@@ -41,14 +38,8 @@ public class RewritePathFilter implements GlobalFilter, Ordered {
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         logger.debug("进入重写请求路径网关过滤器");
 
-        try {
-            ServerHttpRequest newRequest = httpRequestHandlerService.rewriteRequestPath(exchange);
-            return chain.filter(exchange.mutate().request(newRequest).build());
-        } catch (GatewayException e) {
-            httpRequestHandlerService.writeResultInfo(exchange);
-            return Mono.defer(() -> writeError(exchange, e));
-        }
-
+        ServerHttpRequest newRequest = httpRequestHandlerService.rewriteRequestPath(exchange);
+        return chain.filter(exchange.mutate().request(newRequest).build());
     }
 
 }
