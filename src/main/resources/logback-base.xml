@@ -38,7 +38,7 @@
     <appender name="ACCESS_LOG_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>/data/log/${PROJECT_NAME}/access.log</file>
         <encoder>
-            <pattern>%date [%msg%n]</pattern>
+            <pattern>%date %msg%n</pattern>
             <charset>UTF-8</charset>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
