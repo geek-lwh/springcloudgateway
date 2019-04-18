@@ -40,6 +40,35 @@ public class HttpAccessLogServiceImpl implements AccessLogService {
     private ThreadPoolTaskExecutor writeLoggingThreadPool;
 
     /**
+     * 构建访问日志前缀
+     * @param serverHttpRequest
+     * @param startTime
+     * @return
+     */
+    public String printAccessLogging(ServerHttpRequest serverHttpRequest, Long startTime, Long endTime, HttpStatus status) {
+        Long id = IdWorker.getInstance().nextId();
+        String remoteIp = serverHttpRequest.getRemoteAddress().getAddress().getHostAddress();
+        List<String> forwardedIps = serverHttpRequest.getHeaders().get(HEADER_X_FORWARDED_FOR);
+        List<String> userAgent = serverHttpRequest.getHeaders().get(HEADER_USER_AGENT);
+
+        // cookies
+        MultiValueMap<String, HttpCookie> cookieMultiValueMap = serverHttpRequest.getCookies();
+        String userId = getValueOrDefault(cookieMultiValueMap, "user_id");
+        String gSsId = getValueOrDefault(cookieMultiValueMap, "gssid");
+        String gUserId = getValueOrDefault(cookieMultiValueMap, "guserid");
+        String gUniqId = getValueOrDefault(cookieMultiValueMap, "guniqid");
+
+        URI uri = serverHttpRequest.getURI();
+        String cookieString = formatCookieStr(userId, gSsId, gUserId, gUniqId);
+        String date = DateUtil.dateByDefaultFormat(new Date(startTime));
+        Long cost = endTime - startTime;
+        String log = String.format("request_id=%s => [time=%s,uri=%s,remote_ip=%s,forwarded_ip=%s,cookie_string=%s,user_agent=%s,status=%s,cost=%sms]",
+                id, date, uri, remoteIp, forwardedIps, cookieString, userAgent, status, cost);
+
+        return log;
+    }
+
+    /**
      * 打印http response相关信息
      * @param serverWebExchange
      */
@@ -70,34 +99,7 @@ public class HttpAccessLogServiceImpl implements AccessLogService {
         }, writeLoggingThreadPool);
     }
 
-    /**
-     * 构建访问日志前缀
-     * @param serverHttpRequest
-     * @param startTime
-     * @return
-     */
-    public void printAccessLogging(ServerHttpRequest serverHttpRequest, Long startTime, Long endTime, HttpStatus status) {
-        Long id = IdWorker.getInstance().nextId();
-        String remoteIp = serverHttpRequest.getRemoteAddress().getAddress().getHostAddress();
-        List<String> forwardedIps = serverHttpRequest.getHeaders().get(HEADER_X_FORWARDED_FOR);
-        List<String> userAgent = serverHttpRequest.getHeaders().get(HEADER_USER_AGENT);
 
-        // cookies
-        MultiValueMap<String, HttpCookie> cookieMultiValueMap = serverHttpRequest.getCookies();
-        String userId = getValueOrDefault(cookieMultiValueMap, "user_id");
-        String gSsId = getValueOrDefault(cookieMultiValueMap, "gssid");
-        String gUserId = getValueOrDefault(cookieMultiValueMap, "guserid");
-        String gUniqId = getValueOrDefault(cookieMultiValueMap, "guniqid");
-
-        URI uri = serverHttpRequest.getURI();
-        String cookieString = formatCookieStr(userId, gSsId, gUserId, gUniqId);
-        String date = DateUtil.dateByDefaultFormat(new Date(startTime));
-        Long cost = endTime - startTime;
-        String log = String.format("request_id=%s => [time=%s,uri=%s,remote_ip=%s,forwarded_ip=%s,cookie_string=%s,user_agent=%s,status=%s,cost=%sms]",
-                id, date, uri, remoteIp, forwardedIps, cookieString, userAgent, status, cost);
-
-        logger.info("{}", log);
-    }
 
     /**
      * 获取cookies的值

@@ -10,7 +10,7 @@ import org.springframework.web.server.ServerWebExchange;
  */
 public interface AccessLogService {
 
-    void printAccessLogging(ServerHttpRequest serverHttpRequest, Long startTime, Long endTime, HttpStatus status);
+    String printAccessLogging(ServerHttpRequest serverHttpRequest, Long startTime, Long endTime, HttpStatus status);
     /**
      * 当遇到错误时,打印详细信息
      *

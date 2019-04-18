@@ -43,7 +43,7 @@ public class AccessLogFilter implements WebFilter {
                 .doFinally((s) -> CompletableFuture.runAsync(() -> {
                     Long endTime = System.currentTimeMillis();
                     HttpStatus status = serverWebExchange.getResponse().getStatusCode();
-                    httpAccessLogService.printAccessLogging(serverHttpRequest, startTime, endTime, status);
+                    logger.info("{}", httpAccessLogService.printAccessLogging(serverHttpRequest, startTime, endTime, status));
                 }, writeLoggingThreadPool));
     }
 
