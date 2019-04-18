@@ -21,7 +21,7 @@ public class HttpVerifyRequestServiceImpl implements VerifyRequestService {
 
     private static final Logger logger = LoggerFactory.getLogger(HttpVerifyRequestServiceImpl.class);
 
-    @Value("${request.secret.key:d1f1bd03e3b0e08d6ebbecaa60e14445}")
+    @Value("${gateway.secret.key:d1f1bd03e3b0e08d6ebbecaa60e14445}")
     private String secretKey;
 
     /**

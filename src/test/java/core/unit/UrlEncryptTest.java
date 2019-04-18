@@ -1,6 +1,8 @@
 package core.unit;
 
 import com.aha.tech.commons.utils.DateUtil;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Maps;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
@@ -27,26 +29,35 @@ public class UrlEncryptTest {
     private String timestamp = "1555395428000";
 
     @Test
-    @DisplayName("url加密测试类目")
-    public void urlEncryptTest() {
-        logger.info("<<<< {} 开始 [url加密测试类目]", DateUtil.currentDateByDefaultFormat());
-        URI url = URI.create("http://openapi2.ahaschool.com.cn/v3/account/quota?z=20&c=2&a=1&_=1555395225473");
+    @DisplayName("生成signature测试类目")
+    public void createXSignature() {
+        logger.info("<<<< {} 开始 [生成signature测试类目]", DateUtil.currentDateByDefaultFormat());
+        URI url = URI.create("http://localhost:9700/v3/users/update");
         String rawQuery = url.getRawQuery();
-        System.out.println(rawQuery.equals(null));
         String rawPath = url.getRawPath();
 
         String encryptStr = encryptUrl(rawPath, rawQuery, timestamp, secretKey);
         System.out.print("加密后值 : " + encryptStr);
     }
 
+    /**
+     * 2e2613fb4da281081214c805124c0730
+     */
     @Test
     @DisplayName("body加密测试类目")
-    public void bodyEncryptTest() {
+    public void createContentSignature() {
         logger.info("<<<< {} 开始 [body加密测试类目]", DateUtil.currentDateByDefaultFormat());
-        String body = "{\"user_id\":2134}";
-
-        String encryptStr = encryptBody(body, timestamp, secretKey);
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("act_favor", "monkeyd");
+        String encryptStr = encryptBody(jsonObject.toJSONString(), timestamp, secretKey);
+        String input = "{\"act_favor\": \"monkeyd\"}";
+        JSON json = JSON.parseObject(input);
+        String encryptStr2 = encryptBody(json.toJSONString(), timestamp, secretKey);
         System.out.print("加密后的值 : " + encryptStr);
+        System.out.print("加密后的值 : " + encryptStr2);
+
+//        System.out.println("加密后" + s);
+
     }
 
 

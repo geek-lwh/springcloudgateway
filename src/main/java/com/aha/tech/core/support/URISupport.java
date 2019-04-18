@@ -103,25 +103,24 @@ public class URISupport {
      */
     public static String encryptUrl(String rawPath, String rawQuery, String timestamp, String secretKey) {
         Map<String, String> queryMaps = Maps.newHashMap();
-        if (StringUtils.isEmpty(rawQuery)) {
-            return Strings.EMPTY;
-        }
-
-        String[] paramArr = rawQuery.split(Separator.AND_MARK);
-        for (String param : paramArr) {
-            String[] kv = param.split(Separator.EQUAL_SIGN_MARK);
-            String k = kv[0];
-            // url中前端ajax会拼接_=1555395225473 这种query
-            if (k.equals("_")) {
-                continue;
-            }
-
-            queryMaps.put(kv[0], kv[1]);
-        }
 
         String lastMd5 = Strings.EMPTY;
+        String sortQueryParamsStr = Strings.EMPTY;
         try {
-            String sortQueryParamsStr = formatUrlMap(queryMaps, false, false);
+            if (!StringUtils.isEmpty(rawQuery)) {
+                String[] paramArr = rawQuery.split(Separator.AND_MARK);
+                for (String param : paramArr) {
+                    String[] kv = param.split(Separator.EQUAL_SIGN_MARK);
+                    String k = kv[0];
+                    // url中前端ajax会拼接_=1555395225473 这种query
+                    if (k.equals("_")) {
+                        continue;
+                    }
+
+                    queryMaps.put(kv[0], kv[1]);
+                }
+                sortQueryParamsStr = formatUrlMap(queryMaps, false, false);
+            }
             String str1 = rawPath + sortQueryParamsStr + timestamp;
             String firstMd5 = DigestUtils.md5DigestAsHex(str1.getBytes());
             String str2 = firstMd5 + secretKey;
@@ -144,10 +143,11 @@ public class URISupport {
     public static String encryptBody(String body, String timestamp, String secretKey) {
         String lastMd5 = Strings.EMPTY;
         try {
-            String str1 = body + timestamp;
-            if (StringUtils.isEmpty(str1)) {
+            if (StringUtils.isEmpty(body)) {
+                logger.error("body防篡改加密时出现body为空");
                 return Strings.EMPTY;
             }
+            String str1 = body + timestamp;
             String firstMd5 = DigestUtils.md5DigestAsHex(str1.getBytes());
 
             String str2 = firstMd5 + secretKey;

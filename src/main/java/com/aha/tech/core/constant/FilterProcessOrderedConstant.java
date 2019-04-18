@@ -9,11 +9,10 @@ public class FilterProcessOrderedConstant {
 
     public static int STEP = 10;
 
-    // 预处理过滤器
-    public static int CACHE_REQUEST_FILTER_ORDER = 0;
+    public static int PRE_HANDLER_FILTER_ORDER = 0;
 
     // cpu使用率限流
-    public static int CPU_RATE_LIMITER_FILTER_ORDER = CACHE_REQUEST_FILTER_ORDER + STEP;
+    public static int CPU_RATE_LIMITER_FILTER_ORDER = PRE_HANDLER_FILTER_ORDER + STEP;
 
     // qps限流
     public static int QPS_RATE_LIMITER_FILTER_ORDER = CPU_RATE_LIMITER_FILTER_ORDER + STEP;
@@ -21,8 +20,11 @@ public class FilterProcessOrderedConstant {
     // ip限流
     public static int IP_RATE_LIMITER_FILTER_ORDER = QPS_RATE_LIMITER_FILTER_ORDER + STEP;
 
+    // 校验和缓存过滤器
+    public static int CHECK_AND_CACHE_REQUEST_FILTER = IP_RATE_LIMITER_FILTER_ORDER + STEP;
+
     // 重写请求路径过滤器
-    public static int REWRITE_REQUEST_PATH_FILTER_ORDER = IP_RATE_LIMITER_FILTER_ORDER + STEP;
+    public static int REWRITE_REQUEST_PATH_FILTER_ORDER = CHECK_AND_CACHE_REQUEST_FILTER + STEP;
 
     // 全新啊校验过滤器
     public static int AUTH_GATEWAY_FILTER_ORDER = REWRITE_REQUEST_PATH_FILTER_ORDER + STEP;

@@ -1,13 +1,16 @@
 package com.aha.tech.core.filters.global;
 
 import com.aha.tech.core.model.dto.RequestAddParamsDto;
+import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.OverwriteParamService;
+import com.aha.tech.core.support.WriteResponseSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
@@ -19,7 +22,6 @@ import java.net.URI;
 
 import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_ADD_PARAMS_ATTR;
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.MODIFY_PARAMS_FILTER_ORDER;
-import static com.aha.tech.core.support.WriteResponseSupport.writeNpeParamsResponse;
 
 /**
  * @Author: luweihong
@@ -47,7 +49,11 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
         Object obj = exchange.getAttributes().get(GATEWAY_REQUEST_ADD_PARAMS_ATTR);
         if (obj == null) {
             logger.error("缺少需要在网关添加的参数");
-            return Mono.defer(() -> writeNpeParamsResponse(exchange));
+            return Mono.defer(() -> {
+                ResponseVo rpcResponse = ResponseVo.defaultFailureResponseVo();
+                rpcResponse.setMessage("request add params attr is empty !");
+                return WriteResponseSupport.write(exchange, rpcResponse, HttpStatus.BAD_REQUEST);
+            });
         }
 
         RequestAddParamsDto requestAddParamsDto = (RequestAddParamsDto) obj;

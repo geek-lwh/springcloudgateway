@@ -28,7 +28,8 @@ public class TamperProofEntity {
         super();
     }
 
-    public TamperProofEntity(HttpHeaders httpHeaders) {
+    public TamperProofEntity(HttpHeaders httpHeaders, URI uri) {
+        this.uri = uri;
         this.version = httpHeaders.getFirst(HEADER_X_CA_VERSION);
         this.timestamp = httpHeaders.getFirst(HEADER_X_CA_TIMESTAMP);
         this.content = httpHeaders.getFirst(HEADER_X_CA_CONTENT);
