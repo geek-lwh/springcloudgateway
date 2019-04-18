@@ -11,6 +11,7 @@ import com.aha.tech.core.model.entity.RouteEntity;
 import com.aha.tech.core.service.*;
 import com.aha.tech.passportserver.facade.model.vo.UserVo;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +29,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static com.aha.tech.core.constant.ExchangeAttributeConstant.*;
-import static com.aha.tech.core.constant.HeaderFieldConstant.*;
+import static com.aha.tech.core.constant.HeaderFieldConstant.HEADER_AUTHORIZATION;
+import static com.aha.tech.core.constant.HeaderFieldConstant.VERSION_FROYO;
 import static com.aha.tech.core.tools.BeanUtil.copyMultiValueMap;
 
 /**
@@ -49,9 +51,6 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
     private static final String NEED_AUTHORIZATION = "serv-auth";
 
     @Resource
-    private AccessLogService httpAccessLogService;
-
-    @Resource
     private VerifyRequestService httpVerifyRequestService;
 
     @Resource
@@ -66,61 +65,84 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
     @Resource
     private ModifyResponseService httpModifyResponseService;
 
-//    /**
-//     * 打印访问日志
-//     * @param serverWebExchange
-//     */
-//    @Override
-//    public void writeAccessInfo(ServerWebExchange serverWebExchange) {
-//        final ServerHttpRequest serverHttpRequest = serverWebExchange.getRequest();
-//        Map<String, Object> attributes = serverWebExchange.getAttributes();
-//        Long id = IdWorker.getInstance().nextId();
-//        Long requestTime = System.currentTimeMillis();
-//        httpAccessLogService.printRequestInfo(serverHttpRequest, id, requestTime);
-//
-//        attributes.put(ACCESS_REQUEST_ID_ATTR, id);
-//        attributes.put(ACCESS_REQUEST_TIME_ATTR, requestTime);
-//    }
-
     /**
-     * 校验请求合法性
+     * url防篡改
      * version (Froyo, Gingerbread,IceCreamSandwich,JellyBean,KitKat,Lollipop)
-     * @param serverHttpRequest
-     * @param httpHeaders
+     * @param version
+     * @param timestamp
+     * @param signature
      * @param originalPath
      * @return
      */
     @Override
-    public boolean verifyRequestValid(ServerHttpRequest serverHttpRequest, HttpHeaders httpHeaders, String originalPath) {
-        String version = httpHeaders.getFirst(HEADER_X_CA_VERSION);
+    public Boolean urlTamperProof(String version, String timestamp, String signature, URI originalPath) {
+        if (StringUtils.isBlank(timestamp)) {
+            logger.error("URI防篡改timestamp缺失");
+            return Boolean.FALSE;
+        }
 
-        URI uri = URI.create(originalPath);
-        String timestamp = httpHeaders.getFirst(HEADER_X_CA_TIMESTAMP);
-        String signature = httpHeaders.getFirst(HEADER_X_CA_SIGNATURE);
-//        HttpMethod httpMethod = serverHttpRequest.getMethod();
+        if (StringUtils.isBlank(signature)) {
+            logger.error("URI防篡改signature缺失");
+            return Boolean.FALSE;
+        }
+
         String encryptStr = Strings.EMPTY;
+
         switch (version) {
             case VERSION_FROYO:
-                encryptStr = httpVerifyRequestService.verifyUrl(uri, timestamp);
+                encryptStr = httpVerifyRequestService.verifyUrl(originalPath, timestamp);
                 break;
             default:
+                logger.error("URI防篡改版本错误 version={}", version);
                 break;
         }
 
-        return encryptStr.equals(signature);
+        if (encryptStr.equals(signature)) {
+            return Boolean.TRUE;
+        }
+
+        logger.error("url防篡改校验失败 uri : {},timestamp : {},signature : {}", originalPath, timestamp, signature);
+
+        return Boolean.FALSE;
 
     }
 
     /**
-     * 打印结果
-     //     * @param serverWebExchange
-     //     */
-//    @Override
-//    public void writeResultInfo(ServerWebExchange serverWebExchange) {
-//        ServerHttpResponse serverHttpResponse = serverWebExchange.getResponse();
-//        Map<String, Object> attributes = serverWebExchange.getAttributes();
-//        httpAccessLogService.printWhenError(serverHttpResponse, attributes);
-//    }
+     * body防篡改
+     * @param version
+     * @param body
+     * @return
+     */
+    @Override
+    public Boolean bodyTamperProof(String version, String body, String timestamp, String content) {
+        String encryptStr = Strings.EMPTY;
+
+        if (StringUtils.isBlank(body)) {
+            logger.error("body防篡改body缺失");
+            return Boolean.FALSE;
+        }
+
+        if (StringUtils.isBlank(timestamp)) {
+            logger.error("body防篡改timestamp缺失");
+            return Boolean.FALSE;
+        }
+
+        if (StringUtils.isBlank(content)) {
+            logger.error("body防篡改content缺失");
+            return Boolean.FALSE;
+        }
+
+        switch (version) {
+            case VERSION_FROYO:
+                encryptStr = httpVerifyRequestService.verifyBody(body, timestamp);
+                break;
+            default:
+                logger.error("URI防篡改版本错误 version={}", version);
+                break;
+        }
+
+        return encryptStr.equals(content);
+    }
 
     /**
      * 重写请求路径

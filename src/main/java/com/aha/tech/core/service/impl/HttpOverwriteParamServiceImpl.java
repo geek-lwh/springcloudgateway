@@ -50,7 +50,7 @@ public class HttpOverwriteParamServiceImpl implements OverwriteParamService {
         headers.putAll(exchange.getRequest().getHeaders());
 
         CacheRequestEntity cacheRequestEntity = (CacheRequestEntity) exchange.getAttributes().get(GATEWAY_REQUEST_CACHED_REQUEST_BODY_ATTR);
-        JSONObject obj = JSON.parseObject(cacheRequestEntity.getData());
+        JSONObject obj = JSON.parseObject(cacheRequestEntity.getRequestBody());
         obj.put(USER_ID_FIELD, requestAddParamsDto.getUserId());
         String newBody = obj.toJSONString();
         Mono<String> modifiedBody = Mono.justOrEmpty(newBody);

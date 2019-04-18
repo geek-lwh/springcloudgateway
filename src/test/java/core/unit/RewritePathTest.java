@@ -3,7 +3,7 @@ package core.unit;
 import com.aha.tech.commons.symbol.Separator;
 import com.aha.tech.commons.utils.DateUtil;
 import com.aha.tech.core.model.entity.RouteEntity;
-import com.aha.tech.core.support.UriSupport;
+import com.aha.tech.core.support.URISupport;
 import org.apache.commons.lang3.StringUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
@@ -12,7 +12,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.aha.tech.core.support.UriSupport.buildRewritePath;
+import static com.aha.tech.core.support.URISupport.buildRewritePath;
 
 /**
  * @Author: luweihong
@@ -44,7 +44,7 @@ public class RewritePathTest {
     @DisplayName("去除请求url中以下划线分割的第一个区位测试类目")
     public void excludeInvalidPath() {
         logger.info("<<<< {} 开始 [去除请求url中以下划线分割的第一个区位测试类目]", DateUtil.currentDateByDefaultFormat());
-        String validPath = UriSupport.excludeStrings(input, Separator.SLASH_MARK, 1);
+        String validPath = URISupport.excludeStrings(input, Separator.SLASH_MARK, 1);
         String verifyStr = "yanxuan/banner/get";
 
         System.out.println("入参 : " + validPath);

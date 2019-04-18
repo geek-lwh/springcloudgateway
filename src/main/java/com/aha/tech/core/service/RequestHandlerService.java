@@ -6,6 +6,8 @@ import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.http.server.reactive.ServerHttpResponseDecorator;
 import org.springframework.web.server.ServerWebExchange;
 
+import java.net.URI;
+
 /**
  * @Author: luweihong
  * @Date: 2019/3/15
@@ -19,19 +21,22 @@ public interface RequestHandlerService {
 //    void writeAccessInfo(ServerWebExchange serverWebExchange);
 
     /**
-     * 校验请求合法性
-     * @param serverHttpRequest
-     * @param httpHeaders
+     * url防篡改
+     * @param version
+     * @param timestamp
+     * @param signature
+     * @param originalPath
      * @return
      */
-    boolean verifyRequestValid(ServerHttpRequest serverHttpRequest, HttpHeaders httpHeaders, String originalPath);
+    Boolean urlTamperProof(String version, String timestamp, String signature, URI originalPath);
 
     /**
-     //     * 打印结果
-     //     * @param serverWebExchange
-     //     */
-//    void writeResultInfo(ServerWebExchange serverWebExchange);
-
+     * body防篡改
+     * @param version
+     * @param body
+     * @return
+     */
+    Boolean bodyTamperProof(String version, String body, String timestamp, String content);
     /**
      * 重写请求路径
      * @param serverWebExchange

@@ -24,9 +24,6 @@ public class ModifyResponseFilter implements GlobalFilter, Ordered {
 
     private static final Logger logger = LoggerFactory.getLogger(ModifyResponseFilter.class);
 
-//    @Resource
-//    private ThreadPoolTaskExecutor writeLoggingThreadPool;
-
     @Override
     public int getOrder() {
         return MODIFY_RESPONSE_GATEWAY_FILTER_ORDER;
@@ -42,7 +39,6 @@ public class ModifyResponseFilter implements GlobalFilter, Ordered {
         return chain.filter(exchange).then(Mono.fromRunnable(() -> {
             ServerHttpResponse response = exchange.getResponse();
             httpRequestHandlerService.modifyResponseHeader(response.getHeaders());
-//            CompletableFuture.runAsync(() -> httpRequestHandlerService.writeResultInfo(exchange), writeLoggingThreadPool);
         }));
     }
 

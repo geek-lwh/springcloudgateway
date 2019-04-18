@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import java.net.URI;
 import java.util.Map;
 
-import static com.aha.tech.core.support.UriSupport.*;
+import static com.aha.tech.core.support.URISupport.*;
 
 /**
  * @Author: luweihong

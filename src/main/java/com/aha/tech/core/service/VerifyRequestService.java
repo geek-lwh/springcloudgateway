@@ -22,6 +22,6 @@ public interface VerifyRequestService {
      * @param timestamp
      * @return
      */
-    Boolean verifyBody(String body, String timestamp, String version, String content);
+    String verifyBody(String body, String timestamp);
 
 }

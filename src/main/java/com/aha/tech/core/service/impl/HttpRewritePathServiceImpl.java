@@ -12,8 +12,8 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.Map;
 
-import static com.aha.tech.core.support.UriSupport.buildRewritePath;
-import static com.aha.tech.core.support.UriSupport.excludeStrings;
+import static com.aha.tech.core.support.URISupport.buildRewritePath;
+import static com.aha.tech.core.support.URISupport.excludeStrings;
 
 /**
  * @Author: luweihong

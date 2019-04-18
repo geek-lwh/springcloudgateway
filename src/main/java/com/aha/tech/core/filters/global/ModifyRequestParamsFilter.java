@@ -2,13 +2,11 @@ package com.aha.tech.core.filters.global;
 
 import com.aha.tech.core.model.dto.RequestAddParamsDto;
 import com.aha.tech.core.service.OverwriteParamService;
-import com.aha.tech.core.service.RequestHandlerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -20,7 +18,6 @@ import javax.annotation.Resource;
 import java.net.URI;
 
 import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_ADD_PARAMS_ATTR;
-import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR;
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.MODIFY_PARAMS_FILTER_ORDER;
 import static com.aha.tech.core.support.WriteResponseSupport.writeNpeParamsResponse;
 
@@ -37,9 +34,6 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
 
     @Resource
     private OverwriteParamService httpOverwriteParamService;
-
-    @Resource
-    private RequestHandlerService httpRequestHandlerService;
 
     @Override
     public int getOrder() {
@@ -58,15 +52,8 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
 
         RequestAddParamsDto requestAddParamsDto = (RequestAddParamsDto) obj;
         ServerHttpRequest serverHttpRequest = exchange.getRequest();
-        HttpHeaders httpHeaders = serverHttpRequest.getHeaders();
         MediaType mediaType = serverHttpRequest.getHeaders().getContentType();
         HttpMethod httpMethod = exchange.getRequest().getMethod();
-        String originalPath = exchange.getAttributes().get(GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR).toString();
-
-//        Boolean valid = httpRequestHandlerService.verifyRequestValid(serverHttpRequest, httpHeaders, originalPath);
-//        if (!valid) {
-//            return writeInvalidUrl(originalPath, httpHeaders, exchange);
-//        }
 
         if (mediaType.isCompatibleWith(MediaType.APPLICATION_FORM_URLENCODED)) {
             URI uri = serverHttpRequest.getURI();

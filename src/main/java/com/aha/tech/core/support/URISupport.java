@@ -3,6 +3,8 @@ package com.aha.tech.core.support;
 import com.aha.tech.commons.symbol.Separator;
 import com.google.common.collect.Maps;
 import org.apache.logging.log4j.util.Strings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.DigestUtils;
 import org.springframework.util.StringUtils;
 
@@ -15,7 +17,9 @@ import java.util.stream.Stream;
  * @Author: luweihong
  * @Date: 2019/4/2
  */
-public class UriSupport {
+public class URISupport {
+
+    private static final Logger logger = LoggerFactory.getLogger(URISupport.class);
 
     /**
      * 根据字符串,切割符,跳过无效区位数
@@ -99,6 +103,10 @@ public class UriSupport {
      */
     public static String encryptUrl(String rawPath, String rawQuery, String timestamp, String secretKey) {
         Map<String, String> queryMaps = Maps.newHashMap();
+        if (StringUtils.isEmpty(rawQuery)) {
+            return Strings.EMPTY;
+        }
+
         String[] paramArr = rawQuery.split(Separator.AND_MARK);
         for (String param : paramArr) {
             String[] kv = param.split(Separator.EQUAL_SIGN_MARK);
@@ -110,11 +118,18 @@ public class UriSupport {
 
             queryMaps.put(kv[0], kv[1]);
         }
-        String sortQueryParamsStr = formatUrlMap(queryMaps, false, false);
-        String str1 = rawPath + sortQueryParamsStr + timestamp;
-        String firstMd5 = DigestUtils.md5DigestAsHex(str1.getBytes());
-        String str2 = firstMd5 + secretKey;
-        String lastMd5 = DigestUtils.md5DigestAsHex(str2.getBytes());
+
+        String lastMd5 = Strings.EMPTY;
+        try {
+            String sortQueryParamsStr = formatUrlMap(queryMaps, false, false);
+            String str1 = rawPath + sortQueryParamsStr + timestamp;
+            String firstMd5 = DigestUtils.md5DigestAsHex(str1.getBytes());
+            String str2 = firstMd5 + secretKey;
+            lastMd5 = DigestUtils.md5DigestAsHex(str2.getBytes());
+        } catch (Exception e) {
+            logger.error("url防篡改加密出现异常,raw_path={},rawQuery={},timestamp={}", rawPath, rawQuery, timestamp, e);
+        }
+
 
         return lastMd5;
     }
@@ -127,14 +142,19 @@ public class UriSupport {
      * @return
      */
     public static String encryptBody(String body, String timestamp, String secretKey) {
-        String str1 = body + timestamp;
-        if (StringUtils.isEmpty(str1)) {
-            return Strings.EMPTY;
-        }
-        String firstMd5 = DigestUtils.md5DigestAsHex(str1.getBytes());
+        String lastMd5 = Strings.EMPTY;
+        try {
+            String str1 = body + timestamp;
+            if (StringUtils.isEmpty(str1)) {
+                return Strings.EMPTY;
+            }
+            String firstMd5 = DigestUtils.md5DigestAsHex(str1.getBytes());
 
-        String str2 = firstMd5 + secretKey;
-        String lastMd5 = DigestUtils.md5DigestAsHex(str2.getBytes());
+            String str2 = firstMd5 + secretKey;
+            lastMd5 = DigestUtils.md5DigestAsHex(str2.getBytes());
+        } catch (Exception e) {
+            logger.error("body防篡改加密出现异常 body={},timestamp={}", body, timestamp, e);
+        }
 
         return lastMd5;
     }

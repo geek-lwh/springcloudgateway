@@ -1,8 +1,6 @@
 package com.aha.tech.core.service.impl;
 
 import com.aha.tech.core.service.VerifyRequestService;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,9 +8,8 @@ import org.springframework.stereotype.Service;
 
 import java.net.URI;
 
-import static com.aha.tech.core.constant.HeaderFieldConstant.VERSION_FROYO;
-import static com.aha.tech.core.support.UriSupport.encryptBody;
-import static com.aha.tech.core.support.UriSupport.encryptUrl;
+import static com.aha.tech.core.support.URISupport.encryptBody;
+import static com.aha.tech.core.support.URISupport.encryptUrl;
 
 /**
  * @Author: luweihong
@@ -37,9 +34,6 @@ public class HttpVerifyRequestServiceImpl implements VerifyRequestService {
     public String verifyUrl(URI uri, String timestamp) {
         String rawQuery = uri.getRawQuery();
         String rawPath = uri.getRawPath();
-        if (StringUtils.isBlank(timestamp)) {
-            timestamp = Strings.EMPTY;
-        }
         String encryptStr = encryptUrl(rawPath, rawQuery, timestamp, secretKey);
         return encryptStr;
     }
@@ -51,16 +45,7 @@ public class HttpVerifyRequestServiceImpl implements VerifyRequestService {
      * @return
      */
     @Override
-    public Boolean verifyBody(String body, String timestamp, String version, String content) {
-        switch (version) {
-            case VERSION_FROYO:
-                String encryptBody = encryptBody(body, timestamp, secretKey);
-                return encryptBody.equals(content);
-            default:
-                break;
-        }
-
-        logger.error("缺失校验body的版本号");
-        return Boolean.FALSE;
+    public String verifyBody(String body, String timestamp) {
+        return encryptBody(body, timestamp, secretKey);
     }
 }

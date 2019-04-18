@@ -10,10 +10,10 @@ public class FilterProcessOrderedConstant {
     public static int STEP = 10;
 
     // 预处理过滤器
-    public static int PRE_HANDLER_FILTER_ORDER = 0;
+    public static int CACHE_REQUEST_FILTER_ORDER = 0;
 
     // cpu使用率限流
-    public static int CPU_RATE_LIMITER_FILTER_ORDER = PRE_HANDLER_FILTER_ORDER + STEP;
+    public static int CPU_RATE_LIMITER_FILTER_ORDER = CACHE_REQUEST_FILTER_ORDER + STEP;
 
     // qps限流
     public static int QPS_RATE_LIMITER_FILTER_ORDER = CPU_RATE_LIMITER_FILTER_ORDER + STEP;
