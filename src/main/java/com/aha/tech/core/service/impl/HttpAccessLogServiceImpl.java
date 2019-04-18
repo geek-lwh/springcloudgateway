@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_CACHED_REQUEST_BODY_ATTR;
+import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR;
 import static com.aha.tech.core.constant.HeaderFieldConstant.HEADER_USER_AGENT;
 import static com.aha.tech.core.constant.HeaderFieldConstant.HEADER_X_FORWARDED_FOR;
 
@@ -73,14 +74,19 @@ public class HttpAccessLogServiceImpl implements AccessLogService {
      * @param serverWebExchange
      */
     @Override
-    public void printWhenError(ServerWebExchange serverWebExchange, Exception e) {
+    public void printWhenError(ServerWebExchange serverWebExchange, String errorMsg) {
         ServerHttpRequest serverHttpRequest = serverWebExchange.getRequest();
         HttpHeaders httpHeaders = serverHttpRequest.getHeaders();
         CompletableFuture.runAsync(() -> {
             StringBuilder sb = new StringBuilder();
+            String url = serverWebExchange.getAttributes().getOrDefault(GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR, Strings.EMPTY).toString();
+
+            sb.append("错误 : ");
+            String error = serverWebExchange.getAttributes().getOrDefault(ServerWebExchangeUtils.HYSTRIX_EXECUTION_EXCEPTION_ATTR, errorMsg).toString();
+            sb.append(error).append(System.lineSeparator());
 
             // 请求 行
-            sb.append("请求行 : ").append(serverHttpRequest.getMethod()).append(" ").append(serverHttpRequest.getURI());
+            sb.append("请求行 : ").append(serverHttpRequest.getMethod()).append(" ").append(url);
             sb.append(System.lineSeparator());
 
             sb.append("请求头 : ");
@@ -89,17 +95,13 @@ public class HttpAccessLogServiceImpl implements AccessLogService {
 
             sb.append("请求体 : ");
             String body = serverWebExchange.getAttributes().getOrDefault(GATEWAY_REQUEST_CACHED_REQUEST_BODY_ATTR, Strings.EMPTY).toString();
-            sb.append(body).append(System.lineSeparator());
+            sb.append(body);
 
-            sb.append("错误 : ");
-            String error = serverWebExchange.getAttributes().getOrDefault(ServerWebExchangeUtils.HYSTRIX_EXECUTION_EXCEPTION_ATTR, e.getMessage()).toString();
-            sb.append(error);
+
 
             logger.error("{}", sb);
         }, writeLoggingThreadPool);
     }
-
-
 
     /**
      * 获取cookies的值

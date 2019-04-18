@@ -39,13 +39,6 @@ public class ModifyRequestHeaderFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         logger.debug("开始进行修改请求头网关过滤器");
-//        ServerHttpRequest newRequest;
-
-//        try {
-//
-//        } catch (GatewayException e) {
-//            return Mono.defer(() -> writeError(exchange, e));
-//        }
         ServerHttpRequest serverHttpRequest = exchange.getRequest();
         HttpHeaders httpHeaders = serverHttpRequest.getHeaders();
 
@@ -57,7 +50,6 @@ public class ModifyRequestHeaderFilter implements GlobalFilter, Ordered {
             }
         };
 
-//        ServerWebExchange newExchange = exchange.mutate().request(newRequest).build();
         return chain.filter(exchange.mutate().request(newRequest).build());
     }
 

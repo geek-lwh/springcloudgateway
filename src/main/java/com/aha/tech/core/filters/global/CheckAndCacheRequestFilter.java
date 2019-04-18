@@ -65,9 +65,9 @@ public class CheckAndCacheRequestFilter implements GlobalFilter, Ordered {
         boolean isURIValid = checkUrlValid(tamperProofEntity, uri);
         if (!isURIValid) {
             return Mono.defer(() -> {
-                logger.error("url防篡改校验失败 参数 : {}", tamperProofEntity);
-                ResponseVo rpcResponse = new ResponseVo(HttpStatus.FORBIDDEN.value(), "url防篡改校验失败");
-                return WriteResponseSupport.write(exchange, rpcResponse, HttpStatus.FORBIDDEN);
+                String errorMsg = String.format("url防篡改校验失败,参数:%s", tamperProofEntity);
+                ResponseVo rpcResponse = new ResponseVo(HttpStatus.FORBIDDEN.value(), errorMsg);
+                return WriteResponseSupport.shortCircuit(exchange, rpcResponse, HttpStatus.FORBIDDEN, errorMsg);
             });
         }
 
@@ -116,9 +116,9 @@ public class CheckAndCacheRequestFilter implements GlobalFilter, Ordered {
                     cacheRequestEntity.setRequestBody(body);
                     if (!checkBodyValid(body, tamperProofEntity)) {
                         return Mono.defer(() -> {
-                            logger.error("body防篡改校验失败 参数: {}", tamperProofEntity);
-                            ResponseVo rpcResponse = new ResponseVo(HttpStatus.FORBIDDEN.value(), "body防篡改校验失败");
-                            return WriteResponseSupport.write(exchange, rpcResponse, HttpStatus.FORBIDDEN);
+                            String errorMsg = String.format("url防篡改校验失败,参数:%s", tamperProofEntity);
+                            ResponseVo rpcResponse = new ResponseVo(HttpStatus.FORBIDDEN.value(), errorMsg);
+                            return WriteResponseSupport.shortCircuit(exchange, rpcResponse, HttpStatus.FORBIDDEN, errorMsg);
                         });
                     }
                     return chain.filter(exchange);

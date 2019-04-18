@@ -1,6 +1,5 @@
 package com.aha.tech.core.filters.global;
 
-import com.aha.tech.core.exception.GatewayException;
 import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.LimiterService;
 import com.aha.tech.core.support.WriteResponseSupport;
@@ -51,21 +50,14 @@ public class IpRateLimiterFilter implements GlobalFilter, Ordered {
             return chain.filter(exchange);
         }
 
-        try {
-            Boolean isAllowed = ipLimiterService.isAllowed(exchange);
-            if (isAllowed) {
-                return chain.filter(exchange);
-            }
-        } catch (GatewayException e) {
-            logger.error("ip限流出现异常", e);
-            final ResponseVo responseVo = new ResponseVo(e.getCode(), e.getMessage());
-            return Mono.defer(() -> WriteResponseSupport.write(exchange, responseVo, HttpStatus.BAD_GATEWAY));
+        Boolean isAllowed = ipLimiterService.isAllowed(exchange);
+        if (isAllowed) {
+            return chain.filter(exchange);
         }
 
-        logger.warn("没有通过ip限流");
         final ResponseVo responseVo = ResponseVo.defaultFailureResponseVo();
         responseVo.setMessage(IP_RATE_LIMITER_ERROR_MSG);
-        return Mono.defer(() -> WriteResponseSupport.write(exchange, responseVo, HttpStatus.TOO_MANY_REQUESTS));
+        return Mono.defer(() -> WriteResponseSupport.shortCircuit(exchange, responseVo, HttpStatus.TOO_MANY_REQUESTS, IP_RATE_LIMITER_ERROR_MSG));
     }
 
 }

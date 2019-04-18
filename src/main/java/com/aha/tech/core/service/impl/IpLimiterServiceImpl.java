@@ -19,6 +19,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR;
 import static com.aha.tech.core.support.ParseHeadersSupport.parseHeaderIp;
 
 /**
@@ -42,6 +43,8 @@ public class IpLimiterServiceImpl implements LimiterService {
      */
     @Override
     public Boolean isAllowed(ServerWebExchange exchange) {
+        exchange.getAttributes().put(GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR, exchange.getRequest().getURI().getRawPath());
+
         Route route = exchange.getAttribute(ServerWebExchangeUtils.GATEWAY_ROUTE_ATTR);
 
         HttpHeaders httpHeaders = exchange.getRequest().getHeaders();

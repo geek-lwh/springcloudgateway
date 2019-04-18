@@ -8,12 +8,6 @@ package com.aha.tech.core.constant;
  */
 public class ExchangeAttributeConstant {
 
-    // 访问请求id
-    public static final String ACCESS_REQUEST_ID_ATTR = "ACCESS_REQUEST_ID_ATTR";
-
-    // 访问请求时间
-    public static final String ACCESS_REQUEST_TIME_ATTR = "ACCESS_REQUEST_TIME_ATTR";
-
     // 原始路径
     public static final String GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR = "GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR";
 

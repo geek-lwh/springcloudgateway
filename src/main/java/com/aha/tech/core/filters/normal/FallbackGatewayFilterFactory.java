@@ -1,7 +1,6 @@
 package com.aha.tech.core.filters.normal;
 
 import com.aha.tech.core.model.vo.ResponseVo;
-import com.aha.tech.core.service.AccessLogService;
 import com.aha.tech.core.support.WriteResponseSupport;
 import com.netflix.hystrix.HystrixCommandGroupKey;
 import com.netflix.hystrix.HystrixCommandKey;
@@ -28,7 +27,6 @@ import rx.Observable;
 import rx.RxReactiveStreams;
 import rx.Subscription;
 
-import javax.annotation.Resource;
 import java.net.URI;
 import java.util.List;
 import java.util.function.Consumer;
@@ -48,9 +46,6 @@ import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.*
 public class FallbackGatewayFilterFactory extends AbstractGatewayFilterFactory<FallbackGatewayFilterFactory.Config> {
 
     private static final Logger logger = LoggerFactory.getLogger(FallbackGatewayFilterFactory.class);
-
-    @Resource
-    private AccessLogService httpAccessLogService;
 
     private final ObjectProvider<DispatcherHandler> dispatcherHandler;
 
@@ -96,23 +91,23 @@ public class FallbackGatewayFilterFactory extends AbstractGatewayFilterFactory<F
                 if (throwable instanceof HystrixRuntimeException) {
                     HystrixRuntimeException e = (HystrixRuntimeException) throwable;
                     HystrixRuntimeException.FailureType failureType = e.getFailureType();
-                    httpAccessLogService.printWhenError(exchange, e);
+                    logger.error(e.getMessage(), e);
                     String error = exchange.getAttributes().getOrDefault(ServerWebExchangeUtils.HYSTRIX_EXECUTION_EXCEPTION_ATTR, e.getMessage()).toString();
+                    String errorMsg = String.format("HystrixRuntimeExceptionType : %s,错误信息 : %s", failureType, error);
                     switch (failureType) {
                         case TIMEOUT:
                             return Mono.defer(() -> {
                                 logger.error("降级出现超时");
                                 ResponseVo responseVo = ResponseVo.defaultFailureResponseVo();
-                                responseVo.setMessage("降级方法超时");
-                                return WriteResponseSupport.write(exchange, responseVo, HttpStatus.GATEWAY_TIMEOUT);
+                                responseVo.setMessage(errorMsg);
+                                return WriteResponseSupport.shortCircuit(exchange, responseVo, HttpStatus.GATEWAY_TIMEOUT, errorMsg);
                             });
 
                         case COMMAND_EXCEPTION: {
                             return Mono.defer(() -> {
-                                logger.error("降级出现异常 : {}", e);
                                 ResponseVo responseVo = ResponseVo.defaultFailureResponseVo();
-                                responseVo.setMessage("降级方法异常 : " + error);
-                                return WriteResponseSupport.write(exchange, responseVo, HttpStatus.BAD_GATEWAY);
+                                responseVo.setMessage(errorMsg);
+                                return WriteResponseSupport.shortCircuit(exchange, responseVo, HttpStatus.BAD_GATEWAY, errorMsg);
                             });
                         }
 

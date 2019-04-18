@@ -3,10 +3,8 @@ package com.aha.tech.core.filters.global;
 import com.aha.tech.core.constant.FilterProcessOrderedConstant;
 import com.aha.tech.core.exception.GatewayException;
 import com.aha.tech.core.model.vo.ResponseVo;
-import com.aha.tech.core.service.AccessLogService;
 import com.aha.tech.core.service.RequestHandlerService;
 import com.aha.tech.core.support.WriteResponseSupport;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -18,8 +16,6 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
-
-import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR;
 
 /**
  * @Author: luweihong
@@ -35,9 +31,6 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
     @Resource
     private RequestHandlerService httpRequestHandlerService;
 
-    @Resource
-    private AccessLogService httpAccessLogServiceImpl;
-
     @Override
     public int getOrder() {
         return FilterProcessOrderedConstant.AUTH_GATEWAY_FILTER_ORDER;
@@ -46,49 +39,17 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         logger.debug("开始执行权限校验网关过滤器");
-
-        String path = exchange.getAttribute(GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR);
         try {
             httpRequestHandlerService.authorize(exchange);
         } catch (GatewayException ge) {
-//            httpAccessLogServiceImpl.printWhenError(exchange.getResponse(), exchange.getAttributes());
-            return Mono.defer(() -> writeWithGatewayError(exchange, path, ge));
+            return Mono.defer(() -> {
+                String errorMsg = String.format("网关权限校验出现异常,错误信息 : %s", ge.getMessage());
+                ResponseVo rpcResponse = new ResponseVo(ge.getCode(), errorMsg);
+                return WriteResponseSupport.shortCircuit(exchange, rpcResponse, HttpStatus.UNAUTHORIZED, errorMsg);
+            });
         }
 
         return chain.filter(exchange);
-    }
-
-    /**
-     * 根据错误code码返回信息
-     * @param exchange
-     * @param e
-     * @return
-     */
-    private Mono<Void> writeWithGatewayError(ServerWebExchange exchange, String path, GatewayException e) {
-        ResponseVo rpcResponse = new ResponseVo(e.getCode(), e.getMessage());
-        logger.warn("访问路径: {} 失败,原因 : 权限不足,返回值", path, e, rpcResponse);
-        return WriteResponseSupport.write(exchange, rpcResponse, HttpStatus.UNAUTHORIZED);
-    }
-
-    /**
-     * 非业务异常捕获
-     * @param exchange
-     * @param e
-     * @return
-     */
-    @Deprecated
-    private Mono<Void> writeWithError(ServerWebExchange exchange, Exception e) {
-        logger.error("权限校验过滤器出现异常", e);
-        ResponseVo rpcResponse = ResponseVo.defaultFailureResponseVo();
-        String message = e.getMessage();
-        if (StringUtils.isBlank(message) && e.getCause() != null) {
-            message = e.getCause().toString();
-        } else {
-            message = e.getClass().toString();
-        }
-
-        rpcResponse.setMessage(message);
-        return WriteResponseSupport.write(exchange, rpcResponse, HttpStatus.BAD_GATEWAY);
     }
 
 }

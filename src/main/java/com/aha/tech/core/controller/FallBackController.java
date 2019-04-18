@@ -44,7 +44,7 @@ public class FallBackController {
     public Mono<ResponseVo> fallBack(ServerWebExchange serverWebExchange) {
         Object c = serverWebExchange.getAttributes().get(ServerWebExchangeUtils.HYSTRIX_EXECUTION_EXCEPTION_ATTR);
         if (c == null) {
-            httpAccessLogService.printWhenError(serverWebExchange, new Exception("未知异常"));
+            httpAccessLogService.printWhenError(serverWebExchange, "未捕获到hystrix异常!");
             ResponseVo responseVo = ResponseVo.defaultFailureResponseVo();
             responseVo.setMessage(HYSTRIX_ERROR_MESSAGE_PREFIX);
             return Mono.just(responseVo);
@@ -52,9 +52,9 @@ public class FallBackController {
 
         Throwable executionException = (Throwable) c;
         Exception e = (Exception) executionException;
-        httpAccessLogService.printWhenError(serverWebExchange, e);
+        String errorMsg = String.format("出现额外异常,触发hystrix 降级策略,异常信息:%s", e.getMessage());
+        httpAccessLogService.printWhenError(serverWebExchange, errorMsg);
 
-        logger.error("出现额外异常,触发hystrix 降级策略", executionException);
         ResponseVo responseVo = buildHystrixResponse(executionException, serverWebExchange);
 
         return Mono.just(responseVo);

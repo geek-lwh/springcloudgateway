@@ -48,11 +48,11 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
 
         Object obj = exchange.getAttributes().get(GATEWAY_REQUEST_ADD_PARAMS_ATTR);
         if (obj == null) {
-            logger.error("缺少需要在网关添加的参数");
+            String errorMsg = String.format("缺少需要在网关添加的参数");
             return Mono.defer(() -> {
                 ResponseVo rpcResponse = ResponseVo.defaultFailureResponseVo();
                 rpcResponse.setMessage("request add params attr is empty !");
-                return WriteResponseSupport.write(exchange, rpcResponse, HttpStatus.BAD_REQUEST);
+                return WriteResponseSupport.shortCircuit(exchange, rpcResponse, HttpStatus.BAD_REQUEST, errorMsg);
             });
         }
 
