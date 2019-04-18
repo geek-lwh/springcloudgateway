@@ -62,7 +62,7 @@ public class HttpAccessLogServiceImpl implements AccessLogService {
         String cookieString = formatCookieStr(userId, gSsId, gUserId, gUniqId);
         String date = DateUtil.dateByDefaultFormat(new Date(startTime));
         Long cost = endTime - startTime;
-        String log = String.format("request_id=%s => [time=%s,uri=%s,remote_ip=%s,forwarded_ip=%s,cookie_string=%s,user_agent=%s,status=%s,cost=%sms]",
+        String log = String.format("[request_id=%s,time=%s,uri=%s,remote_ip=%s,forwarded_ip=%s,cookie_string=%s,user_agent=%s,status=%s,cost=%sms]",
                 id, date, uri, remoteIp, forwardedIps, cookieString, userAgent, status, cost);
 
         return log;
