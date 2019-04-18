@@ -113,6 +113,7 @@ public class CheckAndCacheRequestFilter implements GlobalFilter, Ordered {
                     String data = new String(buf, StandardCharsets.UTF_8);
                     JSON json = JSON.parseObject(data);
                     String body = json.toJSONString();
+                    cacheRequestEntity.setRequestBody(body);
                     if (!checkBodyValid(body, tamperProofEntity)) {
                         return Mono.defer(() -> {
                             logger.error("body防篡改校验失败 参数: {}", tamperProofEntity);
@@ -120,7 +121,6 @@ public class CheckAndCacheRequestFilter implements GlobalFilter, Ordered {
                             return WriteResponseSupport.write(exchange, rpcResponse, HttpStatus.FORBIDDEN);
                         });
                     }
-                    cacheRequestEntity.setRequestBody(body);
                     return chain.filter(exchange);
                 });
     }
