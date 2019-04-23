@@ -73,7 +73,13 @@ public class HttpAccessLogServiceImpl implements AccessLogService {
             httpStatus = status.value();
         }
 
-        String request = String.format("%s %s", httpMethod, uri);
+        StringBuilder path = new StringBuilder(uri.getRawPath());
+        String rawQuery = uri.getRawQuery();
+        if (StringUtils.isNotBlank(rawQuery)) {
+            path.append(Separator.QUESTION_MARK).append(rawQuery);
+        }
+
+        String request = String.format("%s %s", httpMethod, path);
         String userAgent = getHeaderOrDefault(httpHeaders, HEADER_USER_AGENT).split(Separator.COMMA_MARK)[0];
         String realIp = getHeaderOrDefault(httpHeaders, HEADER_X_FORWARDED_FOR);
         BigDecimal formatSeconds = new BigDecimal(cost).divide(new BigDecimal(1000L));
