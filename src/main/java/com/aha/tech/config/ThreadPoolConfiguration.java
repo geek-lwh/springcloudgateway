@@ -19,7 +19,7 @@ public class ThreadPoolConfiguration {
         executor.setCorePoolSize(10);
         executor.setMaxPoolSize(20);
         executor.setQueueCapacity(50);
-        executor.setThreadNamePrefix("shortCircuit-logging-");
+        executor.setThreadNamePrefix("logging-");
         executor.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardPolicy());
         return executor;
     }
