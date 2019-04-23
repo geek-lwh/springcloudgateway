@@ -3,13 +3,14 @@ package com.aha.tech.core.service.impl;
 import com.aha.tech.commons.symbol.Separator;
 import com.aha.tech.commons.utils.DateUtil;
 import com.aha.tech.core.service.AccessLogService;
-import com.aha.tech.util.IdWorker;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.support.ServerWebExchangeUtils;
 import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -18,15 +19,14 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.server.ServerWebExchange;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.net.URI;
 import java.util.Date;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_CACHED_REQUEST_BODY_ATTR;
 import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR;
-import static com.aha.tech.core.constant.HeaderFieldConstant.HEADER_USER_AGENT;
-import static com.aha.tech.core.constant.HeaderFieldConstant.HEADER_X_FORWARDED_FOR;
+import static com.aha.tech.core.constant.HeaderFieldConstant.*;
 
 /**
  * @Author: luweihong
@@ -47,27 +47,42 @@ public class HttpAccessLogServiceImpl implements AccessLogService {
      * @return
      */
     public String printAccessLogging(ServerHttpRequest serverHttpRequest, Long startTime, Long endTime, HttpStatus status) {
-        Long id = IdWorker.getInstance().nextId();
+//        Long id = IdWorker.getInstance().nextId();
         String remoteIp = serverHttpRequest.getRemoteAddress().getAddress().getHostAddress();
-        List<String> forwardedIps = serverHttpRequest.getHeaders().get(HEADER_X_FORWARDED_FOR);
-        List<String> userAgent = serverHttpRequest.getHeaders().get(HEADER_USER_AGENT);
-
+        HttpHeaders httpHeaders = serverHttpRequest.getHeaders();
+        HttpMethod httpMethod = serverHttpRequest.getMethod();
         // cookies
         MultiValueMap<String, HttpCookie> cookieMultiValueMap = serverHttpRequest.getCookies();
-        String userId = getValueOrDefault(cookieMultiValueMap, "user_id");
-        String gSsId = getValueOrDefault(cookieMultiValueMap, "gssid");
-        String gUserId = getValueOrDefault(cookieMultiValueMap, "guserid");
-        String gUniqId = getValueOrDefault(cookieMultiValueMap, "guniqid");
+        String userId = getCookieOrDefault(cookieMultiValueMap, "user_id");
+        String gSsId = getCookieOrDefault(cookieMultiValueMap, "gssid");
+        String gUserId = getCookieOrDefault(cookieMultiValueMap, "guserid");
+        String gUniqId = getCookieOrDefault(cookieMultiValueMap, "guniqid");
 
         URI uri = serverHttpRequest.getURI();
         String cookieString = formatCookieStr(userId, gSsId, gUserId, gUniqId);
         String date = DateUtil.dateByDefaultFormat(new Date(startTime));
         Long cost = endTime - startTime;
-        String log = String.format("[request_id=%s,time=%s,uri=%s,remote_ip=%s,forwarded_ip=%s,cookie_string=%s,user_agent=%s,status=%s,cost=%sms]",
-                id, date, uri, remoteIp, forwardedIps, cookieString, userAgent, status, cost);
+
+        String referrer = httpHeaders.getFirst(HEADER_REFERER);
+        if (StringUtils.isBlank(referrer)) {
+            referrer = "-";
+        }
+
+        int httpStatus = 500;
+        if (status != null) {
+            httpStatus = status.value();
+        }
+
+        String request = String.format("%s %s", httpMethod, uri);
+        String userAgent = getHeaderOrDefault(httpHeaders, HEADER_USER_AGENT).split(Separator.COMMA_MARK)[0];
+        String realIp = getHeaderOrDefault(httpHeaders, HEADER_X_FORWARDED_FOR);
+        BigDecimal formatSeconds = new BigDecimal(cost).divide(new BigDecimal(1000L));
+        String log = String.format("%s - [%s] \"%s\" %s \"%s\" \"%s\" \"%s\" \"%s\" %s",
+                remoteIp, date, request, httpStatus, referrer, userAgent, realIp, cookieString, formatSeconds);
 
         return log;
     }
+
 
     /**
      * 打印http response相关信息
@@ -98,7 +113,6 @@ public class HttpAccessLogServiceImpl implements AccessLogService {
             sb.append(body);
 
 
-
             logger.error("{}", sb);
         }, writeLoggingThreadPool);
     }
@@ -109,13 +123,28 @@ public class HttpAccessLogServiceImpl implements AccessLogService {
      * @param field
      * @return
      */
-    private String getValueOrDefault(MultiValueMap<String, HttpCookie> cookieMultiValueMap, String field) {
+    private String getCookieOrDefault(MultiValueMap<String, HttpCookie> cookieMultiValueMap, String field) {
         HttpCookie source = cookieMultiValueMap.getFirst(field);
         if (source == null) {
-            return Strings.EMPTY;
+            return "-";
         }
 
         return source.getValue();
+    }
+
+    /**
+     * 获取cookies的值
+     * @param httpHeaders
+     * @param field
+     * @return
+     */
+    private String getHeaderOrDefault(HttpHeaders httpHeaders, String field) {
+        String source = httpHeaders.getFirst(field);
+        if (StringUtils.isBlank(source)) {
+            return "-";
+        }
+
+        return source;
     }
 
     /**
@@ -127,6 +156,6 @@ public class HttpAccessLogServiceImpl implements AccessLogService {
      * @return
      */
     private String formatCookieStr(String userId, String gSsId, String gUserId, String gUniqId) {
-        return String.format("|user_id=%s|&gssid=%s|&guserid=%s|&guniqid=%s|", userId, gSsId, gUserId, gUniqId);
+        return String.format("user_id=%s&gssid=%s&guserid=%s&guniqid=%s", userId, gSsId, gUserId, gUniqId);
     }
 }
