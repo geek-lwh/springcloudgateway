@@ -96,9 +96,9 @@ public class HttpAccessLogServiceImpl implements AccessLogService {
      */
     @Override
     public void printWhenError(ServerWebExchange serverWebExchange, String errorMsg) {
-        ServerHttpRequest serverHttpRequest = serverWebExchange.getRequest();
-        HttpHeaders httpHeaders = serverHttpRequest.getHeaders();
         CompletableFuture.runAsync(() -> {
+            ServerHttpRequest serverHttpRequest = serverWebExchange.getRequest();
+            HttpHeaders httpHeaders = serverHttpRequest.getHeaders();
             StringBuilder sb = new StringBuilder();
             String url = serverWebExchange.getAttributes().getOrDefault(GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR, Strings.EMPTY).toString();
 
