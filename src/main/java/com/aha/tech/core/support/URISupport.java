@@ -43,12 +43,14 @@ public class URISupport {
      * @return
      */
     public static String buildRewritePath(String contextPath, String path) {
-        String rewritePath = new StringBuilder()
-                .append(contextPath)
-                .append(Separator.SLASH_MARK)
-                .append(path).toString();
+        StringBuilder rewritePath = new StringBuilder();
+        if (org.apache.commons.lang3.StringUtils.isNotBlank(contextPath)) {
+            rewritePath.append(Separator.SLASH_MARK).append(contextPath);
+        }
 
-        return rewritePath;
+        rewritePath.append(Separator.SLASH_MARK).append(path).toString();
+
+        return rewritePath.toString();
     }
 
     /**
