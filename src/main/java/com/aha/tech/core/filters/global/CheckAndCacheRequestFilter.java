@@ -114,9 +114,9 @@ public class CheckAndCacheRequestFilter implements GlobalFilter, Ordered {
                     JSON json = JSON.parseObject(data);
                     String body = json.toJSONString();
                     cacheRequestEntity.setRequestBody(body);
-                    if (!checkBodyValid(body, tamperProofEntity)) {
+                    if (!checkBodyValid(data, tamperProofEntity)) {
                         return Mono.defer(() -> {
-                            String errorMsg = String.format("url防篡改校验失败,参数:%s", tamperProofEntity);
+                            String errorMsg = String.format("body 防篡改校验失败,参数:%s", tamperProofEntity);
                             ResponseVo rpcResponse = new ResponseVo(HttpStatus.FORBIDDEN.value(), errorMsg);
                             return WriteResponseSupport.shortCircuit(exchange, rpcResponse, HttpStatus.FORBIDDEN, errorMsg);
                         });

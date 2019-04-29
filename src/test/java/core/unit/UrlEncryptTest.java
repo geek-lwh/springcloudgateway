@@ -28,7 +28,7 @@ public class UrlEncryptTest {
 
     private String secretKey = "d1f1bd03e3b0e08d6ebbecaa60e14445";
 
-    private String timestamp = "1556440724503";
+    private String timestamp = "1555395428000";
 
     @Test
     @DisplayName("生成signature测试类目")
