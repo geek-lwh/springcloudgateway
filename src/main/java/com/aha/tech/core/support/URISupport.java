@@ -137,25 +137,26 @@ public class URISupport {
 
     /**
      * body加密
-     * @param body
+     * @param encodeBody
      * @param timestamp
      * @param secretKey
      * @return
      */
-    public static String encryptBody(String body, String timestamp, String secretKey) {
+    public static String encryptBody(String encodeBody, String timestamp, String secretKey) {
         String lastMd5 = Strings.EMPTY;
         try {
-            if (StringUtils.isEmpty(body)) {
+            if (StringUtils.isEmpty(encodeBody)) {
                 logger.error("body防篡改加密时出现body为空");
                 return Strings.EMPTY;
             }
-            String str1 = body + timestamp;
+
+            String str1 = encodeBody + timestamp;
             String firstMd5 = DigestUtils.md5DigestAsHex(str1.getBytes());
 
             String str2 = firstMd5 + secretKey;
             lastMd5 = DigestUtils.md5DigestAsHex(str2.getBytes());
         } catch (Exception e) {
-            logger.error("body防篡改加密出现异常 body={},timestamp={}", body, timestamp, e);
+            logger.error("body防篡改加密出现异常 body={},timestamp={}", encodeBody, timestamp, e);
         }
 
         return lastMd5;

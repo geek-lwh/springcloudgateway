@@ -1,16 +1,18 @@
 package core.unit;
 
 import com.aha.tech.commons.utils.DateUtil;
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Maps;
+import org.apache.commons.codec.binary.Base64;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import static com.aha.tech.core.support.URISupport.*;
@@ -26,13 +28,13 @@ public class UrlEncryptTest {
 
     private String secretKey = "d1f1bd03e3b0e08d6ebbecaa60e14445";
 
-    private String timestamp = "1555395428000";
+    private String timestamp = "1556440724503";
 
     @Test
     @DisplayName("生成signature测试类目")
     public void createXSignature() {
         logger.info("<<<< {} 开始 [生成signature测试类目]", DateUtil.currentDateByDefaultFormat());
-        URI url = URI.create("http://localhost:9700/v3/users/update");
+        URI url = URI.create("http://api-test5.d.ahaschool.com/v3/userbff/visitor/devices/create");
         String rawQuery = url.getRawQuery();
         String rawPath = url.getRawPath();
 
@@ -45,20 +47,21 @@ public class UrlEncryptTest {
      */
     @Test
     @DisplayName("body加密测试类目")
-    public void createContentSignature() {
+    public void createContentSignature() throws IOException {
         logger.info("<<<< {} 开始 [body加密测试类目]", DateUtil.currentDateByDefaultFormat());
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("act_favor", "monkeyd");
-        String encryptStr = encryptBody(jsonObject.toJSONString(), timestamp, secretKey);
-        String input = "{\"act_favor\": \"monkeyd\"}";
-        JSON json = JSON.parseObject(input);
-        String encryptStr2 = encryptBody(json.toJSONString(), timestamp, secretKey);
-        System.out.print("加密后的值 : " + encryptStr);
-        System.out.print("加密后的值 : " + encryptStr2);
+        jsonObject.put("user_id", 2134);
+        String body = jsonObject.toJSONString();
+        byte[] base64Body = Base64.encodeBase64(body.getBytes());
+        String encodeBody = new String(base64Body, StandardCharsets.UTF_8);
 
-//        System.out.println("加密后" + s);
 
+        String encryptBody = encryptBody(encodeBody, timestamp, secretKey);
+        System.out.println(encryptBody.equals(encodeBody));
     }
+
+//     "message": "url防篡改校验失败,参数:[uri=http://api-test5.d.ahaschool.com/v3/userbff/visitor/devices/create,version=Froyo,timestamp=1556440724503,content=6ecd95c8c403732ed7ed90f501ce599c,signature=5cbb0122804ed76722573533bd4c4d62]"
+
 
 
     @Test
