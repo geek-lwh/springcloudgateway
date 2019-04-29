@@ -56,7 +56,9 @@ public class HttpRewritePathServiceImpl implements RewritePathService {
 
         // 重写新的路由
         RouteEntity routeEntity = routeEntityMap.get(id);
-        String rewritePath = buildRewritePath(routeEntity.getContextPath(), validPath);
+        String realServerUrl = StringUtils.substringAfter(validPath, Separator.SLASH_MARK);
+
+        String rewritePath = buildRewritePath(routeEntity.getContextPath(), realServerUrl);
 
         routeEntity.setRewritePath(rewritePath);
         routeEntity.setId(id);

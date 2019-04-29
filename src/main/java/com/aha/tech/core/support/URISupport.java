@@ -44,11 +44,15 @@ public class URISupport {
      */
     public static String buildRewritePath(String contextPath, String path) {
         StringBuilder rewritePath = new StringBuilder();
-        if (org.apache.commons.lang3.StringUtils.isNotBlank(contextPath)) {
-            rewritePath.append(Separator.SLASH_MARK).append(contextPath);
+        if (!org.apache.commons.lang3.StringUtils.startsWith(contextPath, Separator.SLASH_MARK)) {
+            contextPath = Separator.SLASH_MARK + contextPath;
         }
 
-        rewritePath.append(Separator.SLASH_MARK).append(path).toString();
+        if (org.apache.commons.lang3.StringUtils.isNotBlank(contextPath)) {
+            rewritePath.append(contextPath);
+        }
+
+        rewritePath.append(path).toString();
 
         return rewritePath.toString();
     }
