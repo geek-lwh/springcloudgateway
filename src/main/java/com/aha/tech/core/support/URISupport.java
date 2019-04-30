@@ -39,20 +39,21 @@ public class URISupport {
     /**
      * 构建重写后的路由地址
      * @param contextPath
-     * @param path
+     * @param realServerHost
      * @return
      */
-    public static String buildRewritePath(String contextPath, String path) {
+    public static String buildRewritePath(String contextPath, String realServerHost) {
         StringBuilder rewritePath = new StringBuilder();
-        if (!org.apache.commons.lang3.StringUtils.startsWith(contextPath, Separator.SLASH_MARK)) {
+
+        if (StringUtils.isEmpty(contextPath)) {
+            contextPath = Separator.SLASH_MARK;
+        }
+
+        if (!StringUtils.startsWithIgnoreCase(contextPath, Separator.SLASH_MARK)) {
             contextPath = Separator.SLASH_MARK + contextPath;
         }
 
-        if (org.apache.commons.lang3.StringUtils.isNotBlank(contextPath)) {
-            rewritePath.append(contextPath);
-        }
-
-        rewritePath.append(path).toString();
+        rewritePath.append(contextPath).append(realServerHost).toString();
 
         return rewritePath.toString();
     }

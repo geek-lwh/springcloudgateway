@@ -47,8 +47,8 @@ public class HttpRewritePathServiceImpl implements RewritePathService {
      * @return
      */
     @Override
-    public RouteEntity rewritePath(String validPath) {
-        String id = StringUtils.substringBefore(validPath, Separator.SLASH_MARK);
+    public RouteEntity rewritePath(String realServerHost) {
+        String id = StringUtils.substringBefore(realServerHost, Separator.SLASH_MARK);
         if (!routeEntityMap.containsKey(id)) {
             logger.error("根据id : {} 查找不到对应的请求资源 : {}", id, routeEntityMap);
             throw new NoSuchRouteException();
@@ -56,9 +56,9 @@ public class HttpRewritePathServiceImpl implements RewritePathService {
 
         // 重写新的路由
         RouteEntity routeEntity = routeEntityMap.get(id);
-        String realServerUrl = StringUtils.substringAfter(validPath, Separator.SLASH_MARK);
-
-        String rewritePath = buildRewritePath(routeEntity.getContextPath(), realServerUrl);
+//        String realServerHost = StringUtils.substringAfter(validPath, Separator.SLASH_MARK);
+        String contextPath = routeEntity.getContextPath();
+        String rewritePath = buildRewritePath(contextPath, realServerHost);
 
         routeEntity.setRewritePath(rewritePath);
         routeEntity.setId(id);
