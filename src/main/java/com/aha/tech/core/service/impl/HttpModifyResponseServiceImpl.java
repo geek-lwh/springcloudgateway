@@ -58,6 +58,8 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
         ServerHttpResponseDecorator serverHttpResponseDecorator = new ServerHttpResponseDecorator(oldResponse) {
             @Override
             public Mono<Void> writeWith(Publisher<? extends DataBuffer> body) {
+                logger.debug("开始修改返回值过滤器");
+
                 ModifyResponseBodyGatewayFilterFactory m = new ModifyResponseBodyGatewayFilterFactory(ServerCodecConfigurer.create());
                 String originalResponseContentType = serverWebExchange.getAttribute(ORIGINAL_RESPONSE_CONTENT_TYPE_ATTR);
                 HttpHeaders httpHeaders = new HttpHeaders();
@@ -65,14 +67,19 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
                 ResponseAdapter responseAdapter = m.new ResponseAdapter(body, httpHeaders);
                 DefaultClientResponse clientResponse = new DefaultClientResponse(responseAdapter, ExchangeStrategies.withDefaults());
 
-                Mono modifiedBody = clientResponse.bodyToMono(String.class).flatMap(originalBody -> Mono.just(originalBody));
+                Mono modifiedBody = clientResponse.bodyToMono(String.class).flatMap(originalBody -> {
+                    logger.info("response body : {}", originalBody);
+                    return Mono.just(originalBody);
+                });
 
                 BodyInserter bodyInserter = BodyInserters.fromPublisher(modifiedBody, String.class);
-                CachedBodyOutputMessage outputMessage = new CachedBodyOutputMessage(serverWebExchange, serverWebExchange.getResponse().getHeaders());
+                CachedBodyOutputMessage outputMessage = new CachedBodyOutputMessage(serverWebExchange, oldResponse.getHeaders());
                 return bodyInserter.insert(outputMessage, new BodyInserterContext())
                         .then(Mono.defer(() -> {
                             Flux<DataBuffer> messageBody = outputMessage.getBody();
                             HttpHeaders headers = getDelegate().getHeaders();
+                            headers.remove(HttpHeaders.TRANSFER_ENCODING);
+                            crossAccessSetting(httpHeaders);
                             messageBody = messageBody.doOnNext(data -> headers.setContentLength(data.readableByteCount()));
                             return getDelegate().writeWith(messageBody);
                         }));

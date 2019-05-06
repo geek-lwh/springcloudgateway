@@ -253,7 +253,8 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
     @Override
     public ServerHttpResponseDecorator modifyResponseBodyAndHeaders(ServerWebExchange serverWebExchange) {
         ServerHttpResponse serverHttpResponse = serverWebExchange.getResponse();
-        return httpModifyResponseService.renewResponse(serverWebExchange, serverHttpResponse);
+        ServerHttpResponseDecorator serverHttpResponseDecorator = httpModifyResponseService.renewResponse(serverWebExchange, serverHttpResponse);
+        return serverHttpResponseDecorator;
     }
 
     /**
