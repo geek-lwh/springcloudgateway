@@ -198,7 +198,7 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
         httpHeaders.remove(HEADER_X_CA_SIGNATURE);
         httpHeaders.remove(HEADER_X_CA_VERSION);
         httpHeaders.remove(HEADER_X_CA_CONTENT);
-        httpHeaders.remove(VERSION_FROYO);
+        httpHeaders.remove(HEADER_X_CA_NONCE);
     }
 
     /**

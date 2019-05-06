@@ -103,7 +103,9 @@ public class HeaderFieldConstant {
 
     public static final List<String> HEADER_CROSS_ACCESS_ALLOW_ALLOW_HEADERS = Lists.newArrayList("Authorization", "Origin", "X-Requested-With", "X-Env", "X-Request-Page", "Content-Type", "Accept");
 
-    // 时间错
+    public static final String HEADER_X_CA_NONCE = "X-Ca-Nonce";
+
+    // 时间戳
     public static final String HEADER_X_CA_TIMESTAMP = "X-Ca-Timestamp";
 
     // 签名
