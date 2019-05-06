@@ -77,6 +77,10 @@ public class HeaderFieldConstant {
 
     public static final String X_ENV_FIELD_CHANNEL = "channel";
 
+    public static final String X_ENV_FIELD_USER_ID = "user_id";
+
+    public static final String X_ENV_USER_ID = "X-Env-User-Id";
+
     public static final String X_ENV_CHANNEL = "X-Env-Channel";
 
     public static final String HEADER_PRAGMA = "Pragma";

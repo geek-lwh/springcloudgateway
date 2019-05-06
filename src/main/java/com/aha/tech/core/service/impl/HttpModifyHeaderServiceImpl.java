@@ -167,6 +167,9 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
             case X_ENV_FIELD_CHANNEL:
                 httpHeaders.set(X_ENV_CHANNEL, value);
                 break;
+            case X_ENV_FIELD_USER_ID:
+                httpHeaders.set(X_ENV_USER_ID, value);
+                break;
             default:
                 parseDefault(key, value, httpHeaders);
                 break;
