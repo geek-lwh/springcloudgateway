@@ -55,6 +55,7 @@ public class HttpOverwriteParamServiceImpl implements OverwriteParamService {
         String newBody = obj.toJSONString();
         Mono<String> modifiedBody = Mono.justOrEmpty(newBody);
 
+        logger.debug("request body : {}", newBody);
         CachedBodyOutputMessage outputMessage = new CachedBodyOutputMessage(exchange, headers);
         BodyInserter bodyInserter = BodyInserters.fromPublisher(modifiedBody, String.class);
 

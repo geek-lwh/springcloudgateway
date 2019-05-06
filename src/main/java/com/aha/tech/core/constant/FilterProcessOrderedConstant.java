@@ -1,5 +1,7 @@
 package com.aha.tech.core.constant;
 
+import org.springframework.cloud.gateway.filter.NettyWriteResponseFilter;
+
 /**
  * @Author: luweihong
  * @Date: 2019/2/20
@@ -36,7 +38,7 @@ public class FilterProcessOrderedConstant {
     public static int MODIFY_PARAMS_FILTER_ORDER = MODIFY_REQUEST_HEADER_GATEWAY_FILTER_ORDER + STEP;
 
     // 修改请求返回体过滤器
-    public static int MODIFY_RESPONSE_GATEWAY_FILTER_ORDER = MODIFY_PARAMS_FILTER_ORDER + STEP;
+    public static int MODIFY_RESPONSE_GATEWAY_FILTER_ORDER = NettyWriteResponseFilter.WRITE_RESPONSE_FILTER_ORDER - STEP;
 
 
 }

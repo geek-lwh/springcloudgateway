@@ -182,13 +182,20 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
         httpHeaders.remove(HEADER_PRAGMA);
         httpHeaders.remove(HEADER_CACHE_CONTROL);
         httpHeaders.remove(HEADER_X_ENV);
-//        httpHeaders.remove(HEADER_REFERER);
+        // httpHeaders.remove(HEADER_REFERER);
         httpHeaders.remove(HEADER_ORIGIN);
         httpHeaders.remove(HEADER_X_REQUEST_PAGE);
         httpHeaders.remove(HEADER_HOST);
         httpHeaders.remove(HEADER_DNT);
         httpHeaders.remove(HEADER_COOKIE);
         httpHeaders.remove(HEADER_AUTHORIZATION);
+
+        // 删除url防篡改
+        httpHeaders.remove(HEADER_X_CA_TIMESTAMP);
+        httpHeaders.remove(HEADER_X_CA_SIGNATURE);
+        httpHeaders.remove(HEADER_X_CA_VERSION);
+        httpHeaders.remove(HEADER_X_CA_CONTENT);
+        httpHeaders.remove(VERSION_FROYO);
     }
 
     /**
