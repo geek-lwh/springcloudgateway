@@ -71,17 +71,23 @@ public class URISupport {
      */
     public static String encryptUrl(String rawPath, String rawQuery, String timestamp, String secretKey) {
         String lastMd5 = Strings.EMPTY;
-        String sortQueryParamsStr = Strings.EMPTY;
+        StringBuilder sortQueryParamsStr = new StringBuilder();
         try {
             if (!StringUtils.isEmpty(rawQuery)) {
                 String[] paramArr = rawQuery.split(Separator.AND_MARK);
                 List<String> list = Lists.newArrayList(paramArr);
                 Collections.sort(list);
-                for (String v : list) {
+                for (int i = 0; i < list.size(); i++) {
+                    String v = list.get(i);
                     if (v.startsWith(SPECIAL_SYMBOL)) {
                         continue;
                     }
-                    sortQueryParamsStr += v;
+
+                    if (i == list.size() - 1) {
+                        sortQueryParamsStr.append(v);
+                    } else {
+                        sortQueryParamsStr.append(v).append(Separator.AND_MARK);
+                    }
                 }
             }
 
