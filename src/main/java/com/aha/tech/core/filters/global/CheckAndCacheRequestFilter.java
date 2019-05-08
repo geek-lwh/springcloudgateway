@@ -17,6 +17,7 @@ import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
@@ -73,6 +74,11 @@ public class CheckAndCacheRequestFilter implements GlobalFilter, Ordered {
                 ResponseVo rpcResponse = new ResponseVo(HttpStatus.FORBIDDEN.value(), errorMsg);
                 return WriteResponseSupport.shortCircuit(exchange, rpcResponse, HttpStatus.FORBIDDEN, errorMsg);
             });
+        }
+
+        MediaType mediaType = exchange.getRequest().getHeaders().getContentType();
+        if (mediaType.isCompatibleWith(MediaType.APPLICATION_FORM_URLENCODED)) {
+            return chain.filter(exchange);
         }
 
         HttpMethod httpMethod = request.getMethod();

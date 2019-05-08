@@ -72,6 +72,7 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
         MediaType mediaType = serverHttpRequest.getHeaders().getContentType();
         HttpMethod httpMethod = exchange.getRequest().getMethod();
 
+        // 表单提交
         if (mediaType.isCompatibleWith(MediaType.APPLICATION_FORM_URLENCODED)) {
             URI uri = serverHttpRequest.getURI();
             URI newUri = httpOverwriteParamService.modifyParamsWithFormUrlencoded(requestAddParamsDto, uri);
