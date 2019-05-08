@@ -38,5 +38,4 @@ public class WhiteListFilter implements GlobalFilter, Ordered {
         return chain.filter(exchange);
     }
 
-
 }

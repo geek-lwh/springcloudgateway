@@ -6,8 +6,6 @@ import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.http.server.reactive.ServerHttpResponseDecorator;
 import org.springframework.web.server.ServerWebExchange;
 
-import java.net.URI;
-
 /**
  * @Author: luweihong
  * @Date: 2019/3/15
@@ -25,10 +23,10 @@ public interface RequestHandlerService {
      * @param version
      * @param timestamp
      * @param signature
-     * @param originalPath
+     * @param url
      * @return
      */
-    Boolean urlTamperProof(String version, String timestamp, String signature, URI originalPath);
+    Boolean urlTamperProof(String version, String timestamp, String signature, String rawPath, String url);
 
     /**
      * body防篡改

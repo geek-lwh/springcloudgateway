@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 
 import static com.aha.tech.core.support.URISupport.encryptBody;
@@ -28,15 +27,14 @@ public class HttpVerifyRequestServiceImpl implements VerifyRequestService {
 
     /**
      * 校验请求url是否合法
+     * @param rawPath
      * @param uri
      * @param timestamp
      * @return
      */
     @Override
-    public String verifyUrl(URI uri, String timestamp) {
-        String rawQuery = uri.getRawQuery();
-        String rawPath = uri.getRawPath();
-        String encryptStr = encryptUrl(rawPath, rawQuery, timestamp, secretKey);
+    public String verifyUrl(String rawPath, String uri, String timestamp) {
+        String encryptStr = encryptUrl(rawPath, uri, timestamp, secretKey);
         return encryptStr;
     }
 

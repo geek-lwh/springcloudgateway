@@ -1,5 +1,6 @@
 package com.aha.tech.core.filters.global;
 
+import com.aha.tech.commons.symbol.Separator;
 import com.aha.tech.core.model.entity.CacheRequestEntity;
 import com.aha.tech.core.model.entity.TamperProofEntity;
 import com.aha.tech.core.model.vo.ResponseVo;
@@ -7,6 +8,7 @@ import com.aha.tech.core.service.OverwriteParamService;
 import com.aha.tech.core.service.RequestHandlerService;
 import com.aha.tech.core.support.WriteResponseSupport;
 import com.alibaba.fastjson.JSON;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,15 +22,21 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_CACHED_REQUEST_BODY_ATTR;
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.CHECK_AND_CACHE_REQUEST_FILTER;
+import static com.aha.tech.core.support.URISupport.SPECIAL_SYMBOL;
 
 /**
  * @Author: luweihong
@@ -66,8 +74,10 @@ public class CheckAndCacheRequestFilter implements GlobalFilter, Ordered {
 
         cacheRequestEntity.setRequestLine(uri);
 
+        String rawPath = uri.getRawPath();
+        MultiValueMap<String, String> queryParams = request.getQueryParams();
         TamperProofEntity tamperProofEntity = new TamperProofEntity(httpHeaders, uri);
-        boolean isURIValid = checkUrlValid(tamperProofEntity, uri);
+        boolean isURIValid = checkUrlValid(tamperProofEntity, queryParams, rawPath);
         if (!isURIValid) {
             return Mono.defer(() -> {
                 String errorMsg = String.format("url防篡改校验失败,参数:%s", tamperProofEntity);
@@ -93,20 +103,41 @@ public class CheckAndCacheRequestFilter implements GlobalFilter, Ordered {
     /**
      * 校验url
      * @param tamperProofEntity
-     * @param uri
+     * @param queryParams
+     * @param rawPath
      * @return
      */
-    private boolean checkUrlValid(TamperProofEntity tamperProofEntity, URI uri) {
+    private boolean checkUrlValid(TamperProofEntity tamperProofEntity, MultiValueMap<String, String> queryParams, String rawPath) {
         if (!isEnable) {
             return Boolean.TRUE;
         }
 
-        logger.debug("原始请求地址 : {} , 加密信息 :{} ", uri, tamperProofEntity);
+        logger.debug("原始请求地址 : {} , 加密信息 :{} ", rawPath, tamperProofEntity);
         String timestamp = tamperProofEntity.getTimestamp();
         String signature = tamperProofEntity.getSignature();
         String version = tamperProofEntity.getVersion();
 
-        return httpRequestHandlerService.urlTamperProof(version, timestamp, signature, uri);
+        StringBuilder u = new StringBuilder();
+        queryParams.forEach((String k, List<String> v) -> {
+            if (!k.startsWith(SPECIAL_SYMBOL)) {
+                String value = Strings.EMPTY;
+                if (!CollectionUtils.isEmpty(v) && v.get(0) != null) {
+                    try {
+                        value = URLDecoder.decode(v.get(0), StandardCharsets.UTF_8.name());
+                    } catch (UnsupportedEncodingException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                u.append(k).append(Separator.EQUAL_SIGN_MARK).append(value).append(Separator.AND_MARK);
+            }
+        });
+
+        if (u.length() > 0) {
+            u.deleteCharAt(u.length() - 1);
+        }
+
+        return httpRequestHandlerService.urlTamperProof(version, timestamp, signature, rawPath, u.toString());
     }
 
     /**

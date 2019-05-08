@@ -22,7 +22,7 @@ public class URISupport {
 
     private static final Logger logger = LoggerFactory.getLogger(URISupport.class);
 
-    private final static String SPECIAL_SYMBOL = "_=";
+    public final static String SPECIAL_SYMBOL = "_=";
 
     /**
      * 根据字符串,切割符,跳过无效区位数
@@ -71,24 +71,13 @@ public class URISupport {
      */
     public static String encryptUrl(String rawPath, String rawQuery, String timestamp, String secretKey) {
         String lastMd5 = Strings.EMPTY;
-        StringBuilder sortQueryParamsStr = new StringBuilder();
+        String sortQueryParamsStr = Strings.EMPTY;
         try {
             if (!StringUtils.isEmpty(rawQuery)) {
                 String[] paramArr = rawQuery.split(Separator.AND_MARK);
                 List<String> list = Lists.newArrayList(paramArr);
                 Collections.sort(list);
-                for (int i = 0; i < list.size(); i++) {
-                    String v = list.get(i);
-                    if (v.startsWith(SPECIAL_SYMBOL)) {
-                        continue;
-                    }
-
-                    if (i == list.size() - 1) {
-                        sortQueryParamsStr.append(v);
-                    } else {
-                        sortQueryParamsStr.append(v).append(Separator.AND_MARK);
-                    }
-                }
+                sortQueryParamsStr = org.apache.commons.lang3.StringUtils.join(list, Separator.AND_MARK);
             }
 
             logger.debug("after sort params : {}", sortQueryParamsStr);

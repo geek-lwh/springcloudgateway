@@ -1,7 +1,5 @@
 package com.aha.tech.core.service;
 
-import java.net.URI;
-
 /**
  * @Author: luweihong
  * @Date: 2019/4/16
@@ -14,7 +12,7 @@ public interface VerifyRequestService {
      * @param timestamp
      * @return
      */
-    String verifyUrl(URI uri, String timestamp);
+    String verifyUrl(String rawPath, String uri, String timestamp);
 
     /**
      * 校验body是否合法

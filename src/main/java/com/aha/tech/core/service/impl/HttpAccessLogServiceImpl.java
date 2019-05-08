@@ -25,7 +25,6 @@ import java.util.Date;
 import java.util.concurrent.CompletableFuture;
 
 import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_CACHED_REQUEST_BODY_ATTR;
-import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR;
 import static com.aha.tech.core.constant.HeaderFieldConstant.*;
 
 /**
@@ -100,7 +99,7 @@ public class HttpAccessLogServiceImpl implements AccessLogService {
             ServerHttpRequest serverHttpRequest = serverWebExchange.getRequest();
             HttpHeaders httpHeaders = serverHttpRequest.getHeaders();
             StringBuilder sb = new StringBuilder();
-            String url = serverWebExchange.getAttributes().getOrDefault(GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR, Strings.EMPTY).toString();
+            String url = serverHttpRequest.getURI().toString();
 
             sb.append("错误 : ");
             String error = serverWebExchange.getAttributes().getOrDefault(ServerWebExchangeUtils.HYSTRIX_EXECUTION_EXCEPTION_ATTR, errorMsg).toString();
