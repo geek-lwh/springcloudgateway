@@ -1,6 +1,5 @@
 package com.aha.tech.core.service.impl;
 
-import com.aha.tech.commons.symbol.Separator;
 import com.aha.tech.config.RouteConfiguration;
 import com.aha.tech.core.model.entity.RouteEntity;
 import com.aha.tech.core.service.RuntimeConfigChangedService;
@@ -17,7 +16,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -33,11 +31,11 @@ public class RuntimeConfigChangedServiceImpl implements RuntimeConfigChangedServ
 
     private String DYNAMIC_ROUTE_API_URI_BEAN = "routeEntityMap";
 
-    private String DYNAMIC_ROUTE_API_WHITE_LIST_BEAN = "whiteListMap";
+    private String DYNAMIC_ROUTE_API_WHITE_LIST_BEAN = "whiteList";
 
     private String ROUTE_API_URI_PREFIX = "route.api.uri.mappings.";
 
-    private String ROUTE_API_WHITE_LIST_PREFIX = "route.api.whitelist.mappings.";
+    private String ROUTE_API_WHITE_LIST_PREFIX = "route.api.white.list";
 
 
     @Autowired
@@ -129,21 +127,14 @@ public class RuntimeConfigChangedServiceImpl implements RuntimeConfigChangedServ
         String newValue = change.getNewValue();
         logger.info("变更前的值 : {},变更后的值 : {}", oldValue, newValue);
 
-        Map<String, List<String>> whiteListMap = (Map<String, List<String>>) SpringContextUtil.getBean(DYNAMIC_ROUTE_API_WHITE_LIST_BEAN);
+        List<String> whiteList = (List<String>) SpringContextUtil.getBean(DYNAMIC_ROUTE_API_WHITE_LIST_BEAN);
 
-        String key = changeKeyName.substring(prefix.length());
+        whiteList.remove(oldValue);
+        whiteList.add(newValue);
 
-        if (StringUtils.isBlank(newValue)) {
-            whiteListMap.remove(key);
-            refreshScope.refresh(DYNAMIC_ROUTE_API_WHITE_LIST_BEAN);
-            logger.info("删除 路由API白名单列表 : {}", prefix + key);
-            return;
-        }
-
-        List<String> list = Arrays.asList(StringUtils.split(newValue, Separator.COMMA_MARK));
-        whiteListMap.put(key, list);
         refreshScope.refresh(DYNAMIC_ROUTE_API_WHITE_LIST_BEAN);
-        logger.info("更新 路由API白名单列表 : {}", prefix + key);
+
+        logger.info("更新 路由API白名单列表 : {}", whiteList);
     }
 
     /**

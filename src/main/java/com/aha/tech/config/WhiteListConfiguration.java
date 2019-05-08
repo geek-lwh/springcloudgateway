@@ -1,16 +1,13 @@
 package com.aha.tech.config;
 
-import com.aha.tech.commons.symbol.Separator;
-import com.google.common.collect.Maps;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @Author: luweihong
@@ -19,29 +16,26 @@ import java.util.Map;
  * 网关白名单
  */
 @Configuration
-@ConfigurationProperties(prefix = "route.api.whitelist")
+@ConfigurationProperties(prefix = "route.api.white")
 public class WhiteListConfiguration {
 
-    private Map<String, String> mappings = new HashMap<>();
+    private List<String> list = new ArrayList<>();
 
-    @Bean("whiteListMap")
-    public Map<String, List<String>> whiteListMap() {
-        Map<String, List<String>> whiteListMap = Maps.newHashMap();
-
-        mappings.forEach((k, v) -> {
-            String[] whiteListArray = StringUtils.split(v, Separator.COMMA_MARK);
-            List<String> whiteList = Arrays.asList(whiteListArray);
-            whiteListMap.put(k, whiteList);
-        });
-
-        return whiteListMap;
+    @Bean("whiteList")
+    public List<String> whiteList() {
+        return list;
     }
 
-    public Map<String, String> getMappings() {
-        return mappings;
+    public List<String> getList() {
+        return list;
     }
 
-    public void setMappings(Map<String, String> mappings) {
-        this.mappings = mappings;
+    public void setList(List<String> list) {
+        this.list = list;
+    }
+
+    @Override
+    public String toString() {
+        return ReflectionToStringBuilder.toString(this, ToStringStyle.NO_CLASS_NAME_STYLE);
     }
 }

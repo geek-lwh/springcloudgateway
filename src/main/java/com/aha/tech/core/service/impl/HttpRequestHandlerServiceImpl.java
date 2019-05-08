@@ -184,6 +184,7 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
     @Override
     public Boolean authorize(ServerWebExchange serverWebExchange) {
         ServerHttpRequest serverHttpRequest = serverWebExchange.getRequest();
+
         HttpHeaders requestHeaders = serverHttpRequest.getHeaders();
         // 解析authorization
         PairEntity<String> authorization = parseAuthorizationHeader(requestHeaders);
@@ -204,9 +205,7 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
         AuthenticationEntity authenticationEntity;
 
         if (VISITOR.equals(userName)) {
-            String path = serverWebExchange.getAttribute(GATEWAY_REQUEST_VALID_PATH_ATTR).toString();
-            String id = serverWebExchange.getAttribute(GATEWAY_REQUEST_ROUTE_ID_ATTR).toString();
-            authenticationEntity = httpAuthorizationService.verifyVisitorAccessToken(id, path, accessToken);
+            authenticationEntity = httpAuthorizationService.verifyVisitorAccessToken(accessToken);
         } else if (NEED_AUTHORIZATION.equals(userName)) {
             authenticationEntity = httpAuthorizationService.verifyUser(accessToken);
         } else {

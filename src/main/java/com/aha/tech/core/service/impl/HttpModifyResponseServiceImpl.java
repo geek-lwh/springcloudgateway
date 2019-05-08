@@ -20,6 +20,7 @@ import org.springframework.cloud.gateway.support.DefaultClientResponse;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferFactory;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.codec.ServerCodecConfigurer;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.http.server.reactive.ServerHttpResponseDecorator;
@@ -61,7 +62,7 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
                 logger.debug("开始修改返回值过滤器");
 
                 ModifyResponseBodyGatewayFilterFactory m = new ModifyResponseBodyGatewayFilterFactory(ServerCodecConfigurer.create());
-                String originalResponseContentType = serverWebExchange.getAttribute(ORIGINAL_RESPONSE_CONTENT_TYPE_ATTR);
+                String originalResponseContentType = serverWebExchange.getAttributeOrDefault(ORIGINAL_RESPONSE_CONTENT_TYPE_ATTR, MediaType.APPLICATION_JSON_UTF8_VALUE);
                 HttpHeaders httpHeaders = new HttpHeaders();
                 httpHeaders.add(HttpHeaders.CONTENT_TYPE, originalResponseContentType);
                 ResponseAdapter responseAdapter = m.new ResponseAdapter(body, httpHeaders);

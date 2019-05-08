@@ -8,14 +8,13 @@ import com.aha.tech.core.model.entity.AuthenticationEntity;
  */
 public interface AuthorizationService {
 
+    Boolean isWhiteList(String path);
     /**
      * 校验访客信息
-     * @param id
-     * @param path
      * @param accessToken
      * @return
      */
-    AuthenticationEntity verifyVisitorAccessToken(String id, String path, String accessToken);
+    AuthenticationEntity verifyVisitorAccessToken(String accessToken);
 
     /**
      * 校验用户信息
