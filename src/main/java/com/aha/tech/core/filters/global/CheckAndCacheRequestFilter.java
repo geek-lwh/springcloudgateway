@@ -3,6 +3,7 @@ package com.aha.tech.core.filters.global;
 import com.aha.tech.core.model.entity.CacheRequestEntity;
 import com.aha.tech.core.model.entity.TamperProofEntity;
 import com.aha.tech.core.model.vo.ResponseVo;
+import com.aha.tech.core.service.OverwriteParamService;
 import com.aha.tech.core.service.RequestHandlerService;
 import com.aha.tech.core.support.WriteResponseSupport;
 import com.alibaba.fastjson.JSON;
@@ -41,6 +42,9 @@ public class CheckAndCacheRequestFilter implements GlobalFilter, Ordered {
 
     @Resource
     private RequestHandlerService httpRequestHandlerService;
+
+    @Resource
+    private OverwriteParamService httpOverwriteParamService;
 
     @Value("${gateway.tamper.proof.enable:false}")
     private boolean isEnable;
@@ -121,7 +125,8 @@ public class CheckAndCacheRequestFilter implements GlobalFilter, Ordered {
                             return WriteResponseSupport.shortCircuit(exchange, rpcResponse, HttpStatus.FORBIDDEN, errorMsg);
                         });
                     }
-                    return chain.filter(exchange);
+
+                    return httpOverwriteParamService.rebuildRequestBody(body, chain, exchange);
                 });
     }
 

@@ -15,12 +15,12 @@ public interface OverwriteParamService {
 
     /**
      * 修改POST请求的参数
-     * @param requestAddParamsDto
+     * @param body
      * @param chain
      * @param exchange
      * @return
      */
-    Mono<Void> modifyRequestBody(RequestAddParamsDto requestAddParamsDto, GatewayFilterChain chain, ServerWebExchange exchange);
+    Mono<Void> rebuildRequestBody(String body, GatewayFilterChain chain, ServerWebExchange exchange);
 
     /**
      * 修改GET请求的参数

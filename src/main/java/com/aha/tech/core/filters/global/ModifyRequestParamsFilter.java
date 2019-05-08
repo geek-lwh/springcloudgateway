@@ -1,9 +1,12 @@
 package com.aha.tech.core.filters.global;
 
 import com.aha.tech.core.model.dto.RequestAddParamsDto;
+import com.aha.tech.core.model.entity.CacheRequestEntity;
 import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.OverwriteParamService;
 import com.aha.tech.core.support.WriteResponseSupport;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -20,7 +23,7 @@ import reactor.core.publisher.Mono;
 import javax.annotation.Resource;
 import java.net.URI;
 
-import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_ADD_PARAMS_ATTR;
+import static com.aha.tech.core.constant.ExchangeAttributeConstant.*;
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.MODIFY_PARAMS_FILTER_ORDER;
 
 /**
@@ -37,6 +40,9 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
     @Resource
     private OverwriteParamService httpOverwriteParamService;
 
+    private static final String USER_ID_FIELD = "user_id";
+
+
     @Override
     public int getOrder() {
         return MODIFY_PARAMS_FILTER_ORDER;
@@ -45,6 +51,11 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         logger.debug("开始进入修改GET|POST请求参数过滤器");
+
+        Boolean isWhiteList = (Boolean) exchange.getAttributes().getOrDefault(GATEWAY_URL_WHITE_LIST_ATTR, Boolean.FALSE);
+        if (isWhiteList) {
+            return chain.filter(exchange);
+        }
 
         Object obj = exchange.getAttributes().get(GATEWAY_REQUEST_ADD_PARAMS_ATTR);
         if (obj == null) {
@@ -69,7 +80,11 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
         }
 
         if (httpMethod.equals(HttpMethod.POST) || httpMethod.equals(HttpMethod.PUT)) {
-            return httpOverwriteParamService.modifyRequestBody(requestAddParamsDto, chain, exchange);
+            CacheRequestEntity cacheRequestEntity = (CacheRequestEntity) exchange.getAttributes().get(GATEWAY_REQUEST_CACHED_REQUEST_BODY_ATTR);
+
+            JSONObject body = JSON.parseObject(cacheRequestEntity.getRequestBody());
+            body.put(USER_ID_FIELD, requestAddParamsDto.getUserId());
+            return httpOverwriteParamService.rebuildRequestBody(body.toJSONString(), chain, exchange);
         }
 
         if (httpMethod.equals(HttpMethod.GET) || httpMethod.equals(HttpMethod.DELETE)) {

@@ -184,7 +184,10 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
     @Override
     public Boolean authorize(ServerWebExchange serverWebExchange) {
         ServerHttpRequest serverHttpRequest = serverWebExchange.getRequest();
-
+        Boolean isWhiteList = (Boolean) serverWebExchange.getAttributes().getOrDefault(GATEWAY_URL_WHITE_LIST_ATTR, Boolean.FALSE);
+        if (isWhiteList) {
+            return Boolean.TRUE;
+        }
         HttpHeaders requestHeaders = serverHttpRequest.getHeaders();
         // 解析authorization
         PairEntity<String> authorization = parseAuthorizationHeader(requestHeaders);
