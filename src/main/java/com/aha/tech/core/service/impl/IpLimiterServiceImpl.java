@@ -1,6 +1,5 @@
 package com.aha.tech.core.service.impl;
 
-import com.aha.tech.core.exception.MissHeaderXForwardedException;
 import com.aha.tech.core.limiter.IpRateLimiter;
 import com.aha.tech.core.service.LimiterService;
 import org.apache.commons.lang3.StringUtils;
@@ -48,7 +47,8 @@ public class IpLimiterServiceImpl implements LimiterService {
         Route route = exchange.getAttribute(ServerWebExchangeUtils.GATEWAY_ROUTE_ATTR);
 
         HttpHeaders httpHeaders = exchange.getRequest().getHeaders();
-        String key = getKey(httpHeaders);
+        String remoteIp = exchange.getRequest().getRemoteAddress().getAddress().getHostAddress();
+        String key = getKey(httpHeaders, remoteIp);
 
         Mono<RateLimiter.Response> rateLimiterAllowed = ipRateLimiter.isAllowed(route.getId(), key);
 
@@ -71,12 +71,14 @@ public class IpLimiterServiceImpl implements LimiterService {
      *
      * ip从头对象取出,获取最左一个
      * @param httpHeaders
+     * @param remoteIp
      * @return
      */
-    private String getKey(HttpHeaders httpHeaders) {
+    private String getKey(HttpHeaders httpHeaders, String remoteIp) {
         String realIp = parseHeaderIp(httpHeaders);
         if (StringUtils.isBlank(realIp)) {
-            throw new MissHeaderXForwardedException();
+            logger.warn("缺失X-Forwarded-For , 默认值 : {}", remoteIp);
+            realIp = remoteIp;
         }
 
         return realIp;

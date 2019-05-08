@@ -15,7 +15,8 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
-import static com.aha.tech.core.support.URISupport.*;
+import static com.aha.tech.core.support.URISupport.encryptBody;
+import static com.aha.tech.core.support.URISupport.encryptUrl;
 
 /**
  * @Author: luweihong
@@ -82,8 +83,8 @@ public class UrlEncryptTest {
             queryMaps.put(str[0], str[1]);
         }
 
-        String s = formatUrlMap(queryMaps, false, false);
-        System.out.print("s : " + s);
+//        String s = formatUrlMap(queryMaps, false, false);
+//        System.out.print("s : " + s);
     }
 
 

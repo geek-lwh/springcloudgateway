@@ -8,8 +8,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.DigestUtils;
 import org.springframework.util.StringUtils;
 
-import java.net.URLEncoder;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -20,6 +21,8 @@ import java.util.stream.Stream;
 public class URISupport {
 
     private static final Logger logger = LoggerFactory.getLogger(URISupport.class);
+
+    private final static String SPECIAL_SYMBOL = "_=";
 
     /**
      * 根据字符串,切割符,跳过无效区位数
@@ -59,48 +62,6 @@ public class URISupport {
     }
 
     /**
-     *
-     * @param paraMap
-     * @param urlEncode
-     * @param keyToLower
-     * @return
-     */
-    public static String formatUrlMap(Map<String, String> paraMap, boolean urlEncode, boolean keyToLower) {
-        String buff;
-        Map<String, String> tmpMap = paraMap;
-        try {
-            List<Map.Entry<String, String>> infoIds = new ArrayList<>(tmpMap.entrySet());
-            // 对所有传入参数按照字段名的 ASCII 码从小到大排序（字典序）
-            Collections.sort(infoIds, Comparator.comparing(o -> (o.getKey())));
-            // 构造URL 键值对的格式
-            StringBuilder buf = new StringBuilder();
-            for (Map.Entry<String, String> item : infoIds) {
-                if (!StringUtils.isEmpty(item.getKey())) {
-                    String key = item.getKey();
-                    String val = item.getValue();
-                    if (urlEncode) {
-                        val = URLEncoder.encode(val, "utf-8");
-                    }
-                    if (keyToLower) {
-                        buf.append(key.toLowerCase() + "=" + val);
-                    } else {
-                        buf.append(key + "=" + val);
-                    }
-                    buf.append("&");
-                }
-
-            }
-            buff = buf.toString();
-            if (buff.isEmpty() == false) {
-                buff = buff.substring(0, buff.length() - 1);
-            }
-        } catch (Exception e) {
-            return null;
-        }
-        return buff;
-    }
-
-    /**
      * url 加密算法
      * @param rawPath
      * @param rawQuery
@@ -117,6 +78,9 @@ public class URISupport {
                 List<String> list = Lists.newArrayList(paramArr);
                 Collections.sort(list);
                 for (String v : list) {
+                    if (v.startsWith(SPECIAL_SYMBOL)) {
+                        continue;
+                    }
                     sortQueryParamsStr += v;
                 }
             }

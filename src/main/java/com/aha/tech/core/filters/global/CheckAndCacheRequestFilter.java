@@ -77,7 +77,8 @@ public class CheckAndCacheRequestFilter implements GlobalFilter, Ordered {
         }
 
         MediaType mediaType = exchange.getRequest().getHeaders().getContentType();
-        if (mediaType.isCompatibleWith(MediaType.APPLICATION_FORM_URLENCODED)) {
+
+        if (mediaType != null && mediaType.isCompatibleWith(MediaType.APPLICATION_FORM_URLENCODED)) {
             return chain.filter(exchange);
         }
 
