@@ -41,8 +41,8 @@ public class ModifyRequestHeaderFilter implements GlobalFilter, Ordered {
         logger.debug("开始进行修改请求头网关过滤器");
         ServerHttpRequest serverHttpRequest = exchange.getRequest();
         HttpHeaders httpHeaders = serverHttpRequest.getHeaders();
-
-        HttpHeaders newHttpHeaders = httpRequestHandlerService.modifyRequestHeaders(httpHeaders);
+        String remoteIp = serverHttpRequest.getRemoteAddress().getAddress().getHostAddress();
+        HttpHeaders newHttpHeaders = httpRequestHandlerService.modifyRequestHeaders(httpHeaders, remoteIp);
         ServerHttpRequest newRequest = new ServerHttpRequestDecorator(serverHttpRequest) {
             @Override
             public HttpHeaders getHeaders() {

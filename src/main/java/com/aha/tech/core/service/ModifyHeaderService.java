@@ -8,7 +8,7 @@ import org.springframework.http.HttpHeaders;
  */
 public interface ModifyHeaderService {
 
-    void initHeaders(HttpHeaders httpHeaders);
+    void initHeaders(HttpHeaders httpHeaders, String remoteIp);
 
     /**
      * 设置头部版本号信息

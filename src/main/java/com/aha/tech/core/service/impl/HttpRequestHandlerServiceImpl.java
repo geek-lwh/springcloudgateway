@@ -233,11 +233,11 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
      * @return
      */
     @Override
-    public HttpHeaders modifyRequestHeaders(HttpHeaders oldHeaders) {
+    public HttpHeaders modifyRequestHeaders(HttpHeaders oldHeaders, String remoteIp) {
         HttpHeaders newHeaders = new HttpHeaders();
         copyMultiValueMap(oldHeaders, newHeaders);
 
-        httpModifyHeaderService.initHeaders(newHeaders);
+        httpModifyHeaderService.initHeaders(newHeaders, remoteIp);
         httpModifyHeaderService.versionSetting(newHeaders);
         httpModifyHeaderService.xEnvSetting(newHeaders);
         httpModifyHeaderService.removeHeaders(newHeaders);

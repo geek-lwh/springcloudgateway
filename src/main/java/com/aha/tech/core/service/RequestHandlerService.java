@@ -56,7 +56,7 @@ public interface RequestHandlerService {
      * @param httpHeaders
      * @return
      */
-    HttpHeaders modifyRequestHeaders(HttpHeaders httpHeaders);
+    HttpHeaders modifyRequestHeaders(HttpHeaders httpHeaders, String remoteIp);
 
     /**
      * 重新创建一个response对象

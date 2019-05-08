@@ -1,7 +1,6 @@
 package com.aha.tech.core.service.impl;
 
 import com.aha.tech.commons.symbol.Separator;
-import com.aha.tech.core.exception.MissHeaderXForwardedException;
 import com.aha.tech.core.model.enums.WebClientTypeEnum;
 import com.aha.tech.core.service.ModifyHeaderService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -50,14 +49,15 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
      * @param httpHeaders
      */
     @Override
-    public void initHeaders(HttpHeaders httpHeaders) {
+    public void initHeaders(HttpHeaders httpHeaders, String remoteIp) {
         MediaType mediaType = httpHeaders.getContentType();
         if (mediaType == null) {
             httpHeaders.setContentType(MediaType.APPLICATION_JSON_UTF8);
         }
         String realIp = parseHeaderIp(httpHeaders);
         if (StringUtils.isBlank(realIp)) {
-            throw new MissHeaderXForwardedException();
+            logger.warn("缺失x-forward-for , 使用 remoteIp : {}", remoteIp);
+            realIp = remoteIp;
         }
 
         httpHeaders.set(HEADER_X_FORWARDED_FOR, realIp);
