@@ -79,7 +79,7 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
                             Flux<DataBuffer> messageBody = outputMessage.getBody();
                             HttpHeaders headers = getDelegate().getHeaders();
                             headers.remove(HttpHeaders.TRANSFER_ENCODING);
-                            crossAccessSetting(httpHeaders);
+                            crossAccessSetting(headers);
                             messageBody = messageBody.doOnNext(data -> headers.setContentLength(data.readableByteCount()));
                             return getDelegate().writeWith(messageBody);
                         }));

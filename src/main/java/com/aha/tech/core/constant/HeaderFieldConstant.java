@@ -101,7 +101,7 @@ public class HeaderFieldConstant {
 
     public static final List<HttpMethod> HEADER_CROSS_ACCESS_ALLOW_HTTP_METHODS = Lists.newArrayList(HttpMethod.GET, HttpMethod.POST, HttpMethod.DELETE, HttpMethod.PUT);
 
-    public static final List<String> HEADER_CROSS_ACCESS_ALLOW_ALLOW_HEADERS = Lists.newArrayList("Authorization", "Origin", "X-Requested-With", "X-Env", "X-Request-Page", "Content-Type", "Accept");
+    public static final List<String> HEADER_CROSS_ACCESS_ALLOW_ALLOW_HEADERS = Lists.newArrayList("Authorization", "Origin", "X-Requested-With", "X-Env", "X-Request-Page", "Content-Type", "Accept", "X-Ca-Timestamp", "X-Ca-Nonce", "X-Ca-Signature", "X-Ca-Version", "X-Ca-Content");
 
     public static final String HEADER_X_CA_NONCE = "X-Ca-Nonce";
 
@@ -119,5 +119,4 @@ public class HeaderFieldConstant {
 
     // X-Ca-Version 中的值 代表版本号
     public static final String VERSION_FROYO = "Froyo";
-
 }
