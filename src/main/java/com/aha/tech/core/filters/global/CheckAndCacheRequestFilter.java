@@ -100,6 +100,7 @@ public class CheckAndCacheRequestFilter implements GlobalFilter, Ordered {
             return Boolean.TRUE;
         }
 
+        logger.debug("原始请求地址 : {} , 加密信息 :{} ", uri, tamperProofEntity);
         String timestamp = tamperProofEntity.getTimestamp();
         String signature = tamperProofEntity.getSignature();
         String version = tamperProofEntity.getVersion();
@@ -144,10 +145,12 @@ public class CheckAndCacheRequestFilter implements GlobalFilter, Ordered {
      */
     private Boolean checkBodyValid(String body, TamperProofEntity tamperProofEntity) {
         if (isEnable) {
+            logger.debug("接收到的原始body : {}", body);
+
             String version = tamperProofEntity.getVersion();
             String content = tamperProofEntity.getContent();
             String timestamp = tamperProofEntity.getTimestamp();
-
+            logger.debug("加密信息 : {}", tamperProofEntity);
             return httpRequestHandlerService.bodyTamperProof(version, body, timestamp, content);
         }
 

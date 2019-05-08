@@ -82,7 +82,6 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
 
         if (httpMethod.equals(HttpMethod.POST) || httpMethod.equals(HttpMethod.PUT)) {
             CacheRequestEntity cacheRequestEntity = (CacheRequestEntity) exchange.getAttributes().get(GATEWAY_REQUEST_CACHED_REQUEST_BODY_ATTR);
-
             JSONObject body = JSON.parseObject(cacheRequestEntity.getRequestBody());
             body.put(USER_ID_FIELD, requestAddParamsDto.getUserId());
             return httpOverwriteParamService.rebuildRequestBody(body.toJSONString(), chain, exchange);

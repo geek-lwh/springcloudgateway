@@ -1,7 +1,7 @@
 package com.aha.tech.core.support;
 
 import com.aha.tech.commons.symbol.Separator;
-import com.google.common.collect.Maps;
+import com.google.common.collect.Lists;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -109,25 +109,19 @@ public class URISupport {
      * @return
      */
     public static String encryptUrl(String rawPath, String rawQuery, String timestamp, String secretKey) {
-        Map<String, String> queryMaps = Maps.newHashMap();
-
         String lastMd5 = Strings.EMPTY;
         String sortQueryParamsStr = Strings.EMPTY;
         try {
             if (!StringUtils.isEmpty(rawQuery)) {
                 String[] paramArr = rawQuery.split(Separator.AND_MARK);
-                for (String param : paramArr) {
-                    String[] kv = param.split(Separator.EQUAL_SIGN_MARK);
-                    String k = kv[0];
-                    // url中前端ajax会拼接_=1555395225473 这种query
-                    if (k.equals("_")) {
-                        continue;
-                    }
-
-                    queryMaps.put(kv[0], kv[1]);
+                List<String> list = Lists.newArrayList(paramArr);
+                Collections.sort(list);
+                for (String v : list) {
+                    sortQueryParamsStr += v;
                 }
-                sortQueryParamsStr = formatUrlMap(queryMaps, false, false);
             }
+
+            logger.debug("after sort params : {}", sortQueryParamsStr);
             String str1 = rawPath + sortQueryParamsStr + timestamp;
             String firstMd5 = DigestUtils.md5DigestAsHex(str1.getBytes());
             String str2 = firstMd5 + secretKey;
