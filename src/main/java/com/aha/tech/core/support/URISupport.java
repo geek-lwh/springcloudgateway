@@ -5,9 +5,14 @@ import com.google.common.collect.Lists;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.DigestUtils;
+import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -80,11 +85,13 @@ public class URISupport {
                 sortQueryParamsStr = org.apache.commons.lang3.StringUtils.join(list, Separator.AND_MARK);
             }
 
-            logger.debug("after sort params : {}", sortQueryParamsStr);
+            logger.debug("queryParams 排序后 : {}", sortQueryParamsStr);
             String str1 = rawPath + sortQueryParamsStr + timestamp;
             String firstMd5 = DigestUtils.md5DigestAsHex(str1.getBytes());
+            logger.debug("原串 : {} , 第一次md5 : {}", str1, firstMd5);
             String str2 = firstMd5 + secretKey;
             lastMd5 = DigestUtils.md5DigestAsHex(str2.getBytes());
+            logger.debug("第二次 md5 : {}", lastMd5);
         } catch (Exception e) {
             logger.error("url防篡改加密出现异常,raw_path={},rawQuery={},timestamp={}", rawPath, rawQuery, timestamp, e);
         }
@@ -118,6 +125,35 @@ public class URISupport {
         }
 
         return lastMd5;
+    }
+
+    /**
+     * get请求的query params 排序
+     * @param queryParams
+     * @return
+     */
+    public static String queryParamsSort(MultiValueMap<String, String> queryParams) {
+        StringBuilder u = new StringBuilder();
+        queryParams.forEach((String k, List<String> v) -> {
+            if (!k.startsWith(SPECIAL_SYMBOL)) {
+                String value = Strings.EMPTY;
+                if (!CollectionUtils.isEmpty(v) && v.get(0) != null) {
+                    try {
+                        value = URLDecoder.decode(v.get(0), StandardCharsets.UTF_8.name());
+                    } catch (UnsupportedEncodingException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                u.append(k).append(Separator.EQUAL_SIGN_MARK).append(value).append(Separator.AND_MARK);
+            }
+        });
+
+        if (u.length() > 0) {
+            u.deleteCharAt(u.length() - 1);
+        }
+
+        return u.toString();
     }
 
 }

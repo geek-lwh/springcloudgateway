@@ -1,19 +1,21 @@
 package core.unit;
 
 import com.aha.tech.commons.utils.DateUtil;
+import com.aha.tech.core.support.URISupport;
 import com.alibaba.fastjson.JSONObject;
-import com.google.common.collect.Maps;
+import com.google.common.collect.Lists;
 import org.apache.commons.codec.binary.Base64;
-import org.assertj.core.api.Assertions;
+import org.apache.http.util.Asserts;
 import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
 
 import static com.aha.tech.core.support.URISupport.encryptBody;
 import static com.aha.tech.core.support.URISupport.encryptUrl;
@@ -61,30 +63,26 @@ public class UrlEncryptTest {
         System.out.println(encryptBody.equals(encodeBody));
     }
 
-//     "message": "url防篡改校验失败,参数:[uri=http://api-test5.d.ahaschool.com/v3/userbff/visitor/devices/create,version=Froyo,timestamp=1556440724503,content=6ecd95c8c403732ed7ed90f501ce599c,signature=5cbb0122804ed76722573533bd4c4d62]"
-
-
-
     @Test
     @DisplayName("GET请求加密测试类目")
     public void encryptGetRequest() {
         logger.info("<<<< {} 开始 [GET请求加密测试类目]", DateUtil.currentDateByDefaultFormat());
-        URI url = URI.create("http://openapi2.ahaschool.com.cn/v3/account/quota?wallet_type=2&_=1555395225473");
-        String subUrl = url.getRawPath();
-        Assertions.assertThat(subUrl).as("/v3/account/quota").isEqualTo(true);
+        URI url = URI.create("http://api-test5.d.ahaschool.com/v3/userbff/visitor/login?name=%E4%B8%AD%E5%9B%BD&age=88");
+        String signature = "64587c1c15c100f2bb089e0ec7853c4d";
+        String timestamp = "1557367440721";
+        String content = "b266f3154977f5dd6da84591b28fe0db";
+        String version = "Froyo";
 
-        String queryParams = url.getRawQuery();
-        Assertions.assertThat(queryParams).as("wallet_type=2&_=1555395225473").isEqualTo(true);
+        MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
+        queryParams.put("name", Lists.newArrayList("%E4%B8%AD%E5%9B%BD"));
+        queryParams.put("age", Lists.newArrayList("88"));
 
-        String[] params = queryParams.split("&");
-        Map<String, String> queryMaps = Maps.newHashMap();
-        for (String s : params) {
-            String[] str = s.split("=");
-            queryMaps.put(str[0], str[1]);
-        }
+        String sortQueryParams = URISupport.queryParamsSort(queryParams);
 
-//        String s = formatUrlMap(queryMaps, false, false);
-//        System.out.print("s : " + s);
+        String encryptStr = encryptUrl(url.getRawPath(), sortQueryParams, timestamp, secretKey);
+
+        Asserts.check(encryptStr.equals(signature), "签名与后端加密不一致");
+
     }
 
 

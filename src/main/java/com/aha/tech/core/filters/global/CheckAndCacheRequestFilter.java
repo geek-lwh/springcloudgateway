@@ -1,14 +1,13 @@
 package com.aha.tech.core.filters.global;
 
-import com.aha.tech.commons.symbol.Separator;
 import com.aha.tech.core.model.entity.CacheRequestEntity;
 import com.aha.tech.core.model.entity.TamperProofEntity;
 import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.OverwriteParamService;
 import com.aha.tech.core.service.RequestHandlerService;
+import com.aha.tech.core.support.URISupport;
 import com.aha.tech.core.support.WriteResponseSupport;
 import com.alibaba.fastjson.JSON;
-import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,21 +21,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 
 import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_CACHED_REQUEST_BODY_ATTR;
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.CHECK_AND_CACHE_REQUEST_FILTER;
-import static com.aha.tech.core.support.URISupport.SPECIAL_SYMBOL;
 
 /**
  * @Author: luweihong
@@ -117,27 +111,9 @@ public class CheckAndCacheRequestFilter implements GlobalFilter, Ordered {
         String signature = tamperProofEntity.getSignature();
         String version = tamperProofEntity.getVersion();
 
-        StringBuilder u = new StringBuilder();
-        queryParams.forEach((String k, List<String> v) -> {
-            if (!k.startsWith(SPECIAL_SYMBOL)) {
-                String value = Strings.EMPTY;
-                if (!CollectionUtils.isEmpty(v) && v.get(0) != null) {
-                    try {
-                        value = URLDecoder.decode(v.get(0), StandardCharsets.UTF_8.name());
-                    } catch (UnsupportedEncodingException e) {
-                        e.printStackTrace();
-                    }
-                }
+        String sortQueryParams = URISupport.queryParamsSort(queryParams);
 
-                u.append(k).append(Separator.EQUAL_SIGN_MARK).append(value).append(Separator.AND_MARK);
-            }
-        });
-
-        if (u.length() > 0) {
-            u.deleteCharAt(u.length() - 1);
-        }
-
-        return httpRequestHandlerService.urlTamperProof(version, timestamp, signature, rawPath, u.toString());
+        return httpRequestHandlerService.urlTamperProof(version, timestamp, signature, rawPath, sortQueryParams);
     }
 
     /**
