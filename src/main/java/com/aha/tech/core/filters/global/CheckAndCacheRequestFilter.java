@@ -77,7 +77,7 @@ public class CheckAndCacheRequestFilter implements GlobalFilter, Ordered {
         String rawPath = uri.getRawPath();
         MultiValueMap<String, String> queryParams = request.getQueryParams();
         TamperProofEntity tamperProofEntity = new TamperProofEntity(httpHeaders, uri);
-        boolean isURIValid = checkUrlValid(tamperProofEntity, queryParams, rawPath);
+        boolean isURIValid = urlTamperProof(tamperProofEntity, queryParams, rawPath);
         if (!isURIValid) {
             return Mono.defer(() -> {
                 String errorMsg = String.format("url防篡改校验失败,参数:%s", tamperProofEntity);
@@ -88,7 +88,7 @@ public class CheckAndCacheRequestFilter implements GlobalFilter, Ordered {
 
         MediaType mediaType = exchange.getRequest().getHeaders().getContentType();
 
-        if (mediaType != null && mediaType.isCompatibleWith(MediaType.APPLICATION_FORM_URLENCODED)) {
+        if (mediaType.isCompatibleWith(MediaType.APPLICATION_FORM_URLENCODED)) {
             return chain.filter(exchange);
         }
 
@@ -107,7 +107,7 @@ public class CheckAndCacheRequestFilter implements GlobalFilter, Ordered {
      * @param rawPath
      * @return
      */
-    private boolean checkUrlValid(TamperProofEntity tamperProofEntity, MultiValueMap<String, String> queryParams, String rawPath) {
+    public boolean urlTamperProof(TamperProofEntity tamperProofEntity, MultiValueMap<String, String> queryParams, String rawPath) {
         if (!isEnable) {
             return Boolean.TRUE;
         }
@@ -157,7 +157,7 @@ public class CheckAndCacheRequestFilter implements GlobalFilter, Ordered {
                     JSON json = JSON.parseObject(data);
                     String body = json.toJSONString();
                     cacheRequestEntity.setRequestBody(body);
-                    if (!checkBodyValid(data, tamperProofEntity)) {
+                    if (!bodyTamperProof(data, tamperProofEntity)) {
                         return Mono.defer(() -> {
                             String errorMsg = String.format("body 防篡改校验失败,参数:%s", tamperProofEntity);
                             ResponseVo rpcResponse = new ResponseVo(HttpStatus.FORBIDDEN.value(), errorMsg);
@@ -175,7 +175,7 @@ public class CheckAndCacheRequestFilter implements GlobalFilter, Ordered {
      * @param tamperProofEntity
      * @return
      */
-    private Boolean checkBodyValid(String body, TamperProofEntity tamperProofEntity) {
+    private Boolean bodyTamperProof(String body, TamperProofEntity tamperProofEntity) {
         if (isEnable) {
             logger.debug("接收到的原始body : {}", body);
 
