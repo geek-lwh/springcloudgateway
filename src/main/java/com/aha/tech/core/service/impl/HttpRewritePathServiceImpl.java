@@ -43,7 +43,7 @@ public class HttpRewritePathServiceImpl implements RewritePathService {
 
     /**
      * 从请求路径寻找后端对应的rs地址
-     * @param validPath 真实请求路径
+     * @param realServerHost 真实请求路径
      * @return
      */
     @Override

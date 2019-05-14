@@ -37,7 +37,7 @@ public class UrlEncryptTest {
     @DisplayName("生成signature测试类目")
     public void createXSignature() {
         logger.info("<<<< {} 开始 [生成signature测试类目]", DateUtil.currentDateByDefaultFormat());
-        URI url = URI.create("http://api-test5.d.ahaschool.com/v3/userbff/visitor/devices/create");
+        URI url = URI.create("http://api-test5.d.ahaschool.com/v3/userbff/visitor/devices/create?a=1&a=2");
         String rawQuery = url.getRawQuery();
         String rawPath = url.getRawPath();
 
@@ -68,15 +68,14 @@ public class UrlEncryptTest {
     public void encryptGetRequest() {
         logger.info("<<<< {} 开始 [GET请求加密测试类目]", DateUtil.currentDateByDefaultFormat());
 //       =http://api-test.d.ahaschool.com/v3/appbff/course/screen/all?category_id=3&search_list=11%2C10,version=Froyo,timestamp=1557371770667,content=1d798d4314ec45365b3e0ae33b09a172,signature=699eb686f0b5ba1c711a2a322758a36b
-        URI url = URI.create("http://api-test.d.ahaschool.com/v3/appbff/course/screen/all?category_id=3&search_list=11%2C10");
-        String signature = "699eb686f0b5ba1c711a2a322758a36b";
-        String timestamp = "1557371770667";
+        URI url = URI.create("https://api-test.d.ahaschool.com/v3/appbff/course/screen/all?category_id=3&category_id=");
+        String signature = "be333aa03d8e667cee43999e70385782";
+        String timestamp = "1557479607786";
         String content = "b266f3154977f5dd6da84591b28fe0db";
         String version = "Froyo";
 
         MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
-        queryParams.put("category_id", Lists.newArrayList("3"));
-        queryParams.put("search_list", Lists.newArrayList("11%2C10"));
+        queryParams.put("category_id", Lists.newArrayList("3", ""));
 
         String sortQueryParams = URISupport.queryParamsSort(queryParams);
 

@@ -137,9 +137,10 @@ public class URISupport {
         queryParams.forEach((String k, List<String> v) -> {
             if (!k.startsWith(SPECIAL_SYMBOL)) {
                 String value = Strings.EMPTY;
-                if (!CollectionUtils.isEmpty(v) && v.get(0) != null) {
+                if (!CollectionUtils.isEmpty(v)) {
                     try {
-                        value = URLDecoder.decode(v.get(0), StandardCharsets.UTF_8.name());
+                        String originalValue = org.apache.commons.lang3.StringUtils.join(v, Separator.COMMA_MARK);
+                        value = URLDecoder.decode(originalValue, StandardCharsets.UTF_8.name());
                     } catch (UnsupportedEncodingException e) {
                         e.printStackTrace();
                     }
