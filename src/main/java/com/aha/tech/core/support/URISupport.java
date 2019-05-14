@@ -142,7 +142,7 @@ public class URISupport {
                         String originalValue = org.apache.commons.lang3.StringUtils.join(v, Separator.COMMA_MARK);
                         value = URLDecoder.decode(originalValue, StandardCharsets.UTF_8.name());
                     } catch (UnsupportedEncodingException e) {
-                        e.printStackTrace();
+                        logger.error("url decoder 失败,queryParams : {},失败节点 : {}", queryParams, v, e);
                     }
                 }
 
