@@ -10,9 +10,6 @@ import org.springframework.util.DigestUtils;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -65,35 +62,55 @@ public class URISupport {
     }
 
     /**
+     * get请求的query params 排序
+     * @param queryParams
+     * @return
+     */
+    public static String queryParamsSort(MultiValueMap<String, String> queryParams) {
+        List<String> sortQueryParamsList = Lists.newArrayList();
+        queryParams.forEach((String paramName, List<String> paramValueList) -> {
+            if (paramName.equals(Separator.UNDER_LINE_MARK)) {
+                return;
+            }
+
+            for (String paramValue : paramValueList) {
+                String str = String.format("%s=%s", paramName, StringUtils.isEmpty(paramValue) ? Strings.EMPTY : paramValue);
+                sortQueryParamsList.add(str);
+            }
+        });
+
+        if (CollectionUtils.isEmpty(sortQueryParamsList)) {
+            return Strings.EMPTY;
+        }
+
+        Collections.sort(sortQueryParamsList);
+
+        String sortQueryParamsStr = StringUtils.collectionToDelimitedString(sortQueryParamsList, Separator.AND_MARK);
+        logger.debug("queryParams 排序后 : {}", sortQueryParamsStr);
+
+        return sortQueryParamsStr;
+    }
+
+    /**
      * url 加密算法
      * @param rawPath
-     * @param rawQuery
+     * @param sortQueryParamsStr
      * @param timestamp
      * @param secretKey
      * @return
      */
-    public static String encryptUrl(String rawPath, String rawQuery, String timestamp, String secretKey) {
+    public static String encryptUrl(String rawPath, String sortQueryParamsStr, String timestamp, String secretKey) {
         String lastMd5 = Strings.EMPTY;
-        String sortQueryParamsStr = Strings.EMPTY;
         try {
-            if (!StringUtils.isEmpty(rawQuery)) {
-                String[] paramArr = rawQuery.split(Separator.AND_MARK);
-                List<String> list = Lists.newArrayList(paramArr);
-                Collections.sort(list);
-                sortQueryParamsStr = org.apache.commons.lang3.StringUtils.join(list, Separator.AND_MARK);
-            }
-
-            logger.debug("queryParams 排序后 : {}", sortQueryParamsStr);
             String str1 = rawPath + sortQueryParamsStr + timestamp;
             String firstMd5 = DigestUtils.md5DigestAsHex(str1.getBytes());
             logger.debug("原串 : {} , 第一次md5 : {}", str1, firstMd5);
             String str2 = firstMd5 + secretKey;
             lastMd5 = DigestUtils.md5DigestAsHex(str2.getBytes());
-            logger.debug("第二次 md5 : {}", lastMd5);
+            logger.debug("第二次 md5 : {},secret_key : {}", lastMd5, secretKey);
         } catch (Exception e) {
-            logger.error("url防篡改加密出现异常,raw_path={},rawQuery={},timestamp={}", rawPath, rawQuery, timestamp, e);
+            logger.error("url防篡改加密出现异常,raw_path={},sort_raw_query={},timestamp={}", rawPath, sortQueryParamsStr, timestamp, e);
         }
-
 
         return lastMd5;
     }
@@ -123,36 +140,6 @@ public class URISupport {
         }
 
         return lastMd5;
-    }
-
-    /**
-     * get请求的query params 排序
-     * @param queryParams
-     * @return
-     */
-    public static String queryParamsSort(MultiValueMap<String, String> queryParams) {
-        StringBuilder u = new StringBuilder();
-        queryParams.forEach((String k, List<String> v) -> {
-            if (!k.startsWith(Separator.UNDER_LINE_MARK)) {
-                String value = Strings.EMPTY;
-                if (!CollectionUtils.isEmpty(v)) {
-                    try {
-                        String originalValue = org.apache.commons.lang3.StringUtils.join(v, Separator.COMMA_MARK);
-                        value = URLDecoder.decode(originalValue, StandardCharsets.UTF_8.name());
-                    } catch (UnsupportedEncodingException e) {
-                        logger.error("url decoder 失败,queryParams : {},失败节点 : {}", queryParams, v, e);
-                    }
-                }
-
-                u.append(k).append(Separator.EQUAL_SIGN_MARK).append(value).append(Separator.AND_MARK);
-            }
-        });
-
-        if (u.length() > 0) {
-            u.deleteCharAt(u.length() - 1);
-        }
-
-        return u.toString();
     }
 
 }
