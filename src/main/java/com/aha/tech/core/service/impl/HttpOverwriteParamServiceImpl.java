@@ -102,6 +102,7 @@ public class HttpOverwriteParamServiceImpl implements OverwriteParamService {
 
         URI uri = request.getURI();
         if (isCompatible) {
+            logger.info("兼容java服务的get 请求");
             List<NameValuePair> params = URLEncodedUtils.parse(request.getURI(), StandardCharsets.UTF_8);
             for (NameValuePair pair : params) {
                 String rename = pair.getName().replace(SPECIAL_SYMBOL, Strings.EMPTY);
@@ -117,7 +118,7 @@ public class HttpOverwriteParamServiceImpl implements OverwriteParamService {
                         .build(true)
                         .toUri();
 
-                logger.debug("修改queryParams后,新的uri : {}", newUri);
+                logger.info("兼容java服务的get请求,原始参数 : {},新的请求路径 : {} ", rawQuery, newUri);
                 return newUri;
             }
         }
