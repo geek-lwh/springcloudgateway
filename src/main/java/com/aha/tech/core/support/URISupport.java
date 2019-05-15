@@ -27,8 +27,6 @@ public class URISupport {
 
     private static final Logger logger = LoggerFactory.getLogger(URISupport.class);
 
-    public final static String SPECIAL_SYMBOL = "_=";
-
     /**
      * 根据字符串,切割符,跳过无效区位数
      * @param str
@@ -135,7 +133,7 @@ public class URISupport {
     public static String queryParamsSort(MultiValueMap<String, String> queryParams) {
         StringBuilder u = new StringBuilder();
         queryParams.forEach((String k, List<String> v) -> {
-            if (!k.startsWith(SPECIAL_SYMBOL)) {
+            if (!k.startsWith(Separator.UNDER_LINE_MARK)) {
                 String value = Strings.EMPTY;
                 if (!CollectionUtils.isEmpty(v)) {
                     try {

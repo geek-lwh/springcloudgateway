@@ -1,5 +1,8 @@
 package com.aha.tech.core.model.entity;
 
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+
 import java.net.URI;
 
 /**
@@ -26,5 +29,10 @@ public class CacheRequestEntity {
 
     public void setRequestBody(String requestBody) {
         this.requestBody = requestBody;
+    }
+
+    @Override
+    public String toString() {
+        return ReflectionToStringBuilder.toString(this, ToStringStyle.NO_CLASS_NAME_STYLE);
     }
 }

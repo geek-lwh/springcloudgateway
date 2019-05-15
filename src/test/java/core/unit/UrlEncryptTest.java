@@ -67,15 +67,17 @@ public class UrlEncryptTest {
     @DisplayName("GET请求加密测试类目")
     public void encryptGetRequest() {
         logger.info("<<<< {} 开始 [GET请求加密测试类目]", DateUtil.currentDateByDefaultFormat());
-//       =http://api-test.d.ahaschool.com/v3/appbff/course/screen/all?category_id=3&search_list=11%2C10,version=Froyo,timestamp=1557371770667,content=1d798d4314ec45365b3e0ae33b09a172,signature=699eb686f0b5ba1c711a2a322758a36b
-        URI url = URI.create("https://api-test.d.ahaschool.com/v3/appbff/course/screen/all?category_id=3&category_id=");
-        String signature = "be333aa03d8e667cee43999e70385782";
-        String timestamp = "1557479607786";
+//       http://10.10.181.210:9700/v3/orderbff/products/applyusers/all?product_id=505876&limit=20&order_type%5B%5D=1&order_type%5B%5D=2&order_type%5B%5D=3&order_type%5B%5D=4&_=1557906998176,version=Froyo,timestamp=1557906998516,content=1552e7f40c05c30e0b4c524729819d57,signature=d448d584ce44d02fe7ec7172651c5f45]"
+        URI url = URI.create("https://api-test.d.ahaschool.com/v3/orderbff/orders/all?limit=1&groupbuy_id=6806&order_status[0]=3&order_status[1]=5");
+        String signature = "d448d584ce44d02fe7ec7172651c5f45";
+        String timestamp = "1557906998516";
         String content = "b266f3154977f5dd6da84591b28fe0db";
         String version = "Froyo";
 
         MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
-        queryParams.put("category_id", Lists.newArrayList("3", ""));
+        queryParams.put("limit", Lists.newArrayList("1"));
+        queryParams.put("groupbuy_id", Lists.newArrayList("6806"));
+        queryParams.put("order_status", Lists.newArrayList("6806"));
 
         String sortQueryParams = URISupport.queryParamsSort(queryParams);
 
