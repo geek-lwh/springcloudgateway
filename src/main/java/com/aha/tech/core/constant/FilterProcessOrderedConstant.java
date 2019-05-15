@@ -26,10 +26,13 @@ public class FilterProcessOrderedConstant {
     public static int WHITE_LIST_REQUEST_FILTER = IP_RATE_LIMITER_FILTER_ORDER + STEP;
 
     // 校验和缓存过滤器
-    public static int CHECK_AND_CACHE_REQUEST_FILTER = WHITE_LIST_REQUEST_FILTER + STEP;
+    public static int URL_TAMPER_PROOF_FILTER = WHITE_LIST_REQUEST_FILTER + STEP;
+
+    // 校验和缓存过滤器
+    public static int BODY_TAMPER_PROOF_FILTER = URL_TAMPER_PROOF_FILTER + STEP;
 
     // 权限校验
-    public static int AUTH_GATEWAY_FILTER_ORDER = CHECK_AND_CACHE_REQUEST_FILTER + STEP;
+    public static int AUTH_GATEWAY_FILTER_ORDER = BODY_TAMPER_PROOF_FILTER + STEP;
 
     // 重写请求路径过滤器
     public static int REWRITE_REQUEST_PATH_FILTER_ORDER = AUTH_GATEWAY_FILTER_ORDER + STEP;

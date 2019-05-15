@@ -1,6 +1,7 @@
 package com.aha.tech.core.filters.global;
 
 import com.aha.tech.core.service.AuthorizationService;
+import com.aha.tech.core.support.ExchangeSupport;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
@@ -10,7 +11,7 @@ import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
 
-import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_URL_WHITE_LIST_ATTR;
+import static com.aha.tech.core.constant.ExchangeAttributeConstant.IS_AUTH_WHITE_LIST_ATTR;
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.WHITE_LIST_REQUEST_FILTER;
 
 /**
@@ -31,9 +32,10 @@ public class WhiteListFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         String rawPath = exchange.getRequest().getURI().getRawPath();
-        Boolean isWhiteList = httpAuthorizationService.isWhiteList(rawPath);
+        // 是否跳过授权
+        Boolean isSkipAuth = httpAuthorizationService.isSkipAuth(rawPath);
 
-        exchange.getAttributes().put(GATEWAY_URL_WHITE_LIST_ATTR, isWhiteList);
+        ExchangeSupport.put(exchange, IS_AUTH_WHITE_LIST_ATTR, isSkipAuth);
 
         return chain.filter(exchange);
     }

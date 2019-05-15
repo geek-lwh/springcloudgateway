@@ -14,6 +14,7 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -34,6 +35,9 @@ public class IpLimiterServiceImpl implements LimiterService {
 
     @Resource
     private IpRateLimiter ipRateLimiter;
+
+    @Resource
+    private List<String> ipLimiterWhiteList;
 
     /**
      * ip限流是否通过
@@ -64,6 +68,11 @@ public class IpLimiterServiceImpl implements LimiterService {
         }
 
         return isAllowed;
+    }
+
+    @Override
+    public Boolean isSkipLimiter(String path) {
+        return ipLimiterWhiteList.contains(path);
     }
 
     /**

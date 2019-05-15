@@ -32,11 +32,11 @@ public class HttpAuthorizationServiceImpl implements AuthorizationService {
     private PassportResource passportResource;
 
     @Resource
-    private List<String> whiteList;
+    private List<String> authWhiteList;
 
     @Override
-    public Boolean isWhiteList(String path) {
-        return whiteList.contains(path);
+    public Boolean isSkipAuth(String path) {
+        return authWhiteList.contains(path);
     }
 
     /**

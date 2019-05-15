@@ -50,6 +50,10 @@ public class IpRateLimiterFilter implements GlobalFilter, Ordered {
             return chain.filter(exchange);
         }
 
+        if (ipLimiterService.isSkipLimiter(exchange.getRequest().getURI().getRawPath())) {
+            return chain.filter(exchange);
+        }
+
         Boolean isAllowed = ipLimiterService.isAllowed(exchange);
         if (isAllowed) {
             return chain.filter(exchange);

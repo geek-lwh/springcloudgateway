@@ -25,5 +25,7 @@ public class ExchangeAttributeConstant {
 
     public static final String GATEWAY_REQUEST_CACHED_REQUEST_BODY_ATTR = "GATEWAY_REQUEST_CACHED_REQUEST_BODY_ATTR";
 
-    public static final String GATEWAY_URL_WHITE_LIST_ATTR = "GATEWAY_URL_WHITE_LIST_ATTR";
+    public static final String IS_AUTH_WHITE_LIST_ATTR = "IS_AUTH_WHITE_LIST_ATTR";
+
+//    public static final String IS_IP_LIMITER_WHITE_LIST_ATTR = "IS_IP_LIMITER_WHITE_LIST_ATTR";
 }

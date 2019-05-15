@@ -56,6 +56,11 @@ public class QpsLimiterServiceImpl implements LimiterService {
         return isAllowed;
     }
 
+    @Override
+    public Boolean isSkipLimiter(String path) {
+        return Boolean.FALSE;
+    }
+
     /**
      * 获取限流器的key
      * @return

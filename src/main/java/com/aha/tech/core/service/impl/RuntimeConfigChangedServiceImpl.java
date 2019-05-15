@@ -31,11 +31,15 @@ public class RuntimeConfigChangedServiceImpl implements RuntimeConfigChangedServ
 
     private String DYNAMIC_ROUTE_API_URI_BEAN = "routeEntityMap";
 
-    private String DYNAMIC_ROUTE_API_WHITE_LIST_BEAN = "whiteList";
+    private String DYNAMIC_AUTH_WHITE_LIST_BEAN = "authWhiteList";
+
+    private String DYNAMIC_IP_LIMITER_WHITE_LIST_BEAN = "ipLimiterWhiteList";
 
     private String ROUTE_API_URI_PREFIX = "route.api.uri.mappings.";
 
-    private String ROUTE_API_WHITE_LIST_PREFIX = "route.api.white.list";
+    private String ROUTE_AUTH_WHITE_LIST_PREFIX = "skip.auth.white.list";
+
+    private String ROUTE_IP_LIMITER_WHITE_LIST_PREFIX = "skip.iplimiter.white.list";
 
 
     @Autowired
@@ -76,11 +80,21 @@ public class RuntimeConfigChangedServiceImpl implements RuntimeConfigChangedServ
      * @param changeKeys
      */
     @Override
-    public synchronized void routeApiWhiteListChanged(ConfigChangeEvent changeEvent, Set<String> changeKeys) {
+    public synchronized void skipAuthWhiteListChanged(ConfigChangeEvent changeEvent, Set<String> changeKeys) {
         changeKeys.forEach(changeKeyName -> {
             ConfigChange change = changeEvent.getChange(changeKeyName);
-            if (changeKeyName.startsWith(ROUTE_API_WHITE_LIST_PREFIX)) {
-                refreshRouteApiWhiteListConfig(change, ROUTE_API_WHITE_LIST_PREFIX, changeKeyName);
+            if (changeKeyName.startsWith(ROUTE_AUTH_WHITE_LIST_PREFIX)) {
+                refreshSkipAuthWhiteListConfig(change);
+            }
+        });
+    }
+
+    @Override
+    public void skipIpLimiterWhiteListChanged(ConfigChangeEvent changeEvent, Set<String> changeKeys) {
+        changeKeys.forEach(changeKeyName -> {
+            ConfigChange change = changeEvent.getChange(changeKeyName);
+            if (changeKeyName.startsWith(ROUTE_IP_LIMITER_WHITE_LIST_PREFIX)) {
+                refreshSkipIpLimiterWhiteListConfig(change);
             }
         });
     }
@@ -118,23 +132,41 @@ public class RuntimeConfigChangedServiceImpl implements RuntimeConfigChangedServ
     /**
      * 路由API白名单列表变更
      * @param change
-     * @param prefix
-     * @param changeKeyName
      */
-    private void refreshRouteApiWhiteListConfig(ConfigChange change, String prefix, String changeKeyName) {
-        logger.info("路由API白名单列表变更 !");
+    private void refreshSkipAuthWhiteListConfig(ConfigChange change) {
+        logger.info("跳过授权认证白名单 !");
         String oldValue = change.getOldValue();
         String newValue = change.getNewValue();
         logger.info("变更前的值 : {},变更后的值 : {}", oldValue, newValue);
 
-        List<String> whiteList = (List<String>) SpringContextUtil.getBean(DYNAMIC_ROUTE_API_WHITE_LIST_BEAN);
+        List<String> authWhiteList = (List<String>) SpringContextUtil.getBean(DYNAMIC_AUTH_WHITE_LIST_BEAN);
 
-        whiteList.remove(oldValue);
-        whiteList.add(newValue);
+        authWhiteList.remove(oldValue);
+        authWhiteList.add(newValue);
 
-        refreshScope.refresh(DYNAMIC_ROUTE_API_WHITE_LIST_BEAN);
+        refreshScope.refresh(DYNAMIC_AUTH_WHITE_LIST_BEAN);
 
-        logger.info("更新 路由API白名单列表 : {}", whiteList);
+        logger.info("更新 跳过授权认证白名单 : {}", authWhiteList);
+    }
+
+    /**
+     * 路由API白名单列表变更
+     * @param change
+     */
+    private void refreshSkipIpLimiterWhiteListConfig(ConfigChange change) {
+        logger.info("跳过ip限流白名单 !");
+        String oldValue = change.getOldValue();
+        String newValue = change.getNewValue();
+        logger.info("变更前的值 : {},变更后的值 : {}", oldValue, newValue);
+
+        List<String> ipLimiterWhiteList = (List<String>) SpringContextUtil.getBean(DYNAMIC_IP_LIMITER_WHITE_LIST_BEAN);
+
+        ipLimiterWhiteList.remove(oldValue);
+        ipLimiterWhiteList.add(newValue);
+
+        refreshScope.refresh(DYNAMIC_IP_LIMITER_WHITE_LIST_BEAN);
+
+        logger.info("更新 跳过ip限流白名单 : {}", ipLimiterWhiteList);
     }
 
     /**

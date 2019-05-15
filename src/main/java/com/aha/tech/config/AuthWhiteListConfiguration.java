@@ -16,13 +16,13 @@ import java.util.List;
  * 网关白名单
  */
 @Configuration
-@ConfigurationProperties(prefix = "route.api.white")
-public class WhiteListConfiguration {
+@ConfigurationProperties(prefix = "skip.auth.white")
+public class AuthWhiteListConfiguration {
 
     private List<String> list = new ArrayList<>();
 
-    @Bean("whiteList")
-    public List<String> whiteList() {
+    @Bean(name = "authWhiteList")
+    public List<String> authWhiteList() {
         return list;
     }
 

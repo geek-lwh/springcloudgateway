@@ -38,7 +38,8 @@ public class VariableRefreshEvent {
         Set<String> changeKeys = changeEvent.changedKeys();
 
         runtimeConfigChangedService.routeApiUriChanged(changeEvent,changeKeys);
-        runtimeConfigChangedService.routeApiWhiteListChanged(changeEvent,changeKeys);
+        runtimeConfigChangedService.skipAuthWhiteListChanged(changeEvent, changeKeys);
+        runtimeConfigChangedService.skipIpLimiterWhiteListChanged(changeEvent, changeKeys);
     }
 
 }

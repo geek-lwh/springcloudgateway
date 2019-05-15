@@ -9,6 +9,7 @@ import com.aha.tech.core.model.entity.AuthenticationEntity;
 import com.aha.tech.core.model.entity.PairEntity;
 import com.aha.tech.core.model.entity.RouteEntity;
 import com.aha.tech.core.service.*;
+import com.aha.tech.core.support.ExchangeSupport;
 import com.aha.tech.passportserver.facade.model.vo.UserVo;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
@@ -184,10 +185,12 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
     @Override
     public Boolean authorize(ServerWebExchange serverWebExchange) {
         ServerHttpRequest serverHttpRequest = serverWebExchange.getRequest();
-        Boolean isWhiteList = (Boolean) serverWebExchange.getAttributes().getOrDefault(GATEWAY_URL_WHITE_LIST_ATTR, Boolean.FALSE);
-        if (isWhiteList) {
+        Boolean isSkipAuth = (Boolean) ExchangeSupport.get(serverWebExchange, IS_AUTH_WHITE_LIST_ATTR, Boolean.FALSE);
+
+        if (isSkipAuth) {
             return Boolean.TRUE;
         }
+
         HttpHeaders requestHeaders = serverHttpRequest.getHeaders();
         // 解析authorization
         PairEntity<String> authorization = parseAuthorizationHeader(requestHeaders);

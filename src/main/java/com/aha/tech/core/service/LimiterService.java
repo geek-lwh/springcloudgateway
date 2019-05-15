@@ -14,4 +14,6 @@ public interface LimiterService {
      * @return
      */
     Boolean isAllowed(ServerWebExchange exchange);
+
+    Boolean isSkipLimiter(String path);
 }

@@ -4,6 +4,7 @@ import com.aha.tech.core.model.dto.RequestAddParamsDto;
 import com.aha.tech.core.model.entity.CacheRequestEntity;
 import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.OverwriteParamService;
+import com.aha.tech.core.support.ExchangeSupport;
 import com.aha.tech.core.support.WriteResponseSupport;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -23,7 +24,8 @@ import reactor.core.publisher.Mono;
 import javax.annotation.Resource;
 import java.net.URI;
 
-import static com.aha.tech.core.constant.ExchangeAttributeConstant.*;
+import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_ADD_PARAMS_ATTR;
+import static com.aha.tech.core.constant.ExchangeAttributeConstant.IS_AUTH_WHITE_LIST_ATTR;
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.MODIFY_PARAMS_FILTER_ORDER;
 
 /**
@@ -42,7 +44,6 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
 
     private static final String USER_ID_FIELD = "user_id";
 
-
     @Override
     public int getOrder() {
         return MODIFY_PARAMS_FILTER_ORDER;
@@ -52,12 +53,14 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         logger.debug("开始进入修改GET|POST请求参数过滤器");
 
-        Boolean isWhiteList = (Boolean) exchange.getAttributes().getOrDefault(GATEWAY_URL_WHITE_LIST_ATTR, Boolean.FALSE);
+        Boolean isWhiteList = (Boolean) ExchangeSupport.get(exchange, IS_AUTH_WHITE_LIST_ATTR, Boolean.FALSE);
+
         if (isWhiteList) {
-            return chain.filter(exchange);
+            CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheBody(exchange);
+            return httpOverwriteParamService.rebuildRequestBody(cacheRequestEntity.getRequestBody(), chain, exchange);
         }
 
-        Object obj = exchange.getAttributes().get(GATEWAY_REQUEST_ADD_PARAMS_ATTR);
+        Object obj = ExchangeSupport.get(exchange, GATEWAY_REQUEST_ADD_PARAMS_ATTR, null);
         if (obj == null) {
             String errorMsg = String.format("缺少需要在网关添加的参数");
             return Mono.defer(() -> {
@@ -81,7 +84,7 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
         }
 
         if (httpMethod.equals(HttpMethod.POST) || httpMethod.equals(HttpMethod.PUT)) {
-            CacheRequestEntity cacheRequestEntity = (CacheRequestEntity) exchange.getAttributes().get(GATEWAY_REQUEST_CACHED_REQUEST_BODY_ATTR);
+            CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheBody(exchange);
             JSONObject body = JSON.parseObject(cacheRequestEntity.getRequestBody());
             body.put(USER_ID_FIELD, requestAddParamsDto.getUserId());
             return httpOverwriteParamService.rebuildRequestBody(body.toJSONString(), chain, exchange);
