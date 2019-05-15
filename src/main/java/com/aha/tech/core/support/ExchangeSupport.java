@@ -1,9 +1,11 @@
 package com.aha.tech.core.support;
 
+import com.aha.tech.core.constant.LanguageConstant;
 import com.aha.tech.core.model.entity.CacheRequestEntity;
 import org.springframework.web.server.ServerWebExchange;
 
 import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_CACHED_REQUEST_BODY_ATTR;
+import static com.aha.tech.core.constant.ExchangeAttributeConstant.REQUEST_LANGUAGE_ATTR;
 
 /**
  * @Author: luweihong
@@ -23,5 +25,11 @@ public class ExchangeSupport {
         CacheRequestEntity cacheRequestEntity = (CacheRequestEntity) exchange.getAttributes().get(GATEWAY_REQUEST_CACHED_REQUEST_BODY_ATTR);
 
         return cacheRequestEntity;
+    }
+
+    public static String getRequestLanguage(ServerWebExchange exchange) {
+        String language = (String) exchange.getAttributes().getOrDefault(REQUEST_LANGUAGE_ATTR, LanguageConstant.JAVA);
+
+        return language;
     }
 }

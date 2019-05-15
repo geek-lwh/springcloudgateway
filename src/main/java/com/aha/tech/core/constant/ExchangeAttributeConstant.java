@@ -27,5 +27,7 @@ public class ExchangeAttributeConstant {
 
     public static final String IS_AUTH_WHITE_LIST_ATTR = "IS_AUTH_WHITE_LIST_ATTR";
 
+    public static final String REQUEST_LANGUAGE_ATTR = "REQUEST_LANGUAGE_ATTR";
+
 //    public static final String IS_IP_LIMITER_WHITE_LIST_ATTR = "IS_IP_LIMITER_WHITE_LIST_ATTR";
 }

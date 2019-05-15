@@ -74,11 +74,11 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
         ServerHttpRequest serverHttpRequest = exchange.getRequest();
         MediaType mediaType = serverHttpRequest.getHeaders().getContentType();
         HttpMethod httpMethod = exchange.getRequest().getMethod();
+        String language = ExchangeSupport.getRequestLanguage(exchange);
 
         // 表单提交
         if (mediaType.isCompatibleWith(MediaType.APPLICATION_FORM_URLENCODED)) {
-            URI uri = serverHttpRequest.getURI();
-            URI newUri = httpOverwriteParamService.modifyParamsWithFormUrlencoded(requestAddParamsDto, uri);
+            URI newUri = httpOverwriteParamService.modifyParamsWithFormUrlencoded(requestAddParamsDto, serverHttpRequest, language);
             ServerHttpRequest newRequest = exchange.getRequest().mutate().uri(newUri).build();
             return chain.filter(exchange.mutate().request(newRequest).build());
         }
@@ -91,8 +91,7 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
         }
 
         if (httpMethod.equals(HttpMethod.GET) || httpMethod.equals(HttpMethod.DELETE)) {
-            URI uri = serverHttpRequest.getURI();
-            URI newUri = httpOverwriteParamService.modifyQueryParams(requestAddParamsDto, uri);
+            URI newUri = httpOverwriteParamService.modifyQueryParams(requestAddParamsDto, serverHttpRequest, language);
             ServerHttpRequest newRequest = exchange.getRequest().mutate().uri(newUri).build();
             return chain.filter(exchange.mutate().request(newRequest).build());
         }

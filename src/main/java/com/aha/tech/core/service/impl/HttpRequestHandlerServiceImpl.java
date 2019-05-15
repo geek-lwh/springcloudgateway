@@ -1,5 +1,6 @@
 package com.aha.tech.core.service.impl;
 
+import com.aha.tech.core.constant.LanguageConstant;
 import com.aha.tech.core.exception.AuthorizationFailedException;
 import com.aha.tech.core.exception.MissAuthorizationHeaderException;
 import com.aha.tech.core.exception.NoSuchUserNameException;
@@ -163,7 +164,9 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
         RouteEntity routeEntity = httpRewritePathService.rewritePath(validPath);
         String rewritePath = routeEntity.getRewritePath();
         String id = routeEntity.getId();
+        String language = StringUtils.isBlank(routeEntity.getLanguage()) ? LanguageConstant.JAVA : routeEntity.getLanguage().toLowerCase();
 
+        serverWebExchange.getAttributes().put(REQUEST_LANGUAGE_ATTR, language);
         serverWebExchange.getAttributes().put(GATEWAY_REQUEST_VALID_PATH_ATTR, validPath);
         serverWebExchange.getAttributes().put(GATEWAY_REQUEST_REWRITE_PATH_ATTR, rewritePath);
         serverWebExchange.getAttributes().put(GATEWAY_REQUEST_ROUTE_ID_ATTR, id);
