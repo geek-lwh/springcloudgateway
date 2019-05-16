@@ -6,16 +6,13 @@ import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.RequestHandlerService;
 import com.aha.tech.core.support.ExchangeSupport;
 import com.aha.tech.core.support.WriteResponseSupport;
-import com.alibaba.fastjson.JSON;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
-import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -25,9 +22,7 @@ import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 
-import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_CACHED_REQUEST_BODY_ATTR;
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.BODY_TAMPER_PROOF_FILTER;
 
 /**
@@ -54,42 +49,31 @@ public class BodyTamperProofRequestFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        CacheRequestEntity cacheRequestEntity = new CacheRequestEntity();
-        ExchangeSupport.put(exchange, GATEWAY_REQUEST_CACHED_REQUEST_BODY_ATTR, cacheRequestEntity);
+        CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheBody(exchange);
 
         ServerHttpRequest request = exchange.getRequest();
         URI uri = request.getURI();
         Boolean isSkipUrlTamperProof = ExchangeSupport.getIsSkipUrlTamperProof(exchange);
+        if (isSkipUrlTamperProof) {
+            logger.info("跳过url防篡改,raw_path : {}", uri.getRawPath());
+            return chain.filter(exchange);
+        }
 
-        cacheRequestEntity.setRequestLine(uri);
         HttpHeaders httpHeaders = request.getHeaders();
         MediaType mediaType = httpHeaders.getContentType();
         if (mediaType != null && mediaType.isCompatibleWith(MediaType.APPLICATION_FORM_URLENCODED)) {
+            logger.info("media type不是json : {}", mediaType);
             return chain.filter(exchange);
         }
+
         TamperProofEntity tamperProofEntity = new TamperProofEntity(httpHeaders, uri);
-
-        HttpMethod httpMethod = request.getMethod();
-        if (httpMethod.equals(HttpMethod.POST) || httpMethod.equals(HttpMethod.PUT)) {
-            return DataBufferUtils.join(exchange.getRequest().getBody())
-                    .flatMap(dataBuffer -> {
-                        DataBufferUtils.retain(dataBuffer);
-                        byte[] buf = new byte[dataBuffer.readableByteCount()];
-                        dataBuffer.read(buf);
-                        String data = new String(buf, StandardCharsets.UTF_8);
-                        String body = JSON.parseObject(data).toJSONString();
-                        cacheRequestEntity.setRequestBody(body);
-
-                        if (!isSkipUrlTamperProof && !bodyTamperProof(body, tamperProofEntity)) {
-                            return Mono.defer(() -> {
-                                String errorMsg = String.format("body 防篡改校验失败,参数:%s", tamperProofEntity);
-                                ResponseVo rpcResponse = new ResponseVo(HttpStatus.FORBIDDEN.value(), errorMsg);
-                                return WriteResponseSupport.shortCircuit(exchange, rpcResponse, HttpStatus.FORBIDDEN, errorMsg);
-                            });
-                        }
-
-                        return chain.filter(exchange);
-                    });
+        String body = cacheRequestEntity.getRequestBody();
+        if (!bodyTamperProof(body, tamperProofEntity)) {
+            return Mono.defer(() -> {
+                String errorMsg = String.format("body 防篡改校验失败,参数:%s", tamperProofEntity);
+                ResponseVo rpcResponse = new ResponseVo(HttpStatus.FORBIDDEN.value(), errorMsg);
+                return WriteResponseSupport.shortCircuit(exchange, rpcResponse, HttpStatus.FORBIDDEN, errorMsg);
+            });
         }
 
         return chain.filter(exchange);

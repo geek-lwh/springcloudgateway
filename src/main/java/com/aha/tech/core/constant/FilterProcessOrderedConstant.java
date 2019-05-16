@@ -28,8 +28,10 @@ public class FilterProcessOrderedConstant {
     // 校验和缓存过滤器
     public static int URL_TAMPER_PROOF_FILTER = WHITE_LIST_REQUEST_FILTER + STEP;
 
+    public static int COPY_BODY_FILTER = URL_TAMPER_PROOF_FILTER + STEP;
+
     // 校验和缓存过滤器
-    public static int BODY_TAMPER_PROOF_FILTER = URL_TAMPER_PROOF_FILTER + STEP;
+    public static int BODY_TAMPER_PROOF_FILTER = COPY_BODY_FILTER + STEP;
 
     // 权限校验
     public static int AUTH_GATEWAY_FILTER_ORDER = BODY_TAMPER_PROOF_FILTER + STEP;
