@@ -15,7 +15,6 @@ import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
@@ -72,7 +71,7 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
             return Mono.defer(() -> {
                 ResponseVo rpcResponse = ResponseVo.defaultFailureResponseVo();
                 rpcResponse.setMessage("request add params attr is empty !");
-                return WriteResponseSupport.shortCircuit(exchange, rpcResponse, HttpStatus.BAD_REQUEST, errorMsg);
+                return WriteResponseSupport.shortCircuit(exchange, rpcResponse, errorMsg);
             });
         }
 

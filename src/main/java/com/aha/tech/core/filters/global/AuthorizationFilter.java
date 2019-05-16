@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
@@ -45,7 +44,7 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
             return Mono.defer(() -> {
                 String errorMsg = String.format("网关权限校验出现异常,错误信息 : %s", ge.getMessage());
                 ResponseVo rpcResponse = new ResponseVo(ge.getCode(), errorMsg);
-                return WriteResponseSupport.shortCircuit(exchange, rpcResponse, HttpStatus.UNAUTHORIZED, errorMsg);
+                return WriteResponseSupport.shortCircuit(exchange, rpcResponse, errorMsg);
             });
         }
 

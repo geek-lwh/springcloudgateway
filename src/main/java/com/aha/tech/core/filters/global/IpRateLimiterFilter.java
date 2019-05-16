@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
@@ -66,7 +65,7 @@ public class IpRateLimiterFilter implements GlobalFilter, Ordered {
 
         final ResponseVo responseVo = ResponseVo.defaultFailureResponseVo();
         responseVo.setMessage(IP_RATE_LIMITER_ERROR_MSG);
-        return Mono.defer(() -> WriteResponseSupport.shortCircuit(exchange, responseVo, HttpStatus.TOO_MANY_REQUESTS, IP_RATE_LIMITER_ERROR_MSG));
+        return Mono.defer(() -> WriteResponseSupport.shortCircuit(exchange, responseVo, IP_RATE_LIMITER_ERROR_MSG));
     }
 
 }

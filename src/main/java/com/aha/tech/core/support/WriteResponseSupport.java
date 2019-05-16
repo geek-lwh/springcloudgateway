@@ -32,17 +32,16 @@ public class WriteResponseSupport {
      * 写入response body
      * @param exchange
      * @param responseVo
-     * @param httpStatus
      * @return
      */
-    public static Mono<Void> shortCircuit(ServerWebExchange exchange, ResponseVo responseVo, HttpStatus httpStatus, String errorMsg) {
+    public static Mono<Void> shortCircuit(ServerWebExchange exchange, ResponseVo responseVo, String errorMsg) {
         logger.error("捕获异常 --> {}", errorMsg);
         final ServerHttpResponse resp = exchange.getResponse();
         byte[] bytes = JSON.toJSONString(responseVo).getBytes(StandardCharsets.UTF_8);
         DataBuffer buffer = resp.bufferFactory().wrap(bytes);
         resp.getHeaders().setContentLength(buffer.readableByteCount());
         resp.getHeaders().setContentType(MediaType.APPLICATION_JSON_UTF8);
-        setResponseStatus(exchange, httpStatus);
+        setResponseStatus(exchange, HttpStatus.OK);
         AccessLogService httpAccessLogService = (AccessLogService) SpringContextUtil.getBean("httpAccessLogService");
         httpAccessLogService.printWhenError(exchange, errorMsg);
         return resp.writeWith(Flux.just(buffer));

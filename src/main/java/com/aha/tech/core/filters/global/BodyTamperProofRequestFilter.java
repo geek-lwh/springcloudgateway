@@ -77,7 +77,7 @@ public class BodyTamperProofRequestFilter implements GlobalFilter, Ordered {
             return Mono.defer(() -> {
                 String errorMsg = String.format("body 防篡改校验失败,参数:%s", tamperProofEntity);
                 ResponseVo rpcResponse = new ResponseVo(HttpStatus.FORBIDDEN.value(), errorMsg);
-                return WriteResponseSupport.shortCircuit(exchange, rpcResponse, HttpStatus.FORBIDDEN, errorMsg);
+                return WriteResponseSupport.shortCircuit(exchange, rpcResponse, errorMsg);
             });
         }
 
