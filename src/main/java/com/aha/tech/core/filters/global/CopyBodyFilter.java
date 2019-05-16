@@ -3,13 +3,15 @@ package com.aha.tech.core.filters.global;
 import com.aha.tech.core.model.entity.CacheRequestEntity;
 import com.aha.tech.core.support.ExchangeSupport;
 import com.alibaba.fastjson.JSON;
-import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.core.io.buffer.DataBufferUtils;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
@@ -37,7 +39,10 @@ public class CopyBodyFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        return DataBufferUtils.join(exchange.getRequest().getBody())
+        ServerHttpRequest request = exchange.getRequest();
+        HttpHeaders httpHeaders = request.getHeaders();
+        MediaType mediaType = httpHeaders.getContentType();
+        return DataBufferUtils.join(request.getBody())
                 .map(dataBuffer -> {
                     byte[] bytes = new byte[dataBuffer.readableByteCount()];
                     dataBuffer.read(bytes);
@@ -46,18 +51,16 @@ public class CopyBodyFilter implements GlobalFilter, Ordered {
                 })
                 .defaultIfEmpty(new byte[0])
                 .doOnNext(bytes -> {
-                    String body = Strings.EMPTY;
-                    if (bytes.length > 0) {
-                        body = new String(bytes, StandardCharsets.UTF_8);
+                    String body = new String(bytes, StandardCharsets.UTF_8);
+                    if (bytes.length > 0 && mediaType.isCompatibleWith(MediaType.APPLICATION_JSON_UTF8)) {
+//                        body = new String(bytes, StandardCharsets.UTF_8);
                         body = JSON.parseObject(body).toJSONString();
                     }
                     CacheRequestEntity cacheRequestEntity = new CacheRequestEntity();
                     cacheRequestEntity.setRequestBody(body);
                     cacheRequestEntity.setRequestLine(exchange.getRequest().getURI());
                     ExchangeSupport.put(exchange, GATEWAY_REQUEST_CACHED_REQUEST_BODY_ATTR, cacheRequestEntity);
-                })
-
-                .then(chain.filter(exchange));
+                }).then(chain.filter(exchange));
     }
 
 

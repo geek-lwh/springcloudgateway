@@ -56,17 +56,14 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
         Boolean isSkipAuth = ExchangeSupport.getIsSkipAuth(exchange);
         ServerHttpRequest serverHttpRequest = exchange.getRequest();
         MediaType mediaType = serverHttpRequest.getHeaders().getContentType();
+
         HttpMethod httpMethod = serverHttpRequest.getMethod();
         String language = ExchangeSupport.getRequestLanguage(exchange);
         CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheBody(exchange);
+        String cacheBody = cacheRequestEntity.getRequestBody();
 
         if (isSkipAuth) {
-            if (httpMethod.equals(HttpMethod.POST) || httpMethod.equals(HttpMethod.PUT)) {
-                // 从新构建request body ,因为body之前被读取出来了
-                return httpOverwriteParamService.rebuildRequestBody(cacheRequestEntity.getRequestBody(), chain, exchange, serverHttpRequest.getURI());
-            }
-
-            return chain.filter(exchange);
+            return httpOverwriteParamService.rebuildRequestBody(cacheBody, chain, exchange, serverHttpRequest.getURI());
         }
 
         RequestAddParamsDto requestAddParamsDto = ExchangeSupport.getRequestAddParamsDto(exchange);
@@ -82,13 +79,14 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
         // 表单提交 处理url,不处理body
         URI newUri = httpOverwriteParamService.modifyQueryParams(requestAddParamsDto, serverHttpRequest, language);
 
-        if (mediaType.isCompatibleWith(MediaType.APPLICATION_FORM_URLENCODED)) {
-            ServerHttpRequest newRequest = exchange.getRequest().mutate().uri(newUri).build();
-            return chain.filter(exchange.mutate().request(newRequest).build());
-        }
+//        // 表单提交
+//        if (mediaType.isCompatibleWith(MediaType.APPLICATION_FORM_URLENCODED)) {
+//            ServerHttpRequest newRequest = exchange.getRequest().mutate().uri(newUri).build();
+//            return chain.filter(exchange.mutate().request(newRequest).build());
+//        }
 
-        if (httpMethod.equals(HttpMethod.POST) || httpMethod.equals(HttpMethod.PUT)) {
-            String cacheBody = cacheRequestEntity.getRequestBody();
+        Boolean hasBody = httpMethod.equals(HttpMethod.POST) || httpMethod.equals(HttpMethod.PUT);
+        if (hasBody && mediaType.isCompatibleWith(MediaType.APPLICATION_JSON_UTF8)) {
             Map<String, Object> map = Maps.newHashMap();
             if (StringUtils.isBlank(cacheBody)) {
                 map.put(USER_ID_FIELD, requestAddParamsDto.getUserId());
@@ -96,16 +94,10 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
                 map = JSON.parseObject(cacheRequestEntity.getRequestBody(), Map.class);
                 map.put(USER_ID_FIELD, requestAddParamsDto.getUserId());
             }
-//            Map<String, Object> map =
-////            if(CollectionUtils.isEmpty(map)){
-////                map.put(USER_ID_FIELD, requestAddParamsDto.getUserId());
-////            }
-//            map.put(USER_ID_FIELD, requestAddParamsDto.getUserId());
-            return httpOverwriteParamService.rebuildRequestBody(JSON.toJSONString(map), chain, exchange, newUri);
+            cacheBody = JSON.toJSONString(map);
         }
 
-        ServerHttpRequest newRequest = exchange.getRequest().mutate().uri(newUri).build();
-        return chain.filter(exchange.mutate().request(newRequest).build());
+        return httpOverwriteParamService.rebuildRequestBody(cacheBody, chain, exchange, newUri);
     }
 
 }

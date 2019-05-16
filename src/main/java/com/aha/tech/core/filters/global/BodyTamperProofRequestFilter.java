@@ -13,6 +13,7 @@ import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -52,10 +53,14 @@ public class BodyTamperProofRequestFilter implements GlobalFilter, Ordered {
         CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheBody(exchange);
 
         ServerHttpRequest request = exchange.getRequest();
+        HttpMethod httpMethod = request.getMethod();
+        if (!httpMethod.equals(HttpMethod.POST)) {
+            return chain.filter(exchange);
+        }
         URI uri = request.getURI();
         Boolean isSkipUrlTamperProof = ExchangeSupport.getIsSkipUrlTamperProof(exchange);
         if (isSkipUrlTamperProof) {
-            logger.info("跳过url防篡改,raw_path : {}", uri.getRawPath());
+            logger.info("跳过body防篡改,raw_path : {}", uri.getRawPath());
             return chain.filter(exchange);
         }
 
