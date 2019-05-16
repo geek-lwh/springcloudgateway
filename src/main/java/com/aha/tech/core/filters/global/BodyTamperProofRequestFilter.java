@@ -17,6 +17,7 @@ import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
@@ -62,6 +63,10 @@ public class BodyTamperProofRequestFilter implements GlobalFilter, Ordered {
 
         cacheRequestEntity.setRequestLine(uri);
         HttpHeaders httpHeaders = request.getHeaders();
+        MediaType mediaType = httpHeaders.getContentType();
+        if (mediaType != null && mediaType.isCompatibleWith(MediaType.APPLICATION_FORM_URLENCODED)) {
+            return chain.filter(exchange);
+        }
         TamperProofEntity tamperProofEntity = new TamperProofEntity(httpHeaders, uri);
 
         HttpMethod httpMethod = request.getMethod();
