@@ -17,7 +17,6 @@ import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
@@ -59,14 +58,11 @@ public class BodyTamperProofRequestFilter implements GlobalFilter, Ordered {
 
         ServerHttpRequest request = exchange.getRequest();
         URI uri = request.getURI();
+        Boolean isSkipUrlTamperProof = ExchangeSupport.getIsSkipUrlTamperProof(exchange);
+
         cacheRequestEntity.setRequestLine(uri);
         HttpHeaders httpHeaders = request.getHeaders();
         TamperProofEntity tamperProofEntity = new TamperProofEntity(httpHeaders, uri);
-
-        MediaType mediaType = exchange.getRequest().getHeaders().getContentType();
-        if (mediaType != null && mediaType.isCompatibleWith(MediaType.APPLICATION_FORM_URLENCODED)) {
-            return chain.filter(exchange);
-        }
 
         HttpMethod httpMethod = request.getMethod();
         if (httpMethod.equals(HttpMethod.POST) || httpMethod.equals(HttpMethod.PUT)) {
@@ -78,7 +74,8 @@ public class BodyTamperProofRequestFilter implements GlobalFilter, Ordered {
                         String data = new String(buf, StandardCharsets.UTF_8);
                         String body = JSON.parseObject(data).toJSONString();
                         cacheRequestEntity.setRequestBody(body);
-                        if (!bodyTamperProof(data, tamperProofEntity)) {
+
+                        if (!isSkipUrlTamperProof && !bodyTamperProof(body, tamperProofEntity)) {
                             return Mono.defer(() -> {
                                 String errorMsg = String.format("body 防篡改校验失败,参数:%s", tamperProofEntity);
                                 ResponseVo rpcResponse = new ResponseVo(HttpStatus.FORBIDDEN.value(), errorMsg);

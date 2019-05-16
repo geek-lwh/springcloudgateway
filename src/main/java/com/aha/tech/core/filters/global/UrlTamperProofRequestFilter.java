@@ -3,6 +3,7 @@ package com.aha.tech.core.filters.global;
 import com.aha.tech.core.model.entity.TamperProofEntity;
 import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.RequestHandlerService;
+import com.aha.tech.core.support.ExchangeSupport;
 import com.aha.tech.core.support.URISupport;
 import com.aha.tech.core.support.WriteResponseSupport;
 import org.slf4j.Logger;
@@ -50,9 +51,13 @@ public class UrlTamperProofRequestFilter implements GlobalFilter, Ordered {
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         ServerHttpRequest request = exchange.getRequest();
         URI uri = request.getURI();
-        HttpHeaders httpHeaders = request.getHeaders();
-
         String rawPath = uri.getRawPath();
+        if (ExchangeSupport.getIsSkipUrlTamperProof(exchange)) {
+            logger.info("跳过url防篡改 : {}", rawPath);
+            return chain.filter(exchange);
+        }
+
+        HttpHeaders httpHeaders = request.getHeaders();
         MultiValueMap<String, String> queryParams = request.getQueryParams();
         TamperProofEntity tamperProofEntity = new TamperProofEntity(httpHeaders, uri);
         boolean isURIValid = urlTamperProof(tamperProofEntity, queryParams, rawPath);

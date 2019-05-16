@@ -12,11 +12,21 @@ import org.springframework.web.server.ServerWebExchange;
  */
 public interface RequestHandlerService {
 
+    Boolean isSkipIpLimiter(String rawPath);
+
     /**
-     * 打印访问日志
-     * @param serverWebExchange
+     * 是否跳过授权验证
+     * @param rawPath
+     * @return
      */
-//    void writeAccessInfo(ServerWebExchange serverWebExchange);
+    Boolean isSkipAuth(String rawPath);
+
+    /**
+     * 是否跳过url防篡改
+     * @param rawPath
+     * @return
+     */
+    Boolean isSkipUrlTamperProof(String rawPath);
 
     /**
      * url防篡改

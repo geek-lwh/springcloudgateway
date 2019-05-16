@@ -15,5 +15,10 @@ public interface LimiterService {
      */
     Boolean isAllowed(ServerWebExchange exchange);
 
-    Boolean isSkipLimiter(String path);
+    /**
+     * 是否跳过限流
+     * @param rawPath
+     * @return
+     */
+//    Boolean isSkipLimiter(String rawPath);
 }

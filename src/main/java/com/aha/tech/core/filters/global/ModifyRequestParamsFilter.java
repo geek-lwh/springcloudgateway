@@ -25,7 +25,7 @@ import javax.annotation.Resource;
 import java.net.URI;
 
 import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_ADD_PARAMS_ATTR;
-import static com.aha.tech.core.constant.ExchangeAttributeConstant.IS_AUTH_WHITE_LIST_ATTR;
+import static com.aha.tech.core.constant.ExchangeAttributeConstant.IS_SKIP_AUTH_ATTR;
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.MODIFY_PARAMS_FILTER_ORDER;
 
 /**
@@ -53,7 +53,7 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         logger.debug("开始进入修改GET|POST请求参数过滤器");
 
-        Boolean isWhiteList = (Boolean) ExchangeSupport.get(exchange, IS_AUTH_WHITE_LIST_ATTR, Boolean.FALSE);
+        Boolean isWhiteList = (Boolean) ExchangeSupport.get(exchange, IS_SKIP_AUTH_ATTR, Boolean.FALSE);
 
         if (isWhiteList) {
             CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheBody(exchange);

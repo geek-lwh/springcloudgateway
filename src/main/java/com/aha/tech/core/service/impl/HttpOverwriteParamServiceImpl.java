@@ -4,6 +4,7 @@ import com.aha.tech.commons.symbol.Separator;
 import com.aha.tech.core.constant.LanguageConstant;
 import com.aha.tech.core.model.dto.RequestAddParamsDto;
 import com.aha.tech.core.service.OverwriteParamService;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.logging.log4j.util.Strings;
@@ -97,11 +98,14 @@ public class HttpOverwriteParamServiceImpl implements OverwriteParamService {
     @Override
     public URI modifyQueryParams(RequestAddParamsDto requestAddParamsDto, ServerHttpRequest request, String language) {
         StringBuilder query = new StringBuilder();
-        String rawQuery = UriEncoder.decode(request.getURI().getRawQuery());
-        Boolean isCompatible = language.equals(LanguageConstant.JAVA) && rawQuery.indexOf(SPECIAL_SYMBOL) != -1;
+        String rawQuery = request.getURI().getRawQuery();
+        String encoderRawQuery = StringUtils.isBlank(rawQuery) ? Strings.EMPTY : UriEncoder.decode(request.getURI().getRawQuery());
+        Boolean isJavaLanguage = language.equals(LanguageConstant.JAVA);
+        Boolean hasCompatibleQuery = StringUtils.isNoneBlank(encoderRawQuery) && encoderRawQuery.indexOf(SPECIAL_SYMBOL) != -1;
+        Boolean needCompatible = isJavaLanguage && hasCompatibleQuery;
 
         URI uri = request.getURI();
-        if (isCompatible) {
+        if (needCompatible) {
             logger.info("兼容java服务的get 请求");
             List<NameValuePair> params = URLEncodedUtils.parse(request.getURI(), StandardCharsets.UTF_8);
             for (NameValuePair pair : params) {

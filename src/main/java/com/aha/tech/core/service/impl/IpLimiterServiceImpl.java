@@ -2,6 +2,7 @@ package com.aha.tech.core.service.impl;
 
 import com.aha.tech.core.limiter.IpRateLimiter;
 import com.aha.tech.core.service.LimiterService;
+import com.aha.tech.core.service.RequestHandlerService;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,7 +15,6 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -37,7 +37,7 @@ public class IpLimiterServiceImpl implements LimiterService {
     private IpRateLimiter ipRateLimiter;
 
     @Resource
-    private List<String> ipLimiterWhiteList;
+    private RequestHandlerService httpRequestHandlerService;
 
     /**
      * ip限流是否通过
@@ -70,10 +70,10 @@ public class IpLimiterServiceImpl implements LimiterService {
         return isAllowed;
     }
 
-    @Override
-    public Boolean isSkipLimiter(String path) {
-        return ipLimiterWhiteList.contains(path);
-    }
+//    @Override
+//    public Boolean isSkipLimiter(String rawPath) {
+//        return httpRequestHandlerService.isSkipIpLimiter(rawPath);
+//    }
 
     /**
      * 获取ip限流的key

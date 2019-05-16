@@ -2,6 +2,7 @@ package com.aha.tech.core.filters.global;
 
 import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.LimiterService;
+import com.aha.tech.core.service.RequestHandlerService;
 import com.aha.tech.core.support.WriteResponseSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +35,9 @@ public class IpRateLimiterFilter implements GlobalFilter, Ordered {
     @Resource
     private LimiterService ipLimiterService;
 
+    @Resource
+    private RequestHandlerService httpRequestHandlerService;
+
     @Value("${ip.ratelimiter.enable:false}")
     private boolean isEnable;
 
@@ -50,7 +54,8 @@ public class IpRateLimiterFilter implements GlobalFilter, Ordered {
             return chain.filter(exchange);
         }
 
-        if (ipLimiterService.isSkipLimiter(exchange.getRequest().getURI().getRawPath())) {
+        String rawPath = exchange.getRequest().getURI().getRawPath();
+        if (httpRequestHandlerService.isSkipIpLimiter(rawPath)) {
             return chain.filter(exchange);
         }
 

@@ -30,4 +30,7 @@ public interface RuntimeConfigChangedService {
      * @param changeKeys
      */
     void skipIpLimiterWhiteListChanged(ConfigChangeEvent changeEvent, Set<String> changeKeys);
+
+    void skipUrlTamperProofWhiteListChanged(ConfigChangeEvent changeEvent, Set<String> changeKeys);
+
 }

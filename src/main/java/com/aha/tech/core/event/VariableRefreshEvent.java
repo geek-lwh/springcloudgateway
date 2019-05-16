@@ -40,6 +40,7 @@ public class VariableRefreshEvent {
         runtimeConfigChangedService.routeApiUriChanged(changeEvent,changeKeys);
         runtimeConfigChangedService.skipAuthWhiteListChanged(changeEvent, changeKeys);
         runtimeConfigChangedService.skipIpLimiterWhiteListChanged(changeEvent, changeKeys);
+        runtimeConfigChangedService.skipUrlTamperProofWhiteListChanged(changeEvent, changeKeys);
     }
 
 }

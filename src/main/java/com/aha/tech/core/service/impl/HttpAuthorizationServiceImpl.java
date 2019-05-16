@@ -12,9 +12,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
-import java.util.List;
-
 import static com.aha.tech.commons.constants.ResponseConstants.SUCCESS;
 import static com.aha.tech.core.constant.HeaderFieldConstant.DEFAULT_X_TOKEN_VALUE;
 
@@ -30,14 +27,6 @@ public class HttpAuthorizationServiceImpl implements AuthorizationService {
 
     @Autowired(required = false)
     private PassportResource passportResource;
-
-    @Resource
-    private List<String> authWhiteList;
-
-    @Override
-    public Boolean isSkipAuth(String path) {
-        return authWhiteList.contains(path);
-    }
 
     /**
      * 校验访客信息的合法性

@@ -9,12 +9,6 @@ import com.aha.tech.core.model.entity.AuthenticationEntity;
 public interface AuthorizationService {
 
     /**
-     * 是否跳过授权
-     * @param path
-     * @return
-     */
-    Boolean isSkipAuth(String path);
-    /**
      * 校验访客信息
      * @param accessToken
      * @return

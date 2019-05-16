@@ -67,6 +67,36 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
     @Resource
     private ModifyResponseService httpModifyResponseService;
 
+    @Resource
+    private WhiteListService whiteListService;
+
+    @Override
+    public Boolean isSkipIpLimiter(String rawPath) {
+        List<String> list = whiteListService.findSkipIpLimiterWhiteList();
+        if (CollectionUtils.isEmpty(list)) {
+            return Boolean.FALSE;
+        }
+        return list.contains(rawPath);
+    }
+
+    @Override
+    public Boolean isSkipAuth(String rawPath) {
+        List<String> list = whiteListService.findSkipAuthWhiteList();
+        if (CollectionUtils.isEmpty(list)) {
+            return Boolean.FALSE;
+        }
+        return list.contains(rawPath);
+    }
+
+    @Override
+    public Boolean isSkipUrlTamperProof(String rawPath) {
+        List<String> list = whiteListService.findSkipUrlTamperProofWhiteList();
+        if (CollectionUtils.isEmpty(list)) {
+            return Boolean.FALSE;
+        }
+        return list.contains(rawPath);
+    }
+
     /**
      * url防篡改
      * version (Froyo, Gingerbread,IceCreamSandwich,JellyBean,KitKat,Lollipop)
@@ -188,8 +218,7 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
     @Override
     public Boolean authorize(ServerWebExchange serverWebExchange) {
         ServerHttpRequest serverHttpRequest = serverWebExchange.getRequest();
-        Boolean isSkipAuth = (Boolean) ExchangeSupport.get(serverWebExchange, IS_AUTH_WHITE_LIST_ATTR, Boolean.FALSE);
-
+        Boolean isSkipAuth = ExchangeSupport.getIsSkipAuth(serverWebExchange);
         if (isSkipAuth) {
             return Boolean.TRUE;
         }

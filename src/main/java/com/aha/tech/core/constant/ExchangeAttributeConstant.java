@@ -25,7 +25,9 @@ public class ExchangeAttributeConstant {
 
     public static final String GATEWAY_REQUEST_CACHED_REQUEST_BODY_ATTR = "GATEWAY_REQUEST_CACHED_REQUEST_BODY_ATTR";
 
-    public static final String IS_AUTH_WHITE_LIST_ATTR = "IS_AUTH_WHITE_LIST_ATTR";
+    public static final String IS_SKIP_AUTH_ATTR = "IS_SKIP_AUTH_ATTR";
+
+    public static final String IS_SKIP_URL_TAMPER_PROOF_ATTR = "IS_SKIP_URL_TAMPER_PROOF_ATTR";
 
     public static final String REQUEST_LANGUAGE_ATTR = "REQUEST_LANGUAGE_ATTR";
 

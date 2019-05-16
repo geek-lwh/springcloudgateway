@@ -4,8 +4,7 @@ import com.aha.tech.core.constant.LanguageConstant;
 import com.aha.tech.core.model.entity.CacheRequestEntity;
 import org.springframework.web.server.ServerWebExchange;
 
-import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_CACHED_REQUEST_BODY_ATTR;
-import static com.aha.tech.core.constant.ExchangeAttributeConstant.REQUEST_LANGUAGE_ATTR;
+import static com.aha.tech.core.constant.ExchangeAttributeConstant.*;
 
 /**
  * @Author: luweihong
@@ -32,4 +31,16 @@ public class ExchangeSupport {
 
         return language;
     }
+
+    public static Boolean getIsSkipAuth(ServerWebExchange exchange) {
+        return (Boolean) exchange.getAttributes().getOrDefault(IS_SKIP_AUTH_ATTR, Boolean.FALSE);
+    }
+
+    public static Boolean getIsSkipUrlTamperProof(ServerWebExchange exchange) {
+        return (Boolean) exchange.getAttributes().getOrDefault(IS_SKIP_URL_TAMPER_PROOF_ATTR, Boolean.FALSE);
+    }
+
+//    public static Boolean getIsSkipUrlTamperProof(ServerWebExchange exchange){
+//        return (Boolean) exchange.getAttributes().getOrDefault(IS_SKIP_URL_TAMPER_PROOF_ATTR,Boolean.FALSE);
+//    }
 }
