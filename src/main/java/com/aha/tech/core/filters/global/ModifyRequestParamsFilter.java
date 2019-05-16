@@ -6,8 +6,6 @@ import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.OverwriteParamService;
 import com.aha.tech.core.support.ExchangeSupport;
 import com.aha.tech.core.support.WriteResponseSupport;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -24,8 +22,6 @@ import reactor.core.publisher.Mono;
 import javax.annotation.Resource;
 import java.net.URI;
 
-import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_ADD_PARAMS_ATTR;
-import static com.aha.tech.core.constant.ExchangeAttributeConstant.IS_SKIP_AUTH_ATTR;
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.MODIFY_PARAMS_FILTER_ORDER;
 
 /**
@@ -53,15 +49,19 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         logger.debug("开始进入修改GET|POST请求参数过滤器");
 
-        Boolean isWhiteList = (Boolean) ExchangeSupport.get(exchange, IS_SKIP_AUTH_ATTR, Boolean.FALSE);
+        Boolean isSkipAuth = ExchangeSupport.getIsSkipAuth(exchange);
+        ServerHttpRequest serverHttpRequest = exchange.getRequest();
+        MediaType mediaType = serverHttpRequest.getHeaders().getContentType();
+        HttpMethod httpMethod = serverHttpRequest.getMethod();
+        String language = ExchangeSupport.getRequestLanguage(exchange);
+        CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheBody(exchange);
 
-        if (isWhiteList) {
-            CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheBody(exchange);
-            return httpOverwriteParamService.rebuildRequestBody(cacheRequestEntity.getRequestBody(), chain, exchange);
+        if (isSkipAuth) {
+            return httpOverwriteParamService.rebuildRequestBody(cacheRequestEntity.getRequestBody(), chain, exchange, serverHttpRequest.getURI());
         }
 
-        Object obj = ExchangeSupport.get(exchange, GATEWAY_REQUEST_ADD_PARAMS_ATTR, null);
-        if (obj == null) {
+        RequestAddParamsDto requestAddParamsDto = ExchangeSupport.getRequestAddParamsDto(exchange);
+        if (requestAddParamsDto == null) {
             String errorMsg = String.format("缺少需要在网关添加的参数");
             return Mono.defer(() -> {
                 ResponseVo rpcResponse = ResponseVo.defaultFailureResponseVo();
@@ -70,33 +70,24 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
             });
         }
 
-        RequestAddParamsDto requestAddParamsDto = (RequestAddParamsDto) obj;
-        ServerHttpRequest serverHttpRequest = exchange.getRequest();
-        MediaType mediaType = serverHttpRequest.getHeaders().getContentType();
-        HttpMethod httpMethod = exchange.getRequest().getMethod();
-        String language = ExchangeSupport.getRequestLanguage(exchange);
-
-        // 表单提交
+        // 表单提交 处理url,不处理body
         if (mediaType.isCompatibleWith(MediaType.APPLICATION_FORM_URLENCODED)) {
             URI newUri = httpOverwriteParamService.modifyParamsWithFormUrlencoded(requestAddParamsDto, serverHttpRequest, language);
             ServerHttpRequest newRequest = exchange.getRequest().mutate().uri(newUri).build();
             return chain.filter(exchange.mutate().request(newRequest).build());
         }
 
+        URI newUri = httpOverwriteParamService.modifyQueryParams(requestAddParamsDto, serverHttpRequest, language);
+
         if (httpMethod.equals(HttpMethod.POST) || httpMethod.equals(HttpMethod.PUT)) {
-            CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheBody(exchange);
-            JSONObject body = JSON.parseObject(cacheRequestEntity.getRequestBody());
-            body.put(USER_ID_FIELD, requestAddParamsDto.getUserId());
-            return httpOverwriteParamService.rebuildRequestBody(body.toJSONString(), chain, exchange);
+//            String bodyCache = cacheRequestEntity.getRequestBody();
+//            JSONObject body = JSON.parseObject(StringUtils.isBlank(bodyCache) ? bodyCache : Strings.EMPTY);
+//            body.put(USER_ID_FIELD, requestAddParamsDto.getUserId());
+            return httpOverwriteParamService.rebuildRequestBody("", chain, exchange, newUri);
         }
 
-        if (httpMethod.equals(HttpMethod.GET) || httpMethod.equals(HttpMethod.DELETE)) {
-            URI newUri = httpOverwriteParamService.modifyQueryParams(requestAddParamsDto, serverHttpRequest, language);
-            ServerHttpRequest newRequest = exchange.getRequest().mutate().uri(newUri).build();
-            return chain.filter(exchange.mutate().request(newRequest).build());
-        }
-
-        return chain.filter(exchange);
+        ServerHttpRequest newRequest = exchange.getRequest().mutate().uri(newUri).build();
+        return chain.filter(exchange.mutate().request(newRequest).build());
     }
 
 }

@@ -52,7 +52,7 @@ public class HttpOverwriteParamServiceImpl implements OverwriteParamService {
      * @return
      */
     @Override
-    public Mono<Void> rebuildRequestBody(String body, GatewayFilterChain chain, ServerWebExchange exchange) {
+    public Mono<Void> rebuildRequestBody(String body, GatewayFilterChain chain, ServerWebExchange exchange, URI uri) {
         Mono<String> modifiedBody = Mono.just(body);
 
         HttpHeaders headers = new HttpHeaders();
@@ -80,6 +80,11 @@ public class HttpOverwriteParamServiceImpl implements OverwriteParamService {
                 @Override
                 public Flux<DataBuffer> getBody() {
                     return outputMessage.getBody();
+                }
+
+                @Override
+                public URI getURI() {
+                    return uri;
                 }
             };
 

@@ -21,7 +21,7 @@ public interface OverwriteParamService {
      * @param exchange
      * @return
      */
-    Mono<Void> rebuildRequestBody(String body, GatewayFilterChain chain, ServerWebExchange exchange);
+    Mono<Void> rebuildRequestBody(String body, GatewayFilterChain chain, ServerWebExchange exchange, URI uri);
 
     /**
      * 修改GET请求的参数

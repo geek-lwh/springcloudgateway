@@ -1,6 +1,7 @@
 package com.aha.tech.core.support;
 
 import com.aha.tech.core.constant.LanguageConstant;
+import com.aha.tech.core.model.dto.RequestAddParamsDto;
 import com.aha.tech.core.model.entity.CacheRequestEntity;
 import org.springframework.web.server.ServerWebExchange;
 
@@ -40,7 +41,7 @@ public class ExchangeSupport {
         return (Boolean) exchange.getAttributes().getOrDefault(IS_SKIP_URL_TAMPER_PROOF_ATTR, Boolean.FALSE);
     }
 
-//    public static Boolean getIsSkipUrlTamperProof(ServerWebExchange exchange){
-//        return (Boolean) exchange.getAttributes().getOrDefault(IS_SKIP_URL_TAMPER_PROOF_ATTR,Boolean.FALSE);
-//    }
+    public static RequestAddParamsDto getRequestAddParamsDto(ServerWebExchange exchange) {
+        return (RequestAddParamsDto) exchange.getAttributes().getOrDefault(GATEWAY_REQUEST_ADD_PARAMS_ATTR, null);
+    }
 }
