@@ -10,6 +10,7 @@ import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
@@ -42,25 +43,30 @@ public class CopyBodyFilter implements GlobalFilter, Ordered {
         ServerHttpRequest request = exchange.getRequest();
         HttpHeaders httpHeaders = request.getHeaders();
         MediaType mediaType = httpHeaders.getContentType();
-        return DataBufferUtils.join(request.getBody())
-                .map(dataBuffer -> {
-                    byte[] bytes = new byte[dataBuffer.readableByteCount()];
-                    dataBuffer.read(bytes);
-                    DataBufferUtils.release(dataBuffer);
-                    return bytes;
-                })
-                .defaultIfEmpty(new byte[0])
-                .doOnNext(bytes -> {
-                    String body = new String(bytes, StandardCharsets.UTF_8);
-                    if (bytes.length > 0 && mediaType.isCompatibleWith(MediaType.APPLICATION_JSON_UTF8)) {
+        HttpMethod httpMethod = request.getMethod();
+        if (httpMethod.equals(HttpMethod.POST) || httpMethod.equals(HttpMethod.PUT)) {
+            return DataBufferUtils.join(request.getBody())
+                    .map(dataBuffer -> {
+                        byte[] bytes = new byte[dataBuffer.readableByteCount()];
+                        dataBuffer.read(bytes);
+                        DataBufferUtils.release(dataBuffer);
+                        return bytes;
+                    })
+                    .defaultIfEmpty(new byte[0])
+                    .doOnNext(bytes -> {
+                        String body = new String(bytes, StandardCharsets.UTF_8);
+                        if (bytes.length > 0 && mediaType.isCompatibleWith(MediaType.APPLICATION_JSON_UTF8)) {
 //                        body = new String(bytes, StandardCharsets.UTF_8);
-                        body = JSON.parseObject(body).toJSONString();
-                    }
-                    CacheRequestEntity cacheRequestEntity = new CacheRequestEntity();
-                    cacheRequestEntity.setRequestBody(body);
-                    cacheRequestEntity.setRequestLine(exchange.getRequest().getURI());
-                    ExchangeSupport.put(exchange, GATEWAY_REQUEST_CACHED_REQUEST_BODY_ATTR, cacheRequestEntity);
-                }).then(chain.filter(exchange));
+                            body = JSON.parseObject(body).toJSONString();
+                        }
+                        CacheRequestEntity cacheRequestEntity = new CacheRequestEntity();
+                        cacheRequestEntity.setRequestBody(body);
+                        cacheRequestEntity.setRequestLine(exchange.getRequest().getURI());
+                        ExchangeSupport.put(exchange, GATEWAY_REQUEST_CACHED_REQUEST_BODY_ATTR, cacheRequestEntity);
+                    }).then(chain.filter(exchange));
+        }
+
+        return chain.filter(exchange);
     }
 
 

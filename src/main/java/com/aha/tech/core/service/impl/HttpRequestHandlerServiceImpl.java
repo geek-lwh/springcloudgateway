@@ -136,7 +136,6 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
         logger.error("url防篡改校验失败 uri : {},timestamp : {},signature : {}", url, timestamp, signature);
 
         return Boolean.FALSE;
-
     }
 
     /**

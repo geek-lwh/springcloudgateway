@@ -78,12 +78,6 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
         // 表单提交 处理url,不处理body
         URI newUri = httpOverwriteParamService.modifyQueryParams(requestAddParamsDto, serverHttpRequest, language);
 
-//        // 表单提交
-//        if (mediaType.isCompatibleWith(MediaType.APPLICATION_FORM_URLENCODED)) {
-//            ServerHttpRequest newRequest = exchange.getRequest().mutate().uri(newUri).build();
-//            return chain.filter(exchange.mutate().request(newRequest).build());
-//        }
-
         Boolean hasBody = httpMethod.equals(HttpMethod.POST) || httpMethod.equals(HttpMethod.PUT);
         if (hasBody && mediaType.isCompatibleWith(MediaType.APPLICATION_JSON_UTF8)) {
             Map<String, Object> map = Maps.newHashMap();
