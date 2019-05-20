@@ -76,10 +76,10 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
         if (hasBody && mediaType.isCompatibleWith(MediaType.APPLICATION_JSON_UTF8)) {
             Long userId = requestAddParamsDto.getUserId();
             Map<String, Object> map = Maps.newHashMap();
-            if (StringUtils.isBlank(cacheBody)) {
+            if (StringUtils.isBlank(newBody)) {
                 map.put(USER_ID_FIELD, userId);
             } else {
-                map = JSON.parseObject(cacheRequestEntity.getRequestBody(), Map.class);
+                map = JSON.parseObject(newBody, Map.class);
                 map.put(USER_ID_FIELD, userId);
             }
 
