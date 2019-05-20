@@ -58,9 +58,8 @@ public class UrlTamperProofRequestFilter implements GlobalFilter, Ordered {
         }
 
         HttpHeaders httpHeaders = request.getHeaders();
-        MultiValueMap<String, String> queryParams = request.getQueryParams();
         TamperProofEntity tamperProofEntity = new TamperProofEntity(httpHeaders, uri);
-        boolean isURIValid = urlTamperProof(tamperProofEntity, queryParams, rawPath);
+        boolean isURIValid = urlTamperProof(tamperProofEntity, uri.getRawQuery(), rawPath);
         if (!isURIValid) {
             return Mono.defer(() -> {
                 String errorMsg = String.format("url防篡改校验失败,参数:%s", tamperProofEntity);
@@ -75,11 +74,11 @@ public class UrlTamperProofRequestFilter implements GlobalFilter, Ordered {
     /**
      * 校验url
      * @param tamperProofEntity
-     * @param queryParams
+     * @param rawQuery
      * @param rawPath
      * @return
      */
-    public boolean urlTamperProof(TamperProofEntity tamperProofEntity, MultiValueMap<String, String> queryParams, String rawPath) {
+    public boolean urlTamperProof(TamperProofEntity tamperProofEntity, String rawQuery, String rawPath) {
         if (!isEnable) {
             return Boolean.TRUE;
         }
@@ -88,7 +87,7 @@ public class UrlTamperProofRequestFilter implements GlobalFilter, Ordered {
         String timestamp = tamperProofEntity.getTimestamp();
         String signature = tamperProofEntity.getSignature();
         String version = tamperProofEntity.getVersion();
-
+        MultiValueMap<String, String> queryParams = URISupport.initQueryParams(rawQuery);
         String sortQueryParams = URISupport.queryParamsSort(queryParams);
 
         return httpRequestHandlerService.urlTamperProof(version, timestamp, signature, rawPath, sortQueryParams);

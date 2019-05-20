@@ -5,14 +5,15 @@ import com.google.common.collect.Lists;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.DigestUtils;
-import org.springframework.util.MultiValueMap;
-import org.springframework.util.StringUtils;
+import org.springframework.util.*;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -23,6 +24,8 @@ import java.util.stream.Stream;
 public class URISupport {
 
     private static final Logger logger = LoggerFactory.getLogger(URISupport.class);
+
+    private static final Pattern QUERY_PATTERN = Pattern.compile("([^&=]+)(=?)([^&]+)?");
 
     /**
      * 根据字符串,切割符,跳过无效区位数
@@ -59,6 +62,43 @@ public class URISupport {
         rewritePath.append(contextPath).append(realServerHost).toString();
 
         return rewritePath.toString();
+    }
+
+    /**
+     * 初始化queryParams
+     * @param query
+     * @return
+     */
+    public static MultiValueMap<String, String> initQueryParams(String query) {
+        MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
+        if (org.apache.commons.lang3.StringUtils.isNotBlank(query)) {
+            String urlDecoderQuery = decodeQueryParam(query);
+            Matcher matcher = QUERY_PATTERN.matcher(urlDecoderQuery);
+            while (matcher.find()) {
+                String name = matcher.group(1);
+//                String eq = matcher.group(2);
+                String value = matcher.group(3);
+                queryParams.add(name, value);
+            }
+        }
+
+        return queryParams;
+    }
+
+    /**
+     * url decoder
+     * @param value
+     * @return
+     */
+    @SuppressWarnings("deprecation")
+    private static String decodeQueryParam(String value) {
+        try {
+            return URLDecoder.decode(value, "UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+            logger.warn("Could not decode query value [" + value + "] as 'UTF-8'. " +
+                    "Falling back on default encoding: " + ex.getMessage());
+            return URLDecoder.decode(value);
+        }
     }
 
     /**
