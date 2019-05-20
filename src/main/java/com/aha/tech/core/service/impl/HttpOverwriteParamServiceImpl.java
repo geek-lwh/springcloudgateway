@@ -118,21 +118,24 @@ public class HttpOverwriteParamServiceImpl implements OverwriteParamService {
                 query.append(rename).append(Separator.EQUAL_SIGN_MARK).append(pair.getValue());
                 query.append(Separator.AND_MARK);
             }
-
-            if (query.length() > 0) {
-                query.deleteCharAt(query.length() - 1);
-                URI newUri = UriComponentsBuilder.fromUri(uri)
-                        .replaceQuery(query.toString())
-                        .replaceQueryParam(USER_ID_FIELD, requestAddParamsDto.getUserId())
-                        .build(true)
-                        .toUri();
-
-                logger.info("兼容java服务的get请求,原始参数 : {},新的请求路径 : {} ", rawQuery, newUri);
-                return newUri;
-            }
         }
 
-        URI newURI = UriComponentsBuilder.fromUri(request.getURI())
+        if (query.length() > 0) {
+            query.deleteCharAt(query.length() - 1);
+            uri = UriComponentsBuilder.fromUri(uri)
+                    .replaceQuery(query.toString())
+                    .build(true)
+                    .toUri();
+
+            logger.info("兼容java服务的get请求,原始参数 : {},新的请求路径 : {} ", rawQuery, uri);
+        }
+
+        if (requestAddParamsDto == null || requestAddParamsDto.getUserId() == null) {
+            logger.warn("需要添加的参数为空");
+            return uri;
+        }
+
+        URI newURI = UriComponentsBuilder.fromUri(uri)
                 .replaceQueryParam(USER_ID_FIELD, requestAddParamsDto.getUserId())
                 .build(true)
                 .toUri();

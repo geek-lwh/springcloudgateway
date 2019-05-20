@@ -42,6 +42,12 @@ public class ExchangeSupport {
     }
 
     public static RequestAddParamsDto getRequestAddParamsDto(ServerWebExchange exchange) {
-        return (RequestAddParamsDto) exchange.getAttributes().getOrDefault(GATEWAY_REQUEST_ADD_PARAMS_ATTR, null);
+        RequestAddParamsDto requestAddParamsDto = (RequestAddParamsDto) exchange.getAttributes().getOrDefault(GATEWAY_REQUEST_ADD_PARAMS_ATTR, null);
+        if (requestAddParamsDto == null) {
+            requestAddParamsDto = new RequestAddParamsDto();
+            requestAddParamsDto.setUserId(null);
+        }
+
+        return requestAddParamsDto;
     }
 }
