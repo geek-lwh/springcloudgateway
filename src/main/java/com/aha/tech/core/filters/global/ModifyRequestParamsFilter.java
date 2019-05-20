@@ -50,7 +50,6 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         logger.debug("开始进入修改GET|POST请求参数过滤器");
 
-//        Boolean isSkipAuth = ExchangeSupport.getIsSkipAuth(exchange);
         ServerHttpRequest serverHttpRequest = exchange.getRequest();
         MediaType mediaType = serverHttpRequest.getHeaders().getContentType();
 
@@ -60,33 +59,24 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
         String cacheBody = cacheRequestEntity.getRequestBody();
 
         RequestAddParamsDto requestAddParamsDto = ExchangeSupport.getRequestAddParamsDto(exchange);
-//        if (requestAddParamsDto == null) {
-//            String errorMsg = String.format("缺少需要在网关添加的参数");
-//            return Mono.defer(() -> {
-//                ResponseVo rpcResponse = ResponseVo.defaultFailureResponseVo();
-//                rpcResponse.setMessage("request add params attr is empty !");
-//                return WriteResponseSupport.shortCircuit(exchange, rpcResponse, errorMsg);
-//            });
-//        }
 
-        // 表单提交 处理url,不处理body
         URI newUri = httpOverwriteParamService.modifyQueryParams(requestAddParamsDto, serverHttpRequest, language);
         String newBody = cacheBody;
-        Boolean hasBody = httpMethod.equals(HttpMethod.POST) || httpMethod.equals(HttpMethod.PUT);
-        if (hasBody && mediaType.isCompatibleWith(MediaType.APPLICATION_JSON_UTF8)) {
+        Boolean needAddBodyParams = httpMethod.equals(HttpMethod.POST) || httpMethod.equals(HttpMethod.PUT);
+        if (needAddBodyParams && mediaType.isCompatibleWith(MediaType.APPLICATION_JSON_UTF8)) {
             Long userId = requestAddParamsDto.getUserId();
             Map<String, Object> map = Maps.newHashMap();
-            if (StringUtils.isBlank(newBody)) {
-                map.put(USER_ID_FIELD, userId);
-            } else {
+            if (StringUtils.isNotBlank(newBody)) {
                 map = JSON.parseObject(newBody, Map.class);
-                map.put(USER_ID_FIELD, userId);
             }
 
+            map.put(USER_ID_FIELD, userId);
             newBody = JSON.toJSONString(map);
+
+            return httpOverwriteParamService.rebuildRequestBody(newBody, chain, exchange, newUri);
         }
 
-        return httpOverwriteParamService.rebuildRequestBody(newBody, chain, exchange, newUri);
+        return chain.filter(exchange);
     }
 
 }

@@ -56,7 +56,6 @@ public class CopyBodyFilter implements GlobalFilter, Ordered {
                     .doOnNext(bytes -> {
                         String body = new String(bytes, StandardCharsets.UTF_8);
                         if (bytes.length > 0 && mediaType.isCompatibleWith(MediaType.APPLICATION_JSON_UTF8)) {
-//                        body = new String(bytes, StandardCharsets.UTF_8);
                             body = JSON.parseObject(body).toJSONString();
                         }
                         CacheRequestEntity cacheRequestEntity = new CacheRequestEntity();
