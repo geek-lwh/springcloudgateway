@@ -71,7 +71,7 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
 
         // 表单提交 处理url,不处理body
         URI newUri = httpOverwriteParamService.modifyQueryParams(requestAddParamsDto, serverHttpRequest, language);
-
+        String newBody = cacheBody;
         Boolean hasBody = httpMethod.equals(HttpMethod.POST) || httpMethod.equals(HttpMethod.PUT);
         if (hasBody && mediaType.isCompatibleWith(MediaType.APPLICATION_JSON_UTF8)) {
             Long userId = requestAddParamsDto.getUserId();
@@ -82,10 +82,11 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
                 map = JSON.parseObject(cacheRequestEntity.getRequestBody(), Map.class);
                 map.put(USER_ID_FIELD, userId);
             }
-            cacheBody = JSON.toJSONString(map);
+
+            newBody = JSON.toJSONString(map);
         }
 
-        return httpOverwriteParamService.rebuildRequestBody(cacheBody, chain, exchange, newUri);
+        return httpOverwriteParamService.rebuildRequestBody(newBody, chain, exchange, newUri);
     }
 
 }
