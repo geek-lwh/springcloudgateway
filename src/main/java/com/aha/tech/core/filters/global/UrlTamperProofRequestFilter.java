@@ -78,7 +78,7 @@ public class UrlTamperProofRequestFilter implements GlobalFilter, Ordered {
      * @param rawPath
      * @return
      */
-    public boolean urlTamperProof(TamperProofEntity tamperProofEntity, String rawQuery, String rawPath) {
+    private boolean urlTamperProof(TamperProofEntity tamperProofEntity, String rawQuery, String rawPath) {
         if (!isEnable) {
             return Boolean.TRUE;
         }
