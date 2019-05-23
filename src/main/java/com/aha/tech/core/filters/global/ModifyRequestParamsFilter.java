@@ -61,19 +61,16 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
         RequestAddParamsDto requestAddParamsDto = ExchangeSupport.getRequestAddParamsDto(exchange);
 
         URI newUri = httpOverwriteParamService.modifyQueryParams(requestAddParamsDto, serverHttpRequest, language);
-        String newBody = cacheBody;
         Boolean needAddBodyParams = httpMethod.equals(HttpMethod.POST) || httpMethod.equals(HttpMethod.PUT);
         if (needAddBodyParams && mediaType.isCompatibleWith(MediaType.APPLICATION_JSON_UTF8)) {
             Long userId = requestAddParamsDto.getUserId();
             Map<String, Object> map = Maps.newHashMap();
-            if (StringUtils.isNotBlank(newBody)) {
-                map = JSON.parseObject(newBody, Map.class);
+            if (StringUtils.isNotBlank(cacheBody)) {
+                map = JSON.parseObject(cacheBody, Map.class);
             }
 
             map.put(USER_ID_FIELD, userId);
-            newBody = JSON.toJSONString(map);
-
-            return httpOverwriteParamService.rebuildRequestBody(newBody, chain, exchange, newUri);
+            return httpOverwriteParamService.rebuildRequestBody(JSON.toJSONString(map), chain, exchange, newUri);
         }
 
         return chain.filter(exchange);

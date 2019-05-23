@@ -2,7 +2,6 @@ package com.aha.tech.core.filters.global;
 
 import com.aha.tech.core.model.entity.CacheRequestEntity;
 import com.aha.tech.core.support.ExchangeSupport;
-import com.alibaba.fastjson.JSON;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -55,9 +54,7 @@ public class CopyBodyFilter implements GlobalFilter, Ordered {
                     .defaultIfEmpty(new byte[0])
                     .doOnNext(bytes -> {
                         String body = new String(bytes, StandardCharsets.UTF_8);
-                        if (bytes.length > 0 && mediaType.isCompatibleWith(MediaType.APPLICATION_JSON_UTF8)) {
-                            body = JSON.parseObject(body).toJSONString();
-                        }
+                        logger.debug("原始 body : {} ", body);
                         CacheRequestEntity cacheRequestEntity = new CacheRequestEntity();
                         cacheRequestEntity.setRequestBody(body);
                         cacheRequestEntity.setRequestLine(exchange.getRequest().getURI());
