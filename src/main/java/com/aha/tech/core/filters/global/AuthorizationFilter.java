@@ -42,6 +42,7 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
             httpRequestHandlerService.authorize(exchange);
         } catch (GatewayException ge) {
             return Mono.defer(() -> {
+                logger.error(ge.getMessage(), ge);
                 String errorMsg = String.format("网关权限校验出现异常,错误信息 : %s", ge.getMessage());
                 ResponseVo rpcResponse = new ResponseVo(ge.getCode(), errorMsg);
                 return WriteResponseSupport.shortCircuit(exchange, rpcResponse, errorMsg);

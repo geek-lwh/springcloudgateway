@@ -28,7 +28,7 @@ public class ExchangeSupport {
     }
 
     public static CacheRequestEntity getCacheBody(ServerWebExchange exchange) {
-        CacheRequestEntity cacheRequestEntity = (CacheRequestEntity) exchange.getAttributes().get(GATEWAY_REQUEST_CACHED_REQUEST_BODY_ATTR);
+        CacheRequestEntity cacheRequestEntity = (CacheRequestEntity) exchange.getAttributes().getOrDefault(GATEWAY_REQUEST_CACHED_REQUEST_BODY_ATTR, new CacheRequestEntity());
 
         return cacheRequestEntity;
     }
