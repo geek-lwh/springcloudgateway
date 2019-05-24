@@ -9,7 +9,7 @@ PROFILE="spring.profiles.active="$2
 
 d_start() {
     echo "profile ======> ${PROFILE}"
-    nohup ${JAVA_HOME}/bin/java -D${PROFILE} -jar -Xms1024m -Xmx1024m ${MAIN_CLASS}  >/dev/null 2>&1 &
+    nohup ${JAVA_HOME}/bin/java -D${PROFILE} -jar -Xms256m -Xmx512m ${MAIN_CLASS}  >/dev/null 2>&1 &
 }
 
 d_stop() {

@@ -73,7 +73,8 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
             return httpOverwriteParamService.rebuildRequestBody(JSON.toJSONString(map), chain, exchange, newUri);
         }
 
-        return chain.filter(exchange);
+        ServerHttpRequest request = exchange.getRequest().mutate().uri(newUri).build();
+        return chain.filter(exchange.mutate().request(request).build());
     }
 
 }

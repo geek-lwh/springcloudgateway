@@ -89,7 +89,7 @@ public class UrlTamperProofRequestFilter implements GlobalFilter, Ordered {
         String version = tamperProofEntity.getVersion();
         MultiValueMap<String, String> queryParams = URISupport.initQueryParams(rawQuery);
         String sortQueryParams = URISupport.queryParamsSort(queryParams);
-
+        logger.debug("sort query params : {}", sortQueryParams);
         return httpRequestHandlerService.urlTamperProof(version, timestamp, signature, rawPath, sortQueryParams);
     }
 
