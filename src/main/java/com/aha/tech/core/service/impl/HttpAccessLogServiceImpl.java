@@ -3,6 +3,7 @@ package com.aha.tech.core.service.impl;
 import com.aha.tech.commons.symbol.Separator;
 import com.aha.tech.commons.utils.DateUtil;
 import com.aha.tech.core.service.AccessLogService;
+import com.aha.tech.core.support.ExchangeSupport;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
@@ -99,7 +100,7 @@ public class HttpAccessLogServiceImpl implements AccessLogService {
             ServerHttpRequest serverHttpRequest = serverWebExchange.getRequest();
             HttpHeaders httpHeaders = serverHttpRequest.getHeaders();
             StringBuilder sb = new StringBuilder();
-            String url = serverHttpRequest.getURI().toString();
+            String url = ExchangeSupport.getRequestPath(serverWebExchange, serverHttpRequest.getURI().toString());
 
             sb.append("错误 : ");
             String error = serverWebExchange.getAttributes().getOrDefault(ServerWebExchangeUtils.HYSTRIX_EXECUTION_EXCEPTION_ATTR, errorMsg).toString();
@@ -116,7 +117,6 @@ public class HttpAccessLogServiceImpl implements AccessLogService {
             sb.append("请求体 : ");
             String body = serverWebExchange.getAttributes().getOrDefault(GATEWAY_REQUEST_CACHED_REQUEST_BODY_ATTR, Strings.EMPTY).toString();
             sb.append(body);
-
 
             logger.error("{}", sb);
         }, writeLoggingThreadPool);

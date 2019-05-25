@@ -27,6 +27,10 @@ public class ExchangeSupport {
         exchange.getAttributes().put(key, value);
     }
 
+    public static String getRequestPath(ServerWebExchange exchange, String defaultPath) {
+        return (String) exchange.getAttributes().getOrDefault(GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR, defaultPath);
+    }
+
     public static CacheRequestEntity getCacheBody(ServerWebExchange exchange) {
         CacheRequestEntity cacheRequestEntity = (CacheRequestEntity) exchange.getAttributes().getOrDefault(GATEWAY_REQUEST_CACHED_REQUEST_BODY_ATTR, new CacheRequestEntity());
 
