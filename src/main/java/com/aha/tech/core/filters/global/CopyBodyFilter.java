@@ -10,6 +10,7 @@ import org.springframework.core.Ordered;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
@@ -41,6 +42,11 @@ public class CopyBodyFilter implements GlobalFilter, Ordered {
         ServerHttpRequest request = exchange.getRequest();
         HttpHeaders httpHeaders = request.getHeaders();
         HttpMethod httpMethod = request.getMethod();
+        MediaType mediaType = httpHeaders.getContentType();
+        if (mediaType.isCompatibleWith(MediaType.APPLICATION_FORM_URLENCODED)) {
+            return chain.filter(exchange);
+        }
+
         if (httpMethod.equals(HttpMethod.POST) || httpMethod.equals(HttpMethod.PUT)) {
             return DataBufferUtils.join(request.getBody())
                     .map(dataBuffer -> {
