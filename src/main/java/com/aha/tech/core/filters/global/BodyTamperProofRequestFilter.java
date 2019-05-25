@@ -15,7 +15,6 @@ import org.springframework.core.Ordered;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
@@ -65,12 +64,6 @@ public class BodyTamperProofRequestFilter implements GlobalFilter, Ordered {
         }
 
         HttpHeaders httpHeaders = request.getHeaders();
-        MediaType mediaType = httpHeaders.getContentType();
-        if (mediaType != null && mediaType.isCompatibleWith(MediaType.APPLICATION_FORM_URLENCODED)) {
-            logger.info("media type不是json : {}", mediaType);
-            return chain.filter(exchange);
-        }
-
         TamperProofEntity tamperProofEntity = new TamperProofEntity(httpHeaders, uri);
         String body = cacheRequestEntity.getRequestBody();
         if (!bodyTamperProof(body, tamperProofEntity)) {

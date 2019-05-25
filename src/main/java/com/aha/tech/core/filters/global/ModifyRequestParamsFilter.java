@@ -60,6 +60,7 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
 
         RequestAddParamsDto requestAddParamsDto = ExchangeSupport.getRequestAddParamsDto(exchange);
 
+        // post put 并且是 application/json;
         URI newUri = httpOverwriteParamService.modifyQueryParams(requestAddParamsDto, serverHttpRequest, language);
         Boolean needAddBodyParams = httpMethod.equals(HttpMethod.POST) || httpMethod.equals(HttpMethod.PUT);
         if (needAddBodyParams && mediaType.isCompatibleWith(MediaType.APPLICATION_JSON_UTF8)) {
@@ -71,6 +72,8 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
 
             map.put(USER_ID_FIELD, userId);
             return httpOverwriteParamService.rebuildRequestBody(JSON.toJSONString(map), chain, exchange, newUri);
+        } else if (needAddBodyParams && mediaType.isCompatibleWith(MediaType.APPLICATION_FORM_URLENCODED)) {
+            return httpOverwriteParamService.rebuildRequestBody(cacheBody, chain, exchange, newUri);
         }
 
         ServerHttpRequest request = exchange.getRequest().mutate().uri(newUri).build();
