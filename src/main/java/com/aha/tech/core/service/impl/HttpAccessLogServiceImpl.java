@@ -131,7 +131,7 @@ public class HttpAccessLogServiceImpl implements AccessLogService {
     private String getCookieOrDefault(MultiValueMap<String, HttpCookie> cookieMultiValueMap, String field) {
         HttpCookie source = cookieMultiValueMap.getFirst(field);
         if (source == null) {
-            return "-";
+            return Separator.MID_LINE_MARK;
         }
 
         return source.getValue();
@@ -146,7 +146,7 @@ public class HttpAccessLogServiceImpl implements AccessLogService {
     private String getHeaderOrDefault(HttpHeaders httpHeaders, String field) {
         String source = httpHeaders.getFirst(field);
         if (StringUtils.isBlank(source)) {
-            return "-";
+            return Separator.MID_LINE_MARK;
         }
 
         return source;
