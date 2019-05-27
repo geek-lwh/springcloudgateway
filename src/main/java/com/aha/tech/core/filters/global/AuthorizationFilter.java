@@ -1,10 +1,11 @@
 package com.aha.tech.core.filters.global;
 
 import com.aha.tech.core.constant.FilterProcessOrderedConstant;
+import com.aha.tech.core.exception.AuthorizationFailedException;
 import com.aha.tech.core.exception.GatewayException;
 import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.RequestHandlerService;
-import com.aha.tech.core.support.WriteResponseSupport;
+import com.aha.tech.core.support.IOResponseSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -42,10 +43,9 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
             httpRequestHandlerService.authorize(exchange);
         } catch (GatewayException ge) {
             return Mono.defer(() -> {
-                logger.error(ge.getMessage(), ge);
                 String errorMsg = String.format("网关权限校验出现异常,错误信息 : %s", ge.getMessage());
                 ResponseVo rpcResponse = new ResponseVo(ge.getCode(), errorMsg);
-                return WriteResponseSupport.shortCircuit(exchange, rpcResponse, errorMsg);
+                return IOResponseSupport.write(exchange, rpcResponse, new AuthorizationFailedException(errorMsg));
             });
         }
 

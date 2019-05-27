@@ -1,7 +1,8 @@
 package com.aha.tech.core.filters.normal;
 
+import com.aha.tech.core.exception.GatewayException;
 import com.aha.tech.core.model.vo.ResponseVo;
-import com.aha.tech.core.support.WriteResponseSupport;
+import com.aha.tech.core.support.IOResponseSupport;
 import com.netflix.hystrix.HystrixCommandGroupKey;
 import com.netflix.hystrix.HystrixCommandKey;
 import com.netflix.hystrix.HystrixObservableCommand;
@@ -93,20 +94,21 @@ public class FallbackGatewayFilterFactory extends AbstractGatewayFilterFactory<F
                     logger.error(e.getMessage(), e);
                     String error = exchange.getAttributes().getOrDefault(ServerWebExchangeUtils.HYSTRIX_EXECUTION_EXCEPTION_ATTR, e.getMessage()).toString();
                     String errorMsg = String.format("HystrixRuntimeExceptionType : %s,错误信息 : %s", failureType, error);
+
                     switch (failureType) {
                         case TIMEOUT:
                             return Mono.defer(() -> {
                                 logger.error("降级出现超时");
                                 ResponseVo responseVo = ResponseVo.defaultFailureResponseVo();
                                 responseVo.setMessage(errorMsg);
-                                return WriteResponseSupport.shortCircuit(exchange, responseVo, errorMsg);
+                                return IOResponseSupport.write(exchange, responseVo, new GatewayException(throwable));
                             });
 
                         case COMMAND_EXCEPTION: {
                             return Mono.defer(() -> {
                                 ResponseVo responseVo = ResponseVo.defaultFailureResponseVo();
                                 responseVo.setMessage(errorMsg);
-                                return WriteResponseSupport.shortCircuit(exchange, responseVo, errorMsg);
+                                return IOResponseSupport.write(exchange, responseVo, new GatewayException(throwable));
                             });
                         }
 
