@@ -4,7 +4,7 @@ import com.aha.tech.core.exception.LimiterException;
 import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.LimiterService;
 import com.aha.tech.core.service.RequestHandlerService;
-import com.aha.tech.core.support.IOResponseSupport;
+import com.aha.tech.core.support.ResponseSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -66,7 +66,7 @@ public class IpRateLimiterFilter implements GlobalFilter, Ordered {
 
         final ResponseVo responseVo = ResponseVo.defaultFailureResponseVo();
         responseVo.setMessage(IP_RATE_LIMITER_ERROR_MSG);
-        return Mono.defer(() -> IOResponseSupport.write(exchange, responseVo, new LimiterException(IP_RATE_LIMITER_ERROR_MSG)));
+        return Mono.defer(() -> ResponseSupport.write(exchange, responseVo, new LimiterException(IP_RATE_LIMITER_ERROR_MSG)));
     }
 
 }

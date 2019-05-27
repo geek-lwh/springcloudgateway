@@ -25,9 +25,9 @@ import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.s
  *
  * 返回response信息辅助类
  */
-public class IOResponseSupport {
+public class ResponseSupport {
 
-    private static final Logger logger = LoggerFactory.getLogger(IOResponseSupport.class);
+    private static final Logger logger = LoggerFactory.getLogger(ResponseSupport.class);
 
     /**
      * 写入response body

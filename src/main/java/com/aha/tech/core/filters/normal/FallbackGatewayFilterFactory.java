@@ -2,7 +2,7 @@ package com.aha.tech.core.filters.normal;
 
 import com.aha.tech.core.exception.GatewayException;
 import com.aha.tech.core.model.vo.ResponseVo;
-import com.aha.tech.core.support.IOResponseSupport;
+import com.aha.tech.core.support.ResponseSupport;
 import com.netflix.hystrix.HystrixCommandGroupKey;
 import com.netflix.hystrix.HystrixCommandKey;
 import com.netflix.hystrix.HystrixObservableCommand;
@@ -101,14 +101,14 @@ public class FallbackGatewayFilterFactory extends AbstractGatewayFilterFactory<F
                                 logger.error("降级出现超时");
                                 ResponseVo responseVo = ResponseVo.defaultFailureResponseVo();
                                 responseVo.setMessage(errorMsg);
-                                return IOResponseSupport.write(exchange, responseVo, new GatewayException(throwable));
+                                return ResponseSupport.write(exchange, responseVo, new GatewayException(throwable));
                             });
 
                         case COMMAND_EXCEPTION: {
                             return Mono.defer(() -> {
                                 ResponseVo responseVo = ResponseVo.defaultFailureResponseVo();
                                 responseVo.setMessage(errorMsg);
-                                return IOResponseSupport.write(exchange, responseVo, new GatewayException(throwable));
+                                return ResponseSupport.write(exchange, responseVo, new GatewayException(throwable));
                             });
                         }
 

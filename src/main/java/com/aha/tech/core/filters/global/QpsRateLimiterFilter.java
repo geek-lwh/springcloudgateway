@@ -3,7 +3,7 @@
 //import com.aha.tech.core.exception.GatewayException;
 //import com.aha.tech.core.model.vo.ResponseVo;
 //import com.aha.tech.core.service.LimiterService;
-//import com.aha.tech.core.support.IOResponseSupport;
+//import com.aha.tech.core.support.ResponseSupport;
 //import org.slf4j.Logger;
 //import org.slf4j.LoggerFactory;
 //import org.springframework.beans.factory.annotation.Value;
@@ -60,14 +60,14 @@
 //        } catch (GatewayException e) {
 //            logger.error("qps限流出现异常", e);
 //            final ResponseVo responseVo = new ResponseVo(e.getCode(), e.getMessage());
-//            return Mono.defer(() -> IOResponseSupport.write(exchange, responseVo, HttpStatus.BAD_GATEWAY));
+//            return Mono.defer(() -> ResponseSupport.write(exchange, responseVo, HttpStatus.BAD_GATEWAY));
 //        }
 //
 //        logger.error("没有通过qps限流");
 //
 //        ResponseVo responseVo = ResponseVo.defaultFailureResponseVo();
 //        responseVo.setMessage(QPS_RATE_LIMITER_ERROR_MSG);
-//        return Mono.defer(() -> IOResponseSupport.write(exchange,responseVo,HttpStatus.TOO_MANY_REQUESTS));
+//        return Mono.defer(() -> ResponseSupport.write(exchange,responseVo,HttpStatus.TOO_MANY_REQUESTS));
 //    }
 //
 //}
