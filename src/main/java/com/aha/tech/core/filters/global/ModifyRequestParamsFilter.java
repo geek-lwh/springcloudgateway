@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -51,7 +52,8 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
         logger.debug("开始进入修改GET|POST请求参数过滤器");
 
         ServerHttpRequest serverHttpRequest = exchange.getRequest();
-        MediaType mediaType = serverHttpRequest.getHeaders().getContentType();
+        HttpHeaders httpHeaders = serverHttpRequest.getHeaders();
+        MediaType mediaType = httpHeaders.getContentType();
 
         HttpMethod httpMethod = serverHttpRequest.getMethod();
         String language = ExchangeSupport.getRequestLanguage(exchange);
@@ -60,10 +62,11 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
 
         RequestAddParamsDto requestAddParamsDto = ExchangeSupport.getRequestAddParamsDto(exchange);
 
-        // post put 并且是 application/json;
         URI newUri = httpOverwriteParamService.modifyQueryParams(requestAddParamsDto, serverHttpRequest, language);
         Boolean needAddBodyParams = httpMethod.equals(HttpMethod.POST) || httpMethod.equals(HttpMethod.PUT);
-        if (needAddBodyParams && mediaType.isCompatibleWith(MediaType.APPLICATION_JSON_UTF8)) {
+        if (needAddBodyParams && mediaType.isCompatibleWith(MediaType.APPLICATION_FORM_URLENCODED)) {
+            return httpOverwriteParamService.rebuildRequestBody(cacheBody, chain, exchange, newUri);
+        } else if (needAddBodyParams && mediaType.isCompatibleWith(MediaType.APPLICATION_JSON_UTF8)) {
             Long userId = requestAddParamsDto.getUserId();
             Map<String, Object> map = Maps.newHashMap();
             if (StringUtils.isNotBlank(cacheBody)) {
@@ -72,8 +75,6 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
 
             map.put(USER_ID_FIELD, userId);
             return httpOverwriteParamService.rebuildRequestBody(JSON.toJSONString(map), chain, exchange, newUri);
-        } else if (needAddBodyParams && mediaType.isCompatibleWith(MediaType.APPLICATION_FORM_URLENCODED)) {
-            return httpOverwriteParamService.rebuildRequestBody(cacheBody, chain, exchange, newUri);
         }
 
         ServerHttpRequest request = exchange.getRequest().mutate().uri(newUri).build();
