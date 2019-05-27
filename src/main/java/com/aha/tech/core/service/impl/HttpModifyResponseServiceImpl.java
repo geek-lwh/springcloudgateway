@@ -68,10 +68,7 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
                 ResponseAdapter responseAdapter = m.new ResponseAdapter(body, httpHeaders);
                 DefaultClientResponse clientResponse = new DefaultClientResponse(responseAdapter, ExchangeStrategies.withDefaults());
 
-                Mono modifiedBody = clientResponse.bodyToMono(String.class).flatMap(originalBody -> {
-                    logger.info("response body : {}", originalBody);
-                    return Mono.just(originalBody);
-                });
+                Mono modifiedBody = clientResponse.bodyToMono(String.class).flatMap(originalBody -> Mono.just(originalBody));
 
                 BodyInserter bodyInserter = BodyInserters.fromPublisher(modifiedBody, String.class);
                 CachedBodyOutputMessage outputMessage = new CachedBodyOutputMessage(serverWebExchange, oldResponse.getHeaders());
