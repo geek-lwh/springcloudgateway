@@ -111,7 +111,7 @@ public class HttpAccessLogServiceImpl implements AccessLogService {
             sb.append(System.lineSeparator());
 
             sb.append("请求头 : ");
-            httpHeaders.forEach((key, value) -> sb.append(key).append(Separator.EQUAL_SIGN_MARK).append(value).append(" "));
+            httpHeaders.forEach((key, value) -> sb.append(key).append(Separator.COLON_MARK).append(StringUtils.join(value)));
             sb.append(System.lineSeparator());
 
             sb.append("请求体 : ");
