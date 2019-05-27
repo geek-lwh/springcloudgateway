@@ -50,7 +50,7 @@ public class CopyBodyFilter implements GlobalFilter, Ordered {
                     })
                     .defaultIfEmpty(new byte[0])
                     .doOnNext(bytes -> {
-                        String body = new String(bytes, StandardCharsets.UTF_8);
+                        String body = new String(bytes, StandardCharsets.UTF_8).trim();
                         logger.debug("原始 body : {} ", body);
                         CacheRequestEntity cacheRequestEntity = new CacheRequestEntity();
                         cacheRequestEntity.setRequestBody(body);
