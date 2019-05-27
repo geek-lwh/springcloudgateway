@@ -64,9 +64,15 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
 
         URI newUri = httpOverwriteParamService.modifyQueryParams(requestAddParamsDto, serverHttpRequest, language);
         Boolean needAddBodyParams = httpMethod.equals(HttpMethod.POST) || httpMethod.equals(HttpMethod.PUT);
-        if (needAddBodyParams && mediaType.isCompatibleWith(MediaType.APPLICATION_FORM_URLENCODED)) {
-            return httpOverwriteParamService.rebuildRequestBody(cacheBody, chain, exchange, newUri);
-        } else if (needAddBodyParams && mediaType.isCompatibleWith(MediaType.APPLICATION_JSON_UTF8)) {
+        if (!needAddBodyParams) {
+            ServerHttpRequest request = exchange.getRequest().mutate().uri(newUri).build();
+            return chain.filter(exchange.mutate().request(request).build());
+        }
+
+        // MediaType.APPLICATION_FORM_URLENCODED 不转json
+        String newBodyStr = cacheBody;
+
+        if (mediaType.isCompatibleWith(MediaType.APPLICATION_JSON_UTF8)) {
             Long userId = requestAddParamsDto.getUserId();
             Map<String, Object> map = Maps.newHashMap();
             if (StringUtils.isNotBlank(cacheBody)) {
@@ -74,11 +80,10 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
             }
 
             map.put(USER_ID_FIELD, userId);
-            return httpOverwriteParamService.rebuildRequestBody(JSON.toJSONString(map), chain, exchange, newUri);
+            newBodyStr = JSON.toJSONString(map);
         }
 
-        ServerHttpRequest request = exchange.getRequest().mutate().uri(newUri).build();
-        return chain.filter(exchange.mutate().request(request).build());
+        return httpOverwriteParamService.rebuildRequestBody(newBodyStr, chain, exchange, newUri);
     }
 
 }
