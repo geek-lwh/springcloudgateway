@@ -220,6 +220,7 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
         ServerHttpRequest serverHttpRequest = serverWebExchange.getRequest();
         Boolean isSkipAuth = ExchangeSupport.getIsSkipAuth(serverWebExchange);
         if (isSkipAuth) {
+            logger.info("跳过授权认证 : {}", serverHttpRequest.getURI());
             return Boolean.TRUE;
         }
 

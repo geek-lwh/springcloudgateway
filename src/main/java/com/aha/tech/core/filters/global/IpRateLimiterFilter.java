@@ -56,6 +56,7 @@ public class IpRateLimiterFilter implements GlobalFilter, Ordered {
 
         String rawPath = exchange.getRequest().getURI().getRawPath();
         if (httpRequestHandlerService.isSkipIpLimiter(rawPath)) {
+            logger.info("跳过ip限流策略 : {}", rawPath);
             return chain.filter(exchange);
         }
 
@@ -64,6 +65,7 @@ public class IpRateLimiterFilter implements GlobalFilter, Ordered {
             return chain.filter(exchange);
         }
 
+        logger.warn("ip : {} 限流算法生效", exchange.getRequest().getRemoteAddress().getAddress().getHostAddress());
         final ResponseVo responseVo = ResponseVo.defaultFailureResponseVo();
         responseVo.setMessage(IP_RATE_LIMITER_ERROR_MSG);
         return Mono.defer(() -> ResponseSupport.write(exchange, responseVo, new LimiterException(IP_RATE_LIMITER_ERROR_MSG)));

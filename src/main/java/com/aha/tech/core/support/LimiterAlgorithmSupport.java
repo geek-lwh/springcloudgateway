@@ -18,7 +18,7 @@ import java.util.List;
 /**
  * @Author: luweihong
  * @Date: 2019/3/25
- * 
+ *
  * 限流算法辅助类
  */
 @Component
@@ -59,9 +59,10 @@ public class LimiterAlgorithmSupport {
                 }).map(results -> {
                     boolean allowed = results.get(0) == 1L;
                     Long tokensLeft = results.get(1);
-                    RateLimiter.Response response = new RateLimiter.Response(allowed, getHeaders(replenishRate, burstCapacity, tokensLeft));
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("response: " + response);
+                    HashMap<String, String> responseHeader = getHeaders(replenishRate, burstCapacity, tokensLeft);
+                    RateLimiter.Response response = new RateLimiter.Response(allowed, responseHeader);
+                    if (!allowed) {
+                        logger.warn("ip限流生效 : {}", responseHeader);
                     }
                     return response;
                 });
@@ -75,7 +76,7 @@ public class LimiterAlgorithmSupport {
      * @param tokensLeft
      * @return
      */
-    public static HashMap<String, String> getHeaders(Integer replenishRate, Integer burstCapacity , Long tokensLeft) {
+    public static HashMap<String, String> getHeaders(Integer replenishRate, Integer burstCapacity, Long tokensLeft) {
         HashMap<String, String> headers = new HashMap<>();
         headers.put(REMAINING_HEADER, tokensLeft.toString());
         headers.put(REPLENISH_RATE_HEADER, String.valueOf(replenishRate));
