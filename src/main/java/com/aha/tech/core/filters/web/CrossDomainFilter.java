@@ -1,5 +1,7 @@
 package com.aha.tech.core.filters.web;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
@@ -23,6 +25,8 @@ import static com.aha.tech.core.constant.HeaderFieldConstant.*;
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class CrossDomainFilter implements WebFilter {
 
+    private static final Logger logger = LoggerFactory.getLogger(CrossDomainFilter.class);
+
     @Override
     public Mono<Void> filter(ServerWebExchange serverWebExchange, WebFilterChain webFilterChain) {
         ServerHttpRequest request = serverWebExchange.getRequest();
@@ -36,6 +40,8 @@ public class CrossDomainFilter implements WebFilter {
             response.setStatusCode(HttpStatus.OK);
             return Mono.empty();
         }
+
+        logger.info("接收到请求 {}", request.getURI());
 
         return webFilterChain.filter(serverWebExchange);
     }
