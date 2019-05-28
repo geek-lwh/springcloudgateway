@@ -261,7 +261,7 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
         requestAddParamsDto.setUserId(userVo.getUserId());
         serverWebExchange.getAttributes().put(GATEWAY_REQUEST_ADD_PARAMS_ATTR, requestAddParamsDto);
 
-        return Boolean.TRUE;
+        return authenticationEntity.getVerifyResult();
     }
 
     /**

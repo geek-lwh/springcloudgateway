@@ -41,8 +41,6 @@ public class CrossDomainFilter implements WebFilter {
             return Mono.empty();
         }
 
-        logger.info("接收到请求 {}", request.getURI());
-
         return webFilterChain.filter(serverWebExchange);
     }
 }
