@@ -1,17 +1,14 @@
 package com.aha.tech.core.service.impl;
 
+import com.aha.tech.commons.constants.ResponseConstants;
 import com.aha.tech.core.constant.LanguageConstant;
-import com.aha.tech.core.exception.AuthorizationFailedException;
 import com.aha.tech.core.exception.MissAuthorizationHeaderException;
-import com.aha.tech.core.exception.NoSuchUserNameException;
 import com.aha.tech.core.exception.ParseAuthorizationHeaderException;
-import com.aha.tech.core.model.dto.RequestAddParamsDto;
-import com.aha.tech.core.model.entity.AuthenticationEntity;
+import com.aha.tech.core.model.entity.AuthenticationResultEntity;
 import com.aha.tech.core.model.entity.PairEntity;
 import com.aha.tech.core.model.entity.RouteEntity;
 import com.aha.tech.core.service.*;
 import com.aha.tech.core.support.ExchangeSupport;
-import com.aha.tech.passportserver.facade.model.vo.UserVo;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
@@ -216,12 +213,12 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
      * @return
      */
     @Override
-    public Boolean authorize(ServerWebExchange serverWebExchange) {
+    public AuthenticationResultEntity authorize(ServerWebExchange serverWebExchange) {
         ServerHttpRequest serverHttpRequest = serverWebExchange.getRequest();
         Boolean isSkipAuth = ExchangeSupport.getIsSkipAuth(serverWebExchange);
         if (isSkipAuth) {
             logger.info("跳过授权认证 : {}", serverHttpRequest.getURI());
-            return Boolean.TRUE;
+            return new AuthenticationResultEntity(isSkipAuth);
         }
 
         HttpHeaders requestHeaders = serverHttpRequest.getHeaders();
@@ -229,40 +226,36 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
         PairEntity<String> authorization = parseAuthorizationHeader(requestHeaders);
         String userName = authorization.getFirstEntity();
         String accessToken = authorization.getSecondEntity();
+
         logger.debug("user name : {},access token : {},authorization : {}", userName, accessToken, authorization);
-        return checkPermission(serverWebExchange, userName, accessToken);
+
+        AuthenticationResultEntity authenticationResultEntity = checkPermission(serverWebExchange, userName, accessToken);
+        authenticationResultEntity.setWhiteList(isSkipAuth);
+
+        return authenticationResultEntity;
     }
 
     /**
      * 访问权限校验
-     * @param serverWebExchange
+     * @param swe
      * @param userName
      * @param accessToken
      * @return
      */
-    private Boolean checkPermission(ServerWebExchange serverWebExchange, String userName, String accessToken) {
-        AuthenticationEntity authenticationEntity;
-
+    private AuthenticationResultEntity checkPermission(ServerWebExchange swe, String userName, String accessToken) {
         if (VISITOR.equals(userName)) {
-            authenticationEntity = httpAuthorizationService.verifyVisitorAccessToken(accessToken);
-        } else if (NEED_AUTHORIZATION.equals(userName)) {
-            authenticationEntity = httpAuthorizationService.verifyUser(accessToken);
-        } else {
-            logger.error("无效的user_name : {}", userName);
-            throw new NoSuchUserNameException(String.format("无效的user_name对象 : %s", userName));
+            return httpAuthorizationService.verifyVisitorAccessToken(swe, accessToken);
         }
 
-        RequestAddParamsDto requestAddParamsDto = new RequestAddParamsDto();
-        UserVo userVo = authenticationEntity.getUserVo();
-        if (userVo == null) {
-            logger.error("用户授权信息异常,获取的用户对象为空,access token : {}", accessToken);
-            throw new AuthorizationFailedException();
+        if (NEED_AUTHORIZATION.equals(userName)) {
+            return httpAuthorizationService.verifyUser(swe, accessToken);
         }
 
-        requestAddParamsDto.setUserId(userVo.getUserId());
-        serverWebExchange.getAttributes().put(GATEWAY_REQUEST_ADD_PARAMS_ATTR, requestAddParamsDto);
+        AuthenticationResultEntity authenticationResultEntity = new AuthenticationResultEntity();
+        authenticationResultEntity.setCode(ResponseConstants.FAILURE);
+        authenticationResultEntity.setMessage(String.format("无效的user_name : %s", userName));
 
-        return authenticationEntity.getVerifyResult();
+        return new AuthenticationResultEntity();
     }
 
     /**

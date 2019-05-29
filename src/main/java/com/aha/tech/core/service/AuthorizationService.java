@@ -1,6 +1,7 @@
 package com.aha.tech.core.service;
 
-import com.aha.tech.core.model.entity.AuthenticationEntity;
+import com.aha.tech.core.model.entity.AuthenticationResultEntity;
+import org.springframework.web.server.ServerWebExchange;
 
 /**
  * @Author: luweihong
@@ -10,16 +11,18 @@ public interface AuthorizationService {
 
     /**
      * 校验访客信息
+     * @param swe
      * @param accessToken
      * @return
      */
-    AuthenticationEntity verifyVisitorAccessToken(String accessToken);
+    AuthenticationResultEntity verifyVisitorAccessToken(ServerWebExchange swe, String accessToken);
 
     /**
      * 校验用户信息
+     * @param swe
      * @param accessToken
      * @return
      */
-    AuthenticationEntity verifyUser(String accessToken);
+    AuthenticationResultEntity verifyUser(ServerWebExchange swe, String accessToken);
 
 }

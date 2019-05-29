@@ -1,16 +1,19 @@
 package com.aha.tech.core.service.impl;
 
+import com.aha.tech.commons.constants.ResponseConstants;
 import com.aha.tech.commons.response.RpcResponse;
 import com.aha.tech.core.controller.resource.PassportResource;
-import com.aha.tech.core.model.entity.AuthenticationEntity;
+import com.aha.tech.core.model.dto.RequestAddParamsDto;
+import com.aha.tech.core.model.entity.AuthenticationResultEntity;
 import com.aha.tech.core.service.AuthorizationService;
 import com.aha.tech.passportserver.facade.model.vo.UserVo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ServerWebExchange;
 
-import static com.aha.tech.commons.constants.ResponseConstants.SUCCESS;
+import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_ADD_PARAMS_ATTR;
 import static com.aha.tech.core.constant.HeaderFieldConstant.DEFAULT_X_TOKEN_VALUE;
 
 /**
@@ -28,34 +31,49 @@ public class HttpAuthorizationServiceImpl implements AuthorizationService {
 
     /**
      * 校验访客信息的合法性
+     * @param swe
      * @param accessToken
      * @return
      */
     @Override
-    public AuthenticationEntity verifyVisitorAccessToken(String accessToken) {
+    public AuthenticationResultEntity verifyVisitorAccessToken(ServerWebExchange swe, String accessToken) {
+        AuthenticationResultEntity authenticationResultEntity = new AuthenticationResultEntity();
         Boolean checkTokenValid = accessToken.equals(DEFAULT_X_TOKEN_VALUE);
-        AuthenticationEntity authenticationEntity = new AuthenticationEntity();
-        authenticationEntity.setVerifyResult(checkTokenValid);
-        authenticationEntity.setUserVo(UserVo.anonymousUser());
+        if (!checkTokenValid) {
+            logger.warn("匿名用户令牌不合法, access token : {}", accessToken);
+            authenticationResultEntity.setCode(checkTokenValid ? ResponseConstants.SUCCESS : ResponseConstants.FAILURE);
+            authenticationResultEntity.setMessage("匿名用户令牌不合法");
+        }
 
-        return authenticationEntity;
+        RequestAddParamsDto requestAddParamsDto = new RequestAddParamsDto();
+        requestAddParamsDto.setUserId(UserVo.anonymousUser().getUserId());
+        swe.getAttributes().put(GATEWAY_REQUEST_ADD_PARAMS_ATTR, requestAddParamsDto);
+
+        return authenticationResultEntity;
     }
 
     /**
      * 校验用户信息合法性
+     * @param swe
      * @param accessToken
      * @return
      */
     @Override
-    public AuthenticationEntity verifyUser(String accessToken) {
-        AuthenticationEntity authenticationEntity = new AuthenticationEntity();
+    public AuthenticationResultEntity verifyUser(ServerWebExchange swe, String accessToken) {
+        AuthenticationResultEntity authenticationResultEntity = new AuthenticationResultEntity();
         RpcResponse<UserVo> rpcResponse = passportResource.verify(accessToken);
-        int code = rpcResponse.getCode();
+        Integer code = rpcResponse.getCode();
+        authenticationResultEntity.setMessage(rpcResponse.getMessage());
+        authenticationResultEntity.setCode(code);
+//        authenticationResultEntity.setUserVo(rpcResponse.getData());
 
-        authenticationEntity.setVerifyResult(code == SUCCESS);
-        authenticationEntity.setUserVo(rpcResponse.getData());
+        if (code.equals(ResponseConstants.SUCCESS)) {
+            RequestAddParamsDto requestAddParamsDto = new RequestAddParamsDto();
+            requestAddParamsDto.setUserId(rpcResponse.getData().getUserId());
+            swe.getAttributes().put(GATEWAY_REQUEST_ADD_PARAMS_ATTR, requestAddParamsDto);
+        }
 
-        return authenticationEntity;
+        return authenticationResultEntity;
     }
 
 }

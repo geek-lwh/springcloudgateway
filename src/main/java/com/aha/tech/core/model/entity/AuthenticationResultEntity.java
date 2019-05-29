@@ -1,6 +1,5 @@
 package com.aha.tech.core.model.entity;
 
-import com.aha.tech.passportserver.facade.model.vo.UserVo;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
@@ -10,12 +9,12 @@ import org.apache.commons.lang3.builder.ToStringStyle;
  *
  * 鉴权实体类
  */
-public class AuthenticationEntity {
+public class AuthenticationResultEntity {
 
     /**
      * 授权接口调用结果
      */
-    private UserVo userVo;
+//    private UserVo userVo;
 
     /**
      * basic 用户名
@@ -30,19 +29,31 @@ public class AuthenticationEntity {
     /**
      * 验证结果
      */
-    private Boolean verifyResult;
+    private Integer code;
 
-    public AuthenticationEntity() {
+    /**
+     * 辅助信息
+     */
+    private String message;
+
+    private Boolean isWhiteList;
+
+    public AuthenticationResultEntity() {
         super();
     }
 
-    public UserVo getUserVo() {
-        return userVo;
+    public AuthenticationResultEntity(Boolean isWhiteList) {
+        this.isWhiteList = isWhiteList;
     }
 
-    public void setUserVo(UserVo userVo) {
-        this.userVo = userVo;
-    }
+
+//    public UserVo getUserVo() {
+//        return userVo;
+//    }
+//
+//    public void setUserVo(UserVo userVo) {
+//        this.userVo = userVo;
+//    }
 
     public String getUserName() {
         return userName;
@@ -60,12 +71,28 @@ public class AuthenticationEntity {
         this.password = password;
     }
 
-    public Boolean getVerifyResult() {
-        return verifyResult;
+    public Integer getCode() {
+        return code;
     }
 
-    public void setVerifyResult(Boolean verifyResult) {
-        this.verifyResult = verifyResult;
+    public void setCode(Integer code) {
+        this.code = code;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public Boolean getWhiteList() {
+        return isWhiteList;
+    }
+
+    public void setWhiteList(Boolean whiteList) {
+        isWhiteList = whiteList;
     }
 
     @Override

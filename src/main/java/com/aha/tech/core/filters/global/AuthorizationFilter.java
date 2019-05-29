@@ -1,8 +1,9 @@
 package com.aha.tech.core.filters.global;
 
+import com.aha.tech.commons.constants.ResponseConstants;
 import com.aha.tech.core.constant.FilterProcessOrderedConstant;
 import com.aha.tech.core.exception.AuthorizationFailedException;
-import com.aha.tech.core.exception.GatewayException;
+import com.aha.tech.core.model.entity.AuthenticationResultEntity;
 import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.RequestHandlerService;
 import com.aha.tech.core.support.ResponseSupport;
@@ -39,17 +40,23 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         logger.debug("开始执行权限校验网关过滤器");
-        try {
-            httpRequestHandlerService.authorize(exchange);
-        } catch (GatewayException ge) {
-            return Mono.defer(() -> {
-                String errorMsg = String.format("网关权限校验出现异常,错误信息 : %s", ge.getMessage());
-                ResponseVo rpcResponse = new ResponseVo(ge.getCode(), errorMsg);
-                return ResponseSupport.write(exchange, rpcResponse, new AuthorizationFailedException(errorMsg));
-            });
+        AuthenticationResultEntity authenticationResultEntity = httpRequestHandlerService.authorize(exchange);
+        Boolean isWhiteList = authenticationResultEntity.getWhiteList();
+        if (isWhiteList) {
+            return chain.filter(exchange);
         }
 
-        return chain.filter(exchange);
+        Integer code = authenticationResultEntity.getCode();
+        if (code.equals(ResponseConstants.SUCCESS)) {
+            return chain.filter(exchange);
+        }
+
+        String message = authenticationResultEntity.getMessage();
+        return Mono.defer(() -> {
+            String errorMsg = String.format("网关权限校验出现异常,错误信息 : %s", message);
+            ResponseVo rpcResponse = new ResponseVo(code, errorMsg);
+            return ResponseSupport.write(exchange, rpcResponse, new AuthorizationFailedException(errorMsg));
+        });
     }
 
 }
