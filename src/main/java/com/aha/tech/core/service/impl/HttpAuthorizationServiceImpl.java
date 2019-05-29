@@ -41,10 +41,10 @@ public class HttpAuthorizationServiceImpl implements AuthorizationService {
         Boolean checkTokenValid = accessToken.equals(DEFAULT_X_TOKEN_VALUE);
         if (!checkTokenValid) {
             logger.warn("匿名用户令牌不合法, access token : {}", accessToken);
-            authenticationResultEntity.setCode(checkTokenValid ? ResponseConstants.SUCCESS : ResponseConstants.FAILURE);
             authenticationResultEntity.setMessage("匿名用户令牌不合法");
         }
 
+        authenticationResultEntity.setCode(checkTokenValid ? ResponseConstants.SUCCESS : ResponseConstants.FAILURE);
         RequestAddParamsDto requestAddParamsDto = new RequestAddParamsDto();
         requestAddParamsDto.setUserId(UserVo.anonymousUser().getUserId());
         swe.getAttributes().put(GATEWAY_REQUEST_ADD_PARAMS_ATTR, requestAddParamsDto);

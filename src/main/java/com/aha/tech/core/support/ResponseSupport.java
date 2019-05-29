@@ -48,4 +48,21 @@ public class ResponseSupport {
         return resp.writeWith(Flux.just(buffer));
     }
 
+    /**
+     * 写入response body
+     * @param exchange
+     * @param responseVo
+     * @return
+     */
+    public static Mono<Void> write(ServerWebExchange exchange, ResponseVo responseVo) {
+        logger.warn(responseVo.getMessage());
+        final ServerHttpResponse resp = exchange.getResponse();
+        byte[] bytes = JSON.toJSONString(responseVo).getBytes(StandardCharsets.UTF_8);
+        DataBuffer buffer = resp.bufferFactory().wrap(bytes);
+        resp.getHeaders().setContentLength(buffer.readableByteCount());
+        resp.getHeaders().setContentType(MediaType.APPLICATION_JSON_UTF8);
+        setResponseStatus(exchange, HttpStatus.OK);
+        return resp.writeWith(Flux.just(buffer));
+    }
+
 }

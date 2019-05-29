@@ -2,7 +2,6 @@ package com.aha.tech.core.filters.global;
 
 import com.aha.tech.commons.constants.ResponseConstants;
 import com.aha.tech.core.constant.FilterProcessOrderedConstant;
-import com.aha.tech.core.exception.AuthorizationFailedException;
 import com.aha.tech.core.model.entity.AuthenticationResultEntity;
 import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.RequestHandlerService;
@@ -55,7 +54,7 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
         return Mono.defer(() -> {
             String errorMsg = String.format("网关权限校验出现异常,错误信息 : %s", message);
             ResponseVo rpcResponse = new ResponseVo(code, errorMsg);
-            return ResponseSupport.write(exchange, rpcResponse, new AuthorizationFailedException(errorMsg));
+            return ResponseSupport.write(exchange, rpcResponse);
         });
     }
 
