@@ -72,13 +72,16 @@ public class URISupport {
     public static MultiValueMap<String, String> initQueryParams(String query) {
         MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
         if (org.apache.commons.lang3.StringUtils.isNotBlank(query)) {
-            String urlDecoderQuery = decodeQueryParam(query);
-            Matcher matcher = QUERY_PATTERN.matcher(urlDecoderQuery);
+            Matcher matcher = QUERY_PATTERN.matcher(query);
             while (matcher.find()) {
-                String name = matcher.group(1);
+                String name = decodeQueryParam(matcher.group(1));
 //                String eq = matcher.group(2);
                 String value = matcher.group(3);
-                queryParams.add(name, value);
+                if (org.apache.commons.lang3.StringUtils.isBlank(value)) {
+                    value = Strings.EMPTY;
+                }
+
+                queryParams.add(name, decodeQueryParam(value));
             }
         }
 

@@ -255,7 +255,7 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
         authenticationResultEntity.setCode(ResponseConstants.FAILURE);
         authenticationResultEntity.setMessage(String.format("无效的user_name : %s", userName));
 
-        return new AuthenticationResultEntity();
+        return authenticationResultEntity;
     }
 
     /**
