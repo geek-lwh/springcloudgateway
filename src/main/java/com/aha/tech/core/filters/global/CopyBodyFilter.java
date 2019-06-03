@@ -9,6 +9,7 @@ import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
@@ -39,7 +40,12 @@ public class CopyBodyFilter implements GlobalFilter, Ordered {
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         ServerHttpRequest request = exchange.getRequest();
         HttpMethod httpMethod = request.getMethod();
-
+        MediaType mediaType = request.getHeaders().getContentType();
+        logger.info("mediaType : {}", mediaType);
+        if (mediaType == null) {
+            mediaType = MediaType.APPLICATION_JSON_UTF8;
+            request.getHeaders().setContentType(mediaType);
+        }
         if (httpMethod.equals(HttpMethod.POST) || httpMethod.equals(HttpMethod.PUT)) {
             return DataBufferUtils.join(request.getBody())
                     .map(dataBuffer -> {
