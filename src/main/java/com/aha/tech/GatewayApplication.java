@@ -43,7 +43,8 @@ public class GatewayApplication {
         SpringApplication app = new SpringApplication(GatewayApplication.class);
         try {
             int nThreads = Runtime.getRuntime().availableProcessors();
-            String v = System.getProperty("reactor.netty.ioWorkerCount", String.valueOf(nThreads * 2 + 1));
+//            String v = System.getProperty("reactor.netty.ioWorkerCount", String.valueOf(nThreads * 2 + 1));
+            String v = System.getProperty("reactor.netty.ioWorkerCount", String.valueOf(16));
             System.setProperty("reactor.netty.ioWorkerCount", v);
             ConfigurableApplicationContext configurableApplicationContext = app.run(args);
             Environment env = configurableApplicationContext.getEnvironment();
