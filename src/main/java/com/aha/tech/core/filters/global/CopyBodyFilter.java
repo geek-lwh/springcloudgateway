@@ -42,10 +42,10 @@ public class CopyBodyFilter implements GlobalFilter, Ordered {
         HttpMethod httpMethod = request.getMethod();
         MediaType mediaType = request.getHeaders().getContentType();
         logger.info("mediaType : {}", mediaType);
-        if (mediaType == null) {
-            mediaType = MediaType.APPLICATION_JSON_UTF8;
-            request.getHeaders().setContentType(mediaType);
-        }
+//        if (mediaType == null) {
+//            mediaType = MediaType.APPLICATION_JSON_UTF8;
+//            request.getHeaders().setContentType(mediaType);
+//        }
         if (httpMethod.equals(HttpMethod.POST) || httpMethod.equals(HttpMethod.PUT)) {
             return DataBufferUtils.join(request.getBody())
                     .map(dataBuffer -> {
