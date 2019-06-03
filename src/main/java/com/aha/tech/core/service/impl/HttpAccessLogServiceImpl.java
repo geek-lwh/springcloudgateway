@@ -95,7 +95,7 @@ public class HttpAccessLogServiceImpl implements AccessLogService {
      * @param serverWebExchange
      */
     @Override
-    public void printWhenError(ServerWebExchange serverWebExchange, String errorMsg) {
+    public void printWhenError(ServerWebExchange serverWebExchange, Exception e) {
         CompletableFuture.runAsync(() -> {
             ServerHttpRequest serverHttpRequest = serverWebExchange.getRequest();
             HttpHeaders httpHeaders = serverHttpRequest.getHeaders();
@@ -103,7 +103,7 @@ public class HttpAccessLogServiceImpl implements AccessLogService {
             String url = ExchangeSupport.getRequestPath(serverWebExchange, serverHttpRequest.getURI().toString());
 
             sb.append("错误 : ");
-            String error = serverWebExchange.getAttributes().getOrDefault(ServerWebExchangeUtils.HYSTRIX_EXECUTION_EXCEPTION_ATTR, errorMsg).toString();
+            String error = serverWebExchange.getAttributes().getOrDefault(ServerWebExchangeUtils.HYSTRIX_EXECUTION_EXCEPTION_ATTR, e.getMessage()).toString();
             sb.append(error).append(System.lineSeparator());
 
             // 请求 行
@@ -119,6 +119,7 @@ public class HttpAccessLogServiceImpl implements AccessLogService {
             sb.append(body);
 
             logger.error("{}", sb);
+            logger.error(e.getMessage(), e);
         }, writeLoggingThreadPool);
     }
 

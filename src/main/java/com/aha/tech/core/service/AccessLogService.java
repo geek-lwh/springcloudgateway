@@ -16,6 +16,6 @@ public interface AccessLogService {
      *
      * httpHeaders
      */
-    void printWhenError(ServerWebExchange serverWebExchange, String errorMsg);
+    void printWhenError(ServerWebExchange serverWebExchange, Exception e);
 
 }

@@ -1,6 +1,5 @@
 package com.aha.tech.core.support;
 
-import com.aha.tech.core.exception.GatewayException;
 import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.AccessLogService;
 import com.aha.tech.util.SpringContextUtil;
@@ -35,8 +34,7 @@ public class ResponseSupport {
      * @param responseVo
      * @return
      */
-    public static Mono<Void> write(ServerWebExchange exchange, ResponseVo responseVo, GatewayException e) {
-        logger.error(e.getMessage(), e);
+    public static Mono<Void> write(ServerWebExchange exchange, ResponseVo responseVo, Exception e) {
         final ServerHttpResponse resp = exchange.getResponse();
         byte[] bytes = JSON.toJSONString(responseVo).getBytes(StandardCharsets.UTF_8);
         DataBuffer buffer = resp.bufferFactory().wrap(bytes);
@@ -44,7 +42,7 @@ public class ResponseSupport {
         resp.getHeaders().setContentType(MediaType.APPLICATION_JSON_UTF8);
         setResponseStatus(exchange, HttpStatus.OK);
         AccessLogService httpAccessLogService = (AccessLogService) SpringContextUtil.getBean("httpAccessLogService");
-        httpAccessLogService.printWhenError(exchange, e.getMessage());
+        httpAccessLogService.printWhenError(exchange, e);
         return resp.writeWith(Flux.just(buffer));
     }
 
