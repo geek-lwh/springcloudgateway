@@ -1,6 +1,7 @@
 package com.aha.tech.core.service.impl;
 
 import com.aha.tech.commons.constants.ResponseConstants;
+import com.aha.tech.commons.utils.DateUtil;
 import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.ModifyResponseService;
 import com.alibaba.fastjson.JSON;
@@ -18,6 +19,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.codec.ServerCodecConfigurer;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.http.server.reactive.ServerHttpResponseDecorator;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserter;
 import org.springframework.web.reactive.function.BodyInserters;
@@ -25,6 +27,9 @@ import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import javax.annotation.Resource;
+import java.util.concurrent.CompletableFuture;
 
 import static com.aha.tech.core.constant.HeaderFieldConstant.*;
 import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.ORIGINAL_RESPONSE_CONTENT_TYPE_ATTR;
@@ -37,6 +42,9 @@ import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.O
 public class HttpModifyResponseServiceImpl implements ModifyResponseService {
 
     private static final Logger logger = LoggerFactory.getLogger(HttpModifyResponseServiceImpl.class);
+
+    @Resource
+    private ThreadPoolTaskExecutor writeLoggingThreadPool;
 
     /**
      * 修改返回体
@@ -58,11 +66,13 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
                 DefaultClientResponse clientResponse = new DefaultClientResponse(responseAdapter, ExchangeStrategies.withDefaults());
 
                 Mono modifiedBody = clientResponse.bodyToMono(String.class).flatMap(originalBody -> {
-                    ResponseVo responseVo = JSON.parseObject(originalBody, ResponseVo.class);
-                    int code = responseVo.getCode();
-                    if (code != ResponseConstants.SUCCESS) {
-                        logger.warn("状态码非0 {}", responseVo);
-                    }
+                    CompletableFuture.runAsync(() -> {
+                        ResponseVo responseVo = JSON.parseObject(originalBody, ResponseVo.class);
+                        int code = responseVo.getCode();
+                        if (code != ResponseConstants.SUCCESS) {
+                            logger.warn("{} 异常状态码 {}", DateUtil.currentDateByDefaultFormat(), responseVo);
+                        }
+                    }, writeLoggingThreadPool);
                     return Mono.just(originalBody);
                 });
 
