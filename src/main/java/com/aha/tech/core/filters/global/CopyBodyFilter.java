@@ -9,7 +9,6 @@ import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
@@ -40,12 +39,10 @@ public class CopyBodyFilter implements GlobalFilter, Ordered {
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         ServerHttpRequest request = exchange.getRequest();
         HttpMethod httpMethod = request.getMethod();
-        MediaType mediaType = request.getHeaders().getContentType();
-        logger.info("mediaType : {}", mediaType);
-//        if (mediaType == null) {
-//            mediaType = MediaType.APPLICATION_JSON_UTF8;
-//            request.getHeaders().setContentType(mediaType);
-//        }
+        CacheRequestEntity cacheRequestEntity = new CacheRequestEntity();
+        cacheRequestEntity.setRequestLine(exchange.getRequest().getURI());
+        ExchangeSupport.put(exchange, GATEWAY_REQUEST_CACHED_REQUEST_BODY_ATTR, cacheRequestEntity);
+
         if (httpMethod.equals(HttpMethod.POST) || httpMethod.equals(HttpMethod.PUT)) {
             return DataBufferUtils.join(request.getBody())
                     .map(dataBuffer -> {
@@ -58,10 +55,7 @@ public class CopyBodyFilter implements GlobalFilter, Ordered {
                     .doOnNext(bytes -> {
                         String body = new String(bytes, StandardCharsets.UTF_8).trim();
                         logger.debug("原始 body : {} ", body);
-                        CacheRequestEntity cacheRequestEntity = new CacheRequestEntity();
                         cacheRequestEntity.setRequestBody(body);
-                        cacheRequestEntity.setRequestLine(exchange.getRequest().getURI());
-                        ExchangeSupport.put(exchange, GATEWAY_REQUEST_CACHED_REQUEST_BODY_ATTR, cacheRequestEntity);
                     }).then(chain.filter(exchange));
         }
 
