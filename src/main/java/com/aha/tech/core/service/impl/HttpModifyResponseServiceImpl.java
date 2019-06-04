@@ -2,8 +2,10 @@ package com.aha.tech.core.service.impl;
 
 import com.aha.tech.commons.constants.ResponseConstants;
 import com.aha.tech.commons.utils.DateUtil;
+import com.aha.tech.core.model.entity.CacheRequestEntity;
 import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.ModifyResponseService;
+import com.aha.tech.core.support.ExchangeSupport;
 import com.alibaba.fastjson.JSON;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
@@ -67,10 +69,11 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
 
                 Mono modifiedBody = clientResponse.bodyToMono(String.class).flatMap(originalBody -> {
                     CompletableFuture.runAsync(() -> {
+                        CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheBody(serverWebExchange);
                         ResponseVo responseVo = JSON.parseObject(originalBody, ResponseVo.class);
                         int code = responseVo.getCode();
                         if (code != ResponseConstants.SUCCESS) {
-                            logger.warn("{} 异常状态码 {}", DateUtil.currentDateByDefaultFormat(), responseVo);
+                            logger.warn("时间 : {} 请求信息: {} 异常状态码 {}", DateUtil.currentDateByDefaultFormat(), cacheRequestEntity, responseVo);
                         }
                     }, writeLoggingThreadPool);
                     return Mono.just(originalBody);
