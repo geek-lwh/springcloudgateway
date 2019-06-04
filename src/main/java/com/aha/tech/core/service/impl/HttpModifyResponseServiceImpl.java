@@ -1,7 +1,6 @@
 package com.aha.tech.core.service.impl;
 
 import com.aha.tech.commons.constants.ResponseConstants;
-import com.aha.tech.commons.utils.DateUtil;
 import com.aha.tech.core.model.entity.CacheRequestEntity;
 import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.ModifyResponseService;
@@ -73,7 +72,7 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
                         ResponseVo responseVo = JSON.parseObject(originalBody, ResponseVo.class);
                         int code = responseVo.getCode();
                         if (code != ResponseConstants.SUCCESS) {
-                            logger.warn("时间 : {} 请求信息: {} 异常状态码 {}", DateUtil.currentDateByDefaultFormat(), cacheRequestEntity, responseVo);
+                            logger.warn("请求信息: {} 异常状态码 {}", cacheRequestEntity, responseVo);
                         }
                     }, writeLoggingThreadPool);
                     return Mono.just(originalBody);
