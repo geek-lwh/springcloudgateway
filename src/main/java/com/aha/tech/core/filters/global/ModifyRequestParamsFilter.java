@@ -78,8 +78,10 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
             if (StringUtils.isNotBlank(cacheBody)) {
                 map = JSON.parseObject(cacheBody, Map.class);
             }
+            if (userId != null) {
+                map.put(USER_ID_FIELD, userId);
+            }
 
-            map.put(USER_ID_FIELD, userId);
             newBodyStr = JSON.toJSONString(map);
         }
 
