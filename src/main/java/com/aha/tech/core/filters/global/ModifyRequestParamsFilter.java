@@ -57,7 +57,7 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
 
         HttpMethod httpMethod = serverHttpRequest.getMethod();
         String language = ExchangeSupport.getRequestLanguage(exchange);
-        CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheBody(exchange);
+        CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheRequest(exchange);
         String cacheBody = cacheRequestEntity.getRequestBody();
 
         RequestAddParamsDto requestAddParamsDto = ExchangeSupport.getRequestAddParamsDto(exchange);

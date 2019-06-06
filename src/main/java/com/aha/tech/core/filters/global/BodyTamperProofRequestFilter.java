@@ -50,7 +50,7 @@ public class BodyTamperProofRequestFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheBody(exchange);
+        CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheRequest(exchange);
 
         ServerHttpRequest request = exchange.getRequest();
         HttpMethod httpMethod = request.getMethod();

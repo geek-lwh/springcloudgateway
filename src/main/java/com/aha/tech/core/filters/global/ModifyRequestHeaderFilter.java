@@ -1,6 +1,8 @@
 package com.aha.tech.core.filters.global;
 
+import com.aha.tech.core.model.entity.CacheRequestEntity;
 import com.aha.tech.core.service.RequestHandlerService;
+import com.aha.tech.core.support.ExchangeSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -39,10 +41,15 @@ public class ModifyRequestHeaderFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         logger.debug("开始进行修改请求头网关过滤器");
+
         ServerHttpRequest serverHttpRequest = exchange.getRequest();
         HttpHeaders httpHeaders = serverHttpRequest.getHeaders();
+        CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheRequest(exchange);
+
         String remoteIp = serverHttpRequest.getRemoteAddress().getAddress().getHostAddress();
         HttpHeaders newHttpHeaders = httpRequestHandlerService.modifyRequestHeaders(httpHeaders, remoteIp);
+        cacheRequestEntity.setAfterModifyRequestHttpHeaders(newHttpHeaders);
+
         ServerHttpRequest newRequest = new ServerHttpRequestDecorator(serverHttpRequest) {
             @Override
             public HttpHeaders getHeaders() {

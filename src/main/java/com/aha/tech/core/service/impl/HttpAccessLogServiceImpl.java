@@ -4,6 +4,7 @@ import com.aha.tech.commons.symbol.Separator;
 import com.aha.tech.commons.utils.DateUtil;
 import com.aha.tech.core.service.AccessLogService;
 import com.aha.tech.core.support.ExchangeSupport;
+import com.aha.tech.core.support.ResponseSupport;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
@@ -110,8 +111,8 @@ public class HttpAccessLogServiceImpl implements AccessLogService {
             sb.append("请求行 : ").append(serverHttpRequest.getMethod()).append(" ").append(url);
             sb.append(System.lineSeparator());
 
-            sb.append("请求头 : ");
-            httpHeaders.forEach((key, value) -> sb.append(key).append(Separator.COLON_MARK).append(StringUtils.join(value)));
+            sb.append("请求头 : ").append(ResponseSupport.formatHttpHeaders(httpHeaders));
+
             sb.append(System.lineSeparator());
 
             sb.append("请求体 : ");

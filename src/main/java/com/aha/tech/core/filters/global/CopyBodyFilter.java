@@ -41,6 +41,7 @@ public class CopyBodyFilter implements GlobalFilter, Ordered {
         HttpMethod httpMethod = request.getMethod();
         CacheRequestEntity cacheRequestEntity = new CacheRequestEntity();
         cacheRequestEntity.setRequestLine(exchange.getRequest().getURI());
+        cacheRequestEntity.setOriginalRequestHttpHeaders(request.getHeaders());
         ExchangeSupport.put(exchange, GATEWAY_REQUEST_CACHED_REQUEST_BODY_ATTR, cacheRequestEntity);
 
         if (httpMethod.equals(HttpMethod.POST) || httpMethod.equals(HttpMethod.PUT)) {

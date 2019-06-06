@@ -68,11 +68,14 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
 
                 Mono modifiedBody = clientResponse.bodyToMono(String.class).flatMap(originalBody -> {
                     CompletableFuture.runAsync(() -> {
-                        CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheBody(serverWebExchange);
+                        CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheRequest(serverWebExchange);
                         ResponseVo responseVo = JSON.parseObject(originalBody, ResponseVo.class);
                         int code = responseVo.getCode();
                         if (code != ResponseConstants.SUCCESS) {
-                            logger.warn("请求信息: {} 异常状态码 {}", cacheRequestEntity, responseVo);
+                            StringBuffer sb = new StringBuffer();
+                            sb.append("请求信息 : ").append(cacheRequestEntity).append(System.lineSeparator());
+                            sb.append("状态码 : ").append(responseVo);
+                            logger.warn("{}", sb);
                         }
                     }, writeLoggingThreadPool);
                     return Mono.just(originalBody);

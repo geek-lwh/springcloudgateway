@@ -1,20 +1,25 @@
 package com.aha.tech.core.support;
 
+import com.aha.tech.commons.symbol.Separator;
 import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.AccessLogService;
 import com.aha.tech.util.SpringContextUtil;
 import com.alibaba.fastjson.JSON;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpResponse;
+import org.springframework.util.StringUtils;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.setResponseStatus;
 
@@ -63,4 +68,18 @@ public class ResponseSupport {
         return resp.writeWith(Flux.just(buffer));
     }
 
+    /**
+     * 格式化输出httpheaders
+     * @param httpHeaders
+     * @return
+     */
+    public static String formatHttpHeaders(HttpHeaders httpHeaders) {
+        if (httpHeaders == null) {
+            return Strings.EMPTY;
+        }
+        StringBuilder sb = new StringBuilder();
+        httpHeaders.forEach((String k, List<String> v) -> sb.append(k).append(Separator.COLON_MARK).append(StringUtils.collectionToDelimitedString(v, Separator.COMMA_MARK)).append(System.lineSeparator()));
+
+        return sb.toString();
+    }
 }
