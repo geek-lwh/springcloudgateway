@@ -100,11 +100,12 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
      * @param version
      * @param timestamp
      * @param signature
-     * @param url
+     * @param rawPath
+     * @param sortQueryParams
      * @return
      */
     @Override
-    public Boolean urlTamperProof(String version, String timestamp, String signature, String rawPath, String url) {
+    public Boolean urlTamperProof(String version, String timestamp, String signature, String rawPath, String sortQueryParams) {
         if (StringUtils.isBlank(timestamp)) {
             logger.error("URI防篡改timestamp缺失");
             return Boolean.FALSE;
@@ -119,7 +120,7 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
 
         switch (version) {
             case VERSION_FROYO:
-                encryptStr = httpVerifyRequestService.verifyUrl(rawPath, url, timestamp);
+                encryptStr = httpVerifyRequestService.verifyUrl(rawPath, sortQueryParams, timestamp);
                 break;
             default:
                 logger.error("URI防篡改版本错误 version={}", version);
@@ -130,7 +131,7 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
             return Boolean.TRUE;
         }
 
-        logger.error("url防篡改校验失败 uri : {},timestamp : {},signature : {}", url, timestamp, signature);
+        logger.error("url防篡改校验失败 rawPath:{} , sortQueryParams : {},timestamp : {},signature : {}", rawPath, sortQueryParams, timestamp, signature);
 
         return Boolean.FALSE;
     }
