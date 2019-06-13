@@ -24,7 +24,6 @@ import javax.annotation.Resource;
 import java.net.URI;
 import java.util.Map;
 
-import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_CACHED_ATTR;
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.MODIFY_PARAMS_FILTER_ORDER;
 
 /**
@@ -58,11 +57,6 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
 
         HttpMethod httpMethod = serverHttpRequest.getMethod();
         CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheRequest(exchange);
-        String routeHost = ExchangeSupport.getRouteRequestPath(exchange);
-        logger.info("请求地址 : {},转发服务地址 : {}", cacheRequestEntity.getRequestLine(), routeHost);
-        cacheRequestEntity.setRealServer(routeHost);
-        ExchangeSupport.put(exchange, GATEWAY_REQUEST_CACHED_ATTR, cacheRequestEntity);
-
         String cacheBody = cacheRequestEntity.getRequestBody();
         RequestAddParamsDto requestAddParamsDto = ExchangeSupport.getRequestAddParamsDto(exchange);
 

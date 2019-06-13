@@ -41,10 +41,13 @@ public class FilterProcessOrderedConstant {
     public static int REWRITE_REQUEST_PATH_FILTER_ORDER = AUTH_GATEWAY_FILTER_ORDER + STEP;
 
     // 修改请求报头过滤器 在重写host之后
-    public static int MODIFY_REQUEST_HEADER_GATEWAY_FILTER_ORDER = LoadBalancerClientFilter.LOAD_BALANCER_CLIENT_FILTER_ORDER + STEP;
+    public static int MODIFY_REQUEST_HEADER_GATEWAY_FILTER_ORDER = REWRITE_REQUEST_PATH_FILTER_ORDER + STEP;
 
     // 修改GET|POST请求的参数过滤器
     public static int MODIFY_PARAMS_FILTER_ORDER = MODIFY_REQUEST_HEADER_GATEWAY_FILTER_ORDER + STEP;
+
+    // loadbalance 过滤器
+    public static int LOAD_BALANCING__FILTER = LoadBalancerClientFilter.LOAD_BALANCER_CLIENT_FILTER_ORDER + STEP;
 
     // 修改请求返回体过滤器
     public static int MODIFY_RESPONSE_GATEWAY_FILTER_ORDER = NettyWriteResponseFilter.WRITE_RESPONSE_FILTER_ORDER - STEP;
