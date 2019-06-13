@@ -6,6 +6,7 @@ import com.aha.tech.core.service.ModifyResponseService;
 import com.aha.tech.core.support.ExchangeSupport;
 import com.aha.tech.core.support.ResponseSupport;
 import com.alibaba.fastjson.JSON;
+import org.apache.commons.lang3.StringUtils;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,7 +71,10 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
                     CompletableFuture.runAsync(() -> {
                         CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheRequest(serverWebExchange);
                         ResponseVo responseVo = JSON.parseObject(originalBody, ResponseVo.class);
-                        logger.warn("{}", ResponseSupport.buildWarnLog(cacheRequestEntity, responseVo, getDelegate().getStatusCode()));
+                        String warnLog = ResponseSupport.buildWarnLog(cacheRequestEntity, responseVo, getDelegate().getStatusCode());
+                        if (StringUtils.isNotBlank(warnLog)) {
+                            logger.warn("{}", warnLog);
+                        }
                     }, writeLoggingThreadPool);
                     return Mono.just(originalBody);
                 });
