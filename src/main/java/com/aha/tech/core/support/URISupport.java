@@ -43,6 +43,18 @@ public class URISupport {
     }
 
     /**
+     * 根据字符串,切割符,跳过无效区位数
+     * @param str
+     * @param Separator
+     * @param skipPart
+     * @return
+     */
+    public static String getServiceIdFromRawPath(String str, String Separator, int skipPart) {
+        String[] arr = StringUtils.tokenizeToStringArray(str, Separator);
+        return arr[skipPart];
+    }
+
+    /**
      * 构建重写后的路由地址
      * @param contextPath
      * @param realServerHost
@@ -168,10 +180,10 @@ public class URISupport {
     public static String encryptBody(String encodeBody, String timestamp, String secretKey) {
         String lastMd5 = Strings.EMPTY;
         try {
-            if (StringUtils.isEmpty(encodeBody)) {
-                logger.error("body防篡改加密时出现body为空");
-                return Strings.EMPTY;
-            }
+//            if (StringUtils.isEmpty(encodeBody)) {
+//                logger.error("body防篡改加密时出现body为空");
+//                return Strings.EMPTY;
+//            }
 
             String str1 = encodeBody + timestamp;
             String firstMd5 = DigestUtils.md5DigestAsHex(str1.getBytes());

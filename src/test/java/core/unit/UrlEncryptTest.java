@@ -37,10 +37,10 @@ public class UrlEncryptTest {
     @DisplayName("GET请求加密测试类目")
     public void encryptGetRequest() {
         logger.info("<<<< {} 开始 [GET请求加密测试类目]", DateUtil.currentDateByDefaultFormat());
-        String url = "http://10.10.189.191:9700/v3/orderbff/orders/paycert/get?pay_type=6&order_id=4223274&openid=&return_url=https%3A%2F%2Ftestm.ahaschool.com%2Forder%2Fdetail%3Forder_id%3D4223274%26product_id%3D502656%26alipaysuccess%3D1%26utm_source%3D%26utm_medium%3D%26utm_campaign%3D%26utm_term%3D%26utm_content%3D%26pk%3D%26pd%3D%26ps%3D%26pp%3D&_=1559550174584";
+        String url = "http://10.10.189.191:9700/v3/orderbff/recommends/home/get?gender=&age=&_=1560220064816";
 
-        String signature = "7c3f335437f066927753499e5ace75a1";
-        String timestamp = "1559550186041";
+        String signature = "936169becd4c6c68fdbb505a9334f1a5";
+        String timestamp = "1560222716661";
         String content = "b266f3154977f5dd6da84591b28fe0db";
         String version = "Froyo";
 
@@ -64,16 +64,18 @@ public class UrlEncryptTest {
     @Test
     @DisplayName("body加密测试类目")
     public void createContentSignature() throws IOException {
+        String content = "45e8e948f8a275c7a03003e0ecd8b229";
         logger.info("<<<< {} 开始 [body加密测试类目]", DateUtil.currentDateByDefaultFormat());
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("user_id", 2134);
-        String body = jsonObject.toJSONString();
+        String body = "";
         byte[] base64Body = Base64.encodeBase64(body.getBytes());
         String encodeBody = new String(base64Body, StandardCharsets.UTF_8);
+        Long timestamp = 1560395388l;
 
-
-        String encryptBody = encryptBody(encodeBody, timestamp, secretKey);
-        System.out.println(encryptBody.equals(encodeBody));
+        String encryptBody = encryptBody(encodeBody, String.valueOf(timestamp), secretKey);
+        System.out.println(encryptBody);
+        System.out.println(encryptBody.equals(content));
     }
 
 }
