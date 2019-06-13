@@ -45,6 +45,7 @@ public class ModifyResponseFilter implements GlobalFilter, Ordered {
         if (realServer != null) {
             String validRequestUrl = ExchangeSupport.getRequestValidPath(exchange);
             String realServerUrl = String.format("%s%s%s%s%s", realServer.getHost(), Separator.COLON_MARK, realServer.getPort(), Separator.SLASH_MARK, validRequestUrl);
+            logger.info("请求地址 : {},转发路由地址 : {}", cacheRequestEntity.getRequestLine(), realServerUrl);
             cacheRequestEntity.setRealServer(realServerUrl);
             ExchangeSupport.put(exchange, GATEWAY_REQUEST_CACHED_ATTR, cacheRequestEntity);
         }
