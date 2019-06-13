@@ -71,6 +71,25 @@ public class ResponseSupport {
     }
 
     /**
+     * 构建劲爆日志
+     * @param cacheRequestEntity
+     * @param responseVo
+     * @param httpStatus
+     * @return
+     */
+    public static String buildWarnLog(CacheRequestEntity cacheRequestEntity, ResponseVo responseVo, HttpStatus httpStatus) {
+        Integer code = responseVo.getCode();
+        StringBuffer sb = new StringBuffer();
+        if (code != ResponseConstants.SUCCESS || !httpStatus.equals(HttpStatus.OK)) {
+            sb.append("请求信息 : ").append(cacheRequestEntity).append(System.lineSeparator());
+            sb.append("业务状态码 : ").append(responseVo);
+            sb.append("http状态码 : ").append(httpStatus);
+        }
+
+        return sb.toString();
+    }
+
+    /**
      * 格式化输出httpheaders
      * @param httpHeaders
      * @return
@@ -85,14 +104,4 @@ public class ResponseSupport {
         return sb.toString();
     }
 
-    public static void write(CacheRequestEntity cacheRequestEntity, ResponseVo responseVo, HttpStatus httpStatus) {
-        Integer code = responseVo.getCode();
-        if (code != ResponseConstants.SUCCESS || !httpStatus.equals(HttpStatus.OK)) {
-            StringBuffer sb = new StringBuffer();
-            sb.append("请求信息 : ").append(cacheRequestEntity).append(System.lineSeparator());
-            sb.append("业务状态码 : ").append(responseVo);
-            sb.append("http状态码 : ").append(httpStatus);
-            logger.warn("{}", sb);
-        }
-    }
 }

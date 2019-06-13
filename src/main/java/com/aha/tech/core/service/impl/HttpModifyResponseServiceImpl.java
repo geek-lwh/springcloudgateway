@@ -70,7 +70,7 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
                     CompletableFuture.runAsync(() -> {
                         CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheRequest(serverWebExchange);
                         ResponseVo responseVo = JSON.parseObject(originalBody, ResponseVo.class);
-                        ResponseSupport.write(cacheRequestEntity, responseVo, getDelegate().getStatusCode());
+                        logger.warn("{}", ResponseSupport.buildWarnLog(cacheRequestEntity, responseVo, getDelegate().getStatusCode()));
                     }, writeLoggingThreadPool);
                     return Mono.just(originalBody);
                 });
