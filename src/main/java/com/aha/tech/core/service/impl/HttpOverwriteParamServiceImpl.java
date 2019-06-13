@@ -1,13 +1,7 @@
 package com.aha.tech.core.service.impl;
 
-import com.aha.tech.commons.symbol.Separator;
-import com.aha.tech.core.constant.LanguageConstant;
 import com.aha.tech.core.model.dto.RequestAddParamsDto;
 import com.aha.tech.core.service.OverwriteParamService;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URLEncodedUtils;
-import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -22,13 +16,10 @@ import org.springframework.web.reactive.function.BodyInserter;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.util.UriComponentsBuilder;
-import org.yaml.snakeyaml.util.UriEncoder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
 
 /**
  * @Author: luweihong
@@ -42,7 +33,7 @@ public class HttpOverwriteParamServiceImpl implements OverwriteParamService {
 
     private static final String USER_ID_FIELD = "user_id";
 
-    private static final String SPECIAL_SYMBOL = "[]";
+//    private static final String SPECIAL_SYMBOL = "[]";
 
     /**
      * 修改POST请求参数
@@ -102,33 +93,33 @@ public class HttpOverwriteParamServiceImpl implements OverwriteParamService {
      */
     @Override
     public URI modifyQueryParams(RequestAddParamsDto requestAddParamsDto, ServerHttpRequest request, String language) {
-        StringBuilder query = new StringBuilder();
-        String rawQuery = request.getURI().getRawQuery();
-        String encoderRawQuery = StringUtils.isBlank(rawQuery) ? Strings.EMPTY : UriEncoder.decode(request.getURI().getRawQuery());
-        Boolean isJavaLanguage = language.equals(LanguageConstant.JAVA);
-        Boolean hasCompatibleQuery = StringUtils.isNoneBlank(encoderRawQuery) && encoderRawQuery.indexOf(SPECIAL_SYMBOL) != -1;
-        Boolean needCompatible = isJavaLanguage && hasCompatibleQuery;
+//        StringBuilder query = new StringBuilder();
+//        String rawQuery = request.getURI().getRawQuery();
+//        String encoderRawQuery = StringUtils.isBlank(rawQuery) ? Strings.EMPTY : UriEncoder.decode(request.getURI().getRawQuery());
+//        Boolean isJavaLanguage = language.equals(LanguageConstant.JAVA);
+//        Boolean hasCompatibleQuery = StringUtils.isNoneBlank(encoderRawQuery) && encoderRawQuery.indexOf(SPECIAL_SYMBOL) != -1;
+//        Boolean needCompatible = isJavaLanguage && hasCompatibleQuery;
 
         URI uri = request.getURI();
-        if (needCompatible) {
-            logger.info("兼容java服务的get 请求");
-            List<NameValuePair> params = URLEncodedUtils.parse(request.getURI(), StandardCharsets.UTF_8);
-            for (NameValuePair pair : params) {
-                String rename = pair.getName().replace(SPECIAL_SYMBOL, Strings.EMPTY);
-                query.append(rename).append(Separator.EQUAL_SIGN_MARK).append(pair.getValue());
-                query.append(Separator.AND_MARK);
-            }
-        }
+//        if (needCompatible) {
+//            logger.info("兼容java服务的get 请求");
+//            List<NameValuePair> params = URLEncodedUtils.parse(request.getURI(), StandardCharsets.UTF_8);
+//            for (NameValuePair pair : params) {
+//                String rename = pair.getName().replace(SPECIAL_SYMBOL, Strings.EMPTY);
+//                query.append(rename).append(Separator.EQUAL_SIGN_MARK).append(pair.getValue());
+//                query.append(Separator.AND_MARK);
+//            }
+//        }
 
-        if (query.length() > 0) {
-            query.deleteCharAt(query.length() - 1);
-            uri = UriComponentsBuilder.fromUri(uri)
-                    .replaceQuery(query.toString())
-                    .build(true)
-                    .toUri();
-
-            logger.info("兼容java服务的get请求,原始参数 : {},新的请求路径 : {} ", rawQuery, uri);
-        }
+//        if (query.length() > 0) {
+//            query.deleteCharAt(query.length() - 1);
+//            uri = UriComponentsBuilder.fromUri(uri)
+//                    .replaceQuery(query.toString())
+//                    .build(true)
+//                    .toUri();
+//
+//            logger.info("兼容java服务的get请求,原始参数 : {},新的请求路径 : {} ", rawQuery, uri);
+//        }
 
         if (requestAddParamsDto == null || requestAddParamsDto.getUserId() == null) {
             logger.warn("user_id为null,赋值0");

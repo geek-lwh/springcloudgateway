@@ -35,11 +35,6 @@ public class RouteEntity {
     private String rewritePath;
 
     /**
-     * 语言类型
-     */
-    private String language;
-
-    /**
      * 接口每秒产生多少令牌
      */
     private Integer replenishRate;
@@ -103,14 +98,6 @@ public class RouteEntity {
 
     public void setBurstCapacity(Integer burstCapacity) {
         this.burstCapacity = burstCapacity;
-    }
-
-    public String getLanguage() {
-        return language;
-    }
-
-    public void setLanguage(String language) {
-        this.language = language;
     }
 
     @Override
