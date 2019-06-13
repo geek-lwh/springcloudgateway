@@ -25,9 +25,10 @@ public interface RequestHandlerService {
     /**
      * 是否跳过url防篡改
      * @param rawPath
+     * @param httpHeaders
      * @return
      */
-    Boolean isSkipUrlTamperProof(String rawPath);
+    Boolean isSkipUrlTamperProof(String rawPath, HttpHeaders httpHeaders);
 
     /**
      * url防篡改

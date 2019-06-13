@@ -1,6 +1,7 @@
 package com.aha.tech.core.service.impl;
 
 import com.aha.tech.commons.constants.ResponseConstants;
+import com.aha.tech.core.constant.SystemConstant;
 import com.aha.tech.core.exception.MissAuthorizationHeaderException;
 import com.aha.tech.core.exception.ParseAuthorizationHeaderException;
 import com.aha.tech.core.model.entity.AuthenticationResultEntity;
@@ -24,11 +25,12 @@ import org.springframework.web.server.ServerWebExchange;
 import javax.annotation.Resource;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.List;
 
 import static com.aha.tech.core.constant.ExchangeAttributeConstant.*;
-import static com.aha.tech.core.constant.HeaderFieldConstant.HEADER_AUTHORIZATION;
-import static com.aha.tech.core.constant.HeaderFieldConstant.VERSION_FROYO;
+import static com.aha.tech.core.constant.HeaderFieldConstant.*;
+import static com.aha.tech.core.constant.SystemConstant.TEST;
 import static com.aha.tech.core.tools.BeanUtil.copyMultiValueMap;
 
 /**
@@ -85,11 +87,21 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
     }
 
     @Override
-    public Boolean isSkipUrlTamperProof(String rawPath) {
+    public Boolean isSkipUrlTamperProof(String rawPath, HttpHeaders httpHeaders) {
+        String profile = System.getProperty(SystemConstant.SPRING_PROFILES_ACTIVE);
+        if (profile.startsWith(TEST)) {
+            List<String> isSkip = httpHeaders.getOrDefault(HEADER_SKIP_URL_TAMPER_PROOF, Collections.EMPTY_LIST);
+            if (!CollectionUtils.isEmpty(isSkip)) {
+                logger.info("存在跳过url防篡改的header头 : {}, profiles : {}", HEADER_SKIP_URL_TAMPER_PROOF, profile);
+                return Boolean.TRUE;
+            }
+        }
+
         List<String> list = whiteListService.findSkipUrlTamperProofWhiteList();
         if (CollectionUtils.isEmpty(list)) {
             return Boolean.FALSE;
         }
+
         return list.contains(rawPath);
     }
 

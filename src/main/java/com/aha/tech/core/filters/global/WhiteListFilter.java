@@ -5,6 +5,7 @@ import com.aha.tech.core.support.ExchangeSupport;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
@@ -33,11 +34,12 @@ public class WhiteListFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         String rawPath = exchange.getRequest().getURI().getRawPath();
+        HttpHeaders httpHeaders = exchange.getRequest().getHeaders();
         // 是否跳过授权
         Boolean isSkipAuth = httpRequestHandlerService.isSkipAuth(rawPath);
 
         // 是否跳过url防篡改
-        Boolean isSkipUrlTamperProof = httpRequestHandlerService.isSkipUrlTamperProof(rawPath);
+        Boolean isSkipUrlTamperProof = httpRequestHandlerService.isSkipUrlTamperProof(rawPath, httpHeaders);
 
         ExchangeSupport.put(exchange, IS_SKIP_AUTH_ATTR, isSkipAuth);
         ExchangeSupport.put(exchange, IS_SKIP_URL_TAMPER_PROOF_ATTR, isSkipUrlTamperProof);
