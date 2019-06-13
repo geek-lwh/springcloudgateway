@@ -3,6 +3,7 @@ package com.aha.tech.core.support;
 import com.aha.tech.core.constant.LanguageConstant;
 import com.aha.tech.core.model.dto.RequestAddParamsDto;
 import com.aha.tech.core.model.entity.CacheRequestEntity;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.server.ServerWebExchange;
@@ -31,11 +32,15 @@ public class ExchangeSupport {
         return (String) exchange.getAttributes().getOrDefault(GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR, defaultPath);
     }
 
+    public static String getRequestValidPath(ServerWebExchange exchange) {
+        return (String) exchange.getAttributes().getOrDefault(GATEWAY_REQUEST_VALID_PATH_ATTR, StringUtils.EMPTY);
+    }
+
     public static CacheRequestEntity getCacheRequest(ServerWebExchange exchange) {
-        CacheRequestEntity cacheRequestEntity = (CacheRequestEntity) exchange.getAttributes().getOrDefault(GATEWAY_REQUEST_CACHED_REQUEST_BODY_ATTR, null);
+        CacheRequestEntity cacheRequestEntity = (CacheRequestEntity) exchange.getAttributes().getOrDefault(GATEWAY_REQUEST_CACHED_ATTR, null);
         if (cacheRequestEntity == null) {
             cacheRequestEntity = new CacheRequestEntity();
-            exchange.getAttributes().put(GATEWAY_REQUEST_CACHED_REQUEST_BODY_ATTR, cacheRequestEntity);
+            exchange.getAttributes().put(GATEWAY_REQUEST_CACHED_ATTR, cacheRequestEntity);
         }
         return cacheRequestEntity;
     }

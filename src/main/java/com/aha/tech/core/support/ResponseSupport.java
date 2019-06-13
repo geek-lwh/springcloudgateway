@@ -1,6 +1,8 @@
 package com.aha.tech.core.support;
 
+import com.aha.tech.commons.constants.ResponseConstants;
 import com.aha.tech.commons.symbol.Separator;
+import com.aha.tech.core.model.entity.CacheRequestEntity;
 import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.AccessLogService;
 import com.aha.tech.util.SpringContextUtil;
@@ -81,5 +83,16 @@ public class ResponseSupport {
         httpHeaders.forEach((String k, List<String> v) -> sb.append(k).append(Separator.COLON_MARK).append(StringUtils.collectionToDelimitedString(v, Separator.COMMA_MARK)).append(System.lineSeparator()));
 
         return sb.toString();
+    }
+
+    public static void write(CacheRequestEntity cacheRequestEntity, ResponseVo responseVo, HttpStatus httpStatus) {
+        Integer code = responseVo.getCode();
+        if (code != ResponseConstants.SUCCESS || !httpStatus.equals(HttpStatus.OK)) {
+            StringBuffer sb = new StringBuffer();
+            sb.append("请求信息 : ").append(cacheRequestEntity).append(System.lineSeparator());
+            sb.append("业务状态码 : ").append(responseVo);
+            sb.append("http状态码 : ").append(httpStatus);
+            logger.warn("{}", sb);
+        }
     }
 }

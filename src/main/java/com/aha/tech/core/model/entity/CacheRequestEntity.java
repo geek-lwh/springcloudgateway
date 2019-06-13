@@ -18,6 +18,8 @@ public class CacheRequestEntity {
 
     private URI requestLine;
 
+    private String realServer;
+
     private String requestBody;
 
     public URI getRequestLine() {
@@ -52,10 +54,19 @@ public class CacheRequestEntity {
         this.requestBody = requestBody;
     }
 
+    public String getRealServer() {
+        return realServer;
+    }
+
+    public void setRealServer(String realServer) {
+        this.realServer = realServer;
+    }
+
     @Override
     public String toString() {
         StringBuffer sb = new StringBuffer();
         sb.append("请求行").append(Separator.COLON_MARK).append(this.requestLine).append(System.lineSeparator());
+        sb.append("路由服务器").append(Separator.COLON_MARK).append(this.realServer).append(System.lineSeparator());
         sb.append("原始请求头").append(Separator.COLON_MARK).append(ResponseSupport.formatHttpHeaders(this.originalRequestHttpHeaders)).append(System.lineSeparator());
         sb.append("修改后请求头").append(Separator.COLON_MARK).append(ResponseSupport.formatHttpHeaders(this.afterModifyRequestHttpHeaders)).append(System.lineSeparator());
         sb.append("请求体").append(Separator.COLON_MARK).append(this.requestBody);

@@ -71,7 +71,7 @@ public class URISupport {
             contextPath = Separator.SLASH_MARK + contextPath;
         }
 
-        rewritePath.append(contextPath).append(realServerHost).toString();
+        rewritePath.append(contextPath).append(Separator.SLASH_MARK).append(realServerHost).toString();
 
         return rewritePath.toString();
     }

@@ -1,10 +1,10 @@
 package com.aha.tech.core.service.impl;
 
-import com.aha.tech.commons.constants.ResponseConstants;
 import com.aha.tech.core.model.entity.CacheRequestEntity;
 import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.ModifyResponseService;
 import com.aha.tech.core.support.ExchangeSupport;
+import com.aha.tech.core.support.ResponseSupport;
 import com.alibaba.fastjson.JSON;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
@@ -70,13 +70,7 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
                     CompletableFuture.runAsync(() -> {
                         CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheRequest(serverWebExchange);
                         ResponseVo responseVo = JSON.parseObject(originalBody, ResponseVo.class);
-                        int code = responseVo.getCode();
-                        if (code != ResponseConstants.SUCCESS) {
-                            StringBuffer sb = new StringBuffer();
-                            sb.append("请求信息 : ").append(cacheRequestEntity).append(System.lineSeparator());
-                            sb.append("状态码 : ").append(responseVo);
-                            logger.warn("{}", sb);
-                        }
+                        ResponseSupport.write(cacheRequestEntity, responseVo, getDelegate().getStatusCode());
                     }, writeLoggingThreadPool);
                     return Mono.just(originalBody);
                 });

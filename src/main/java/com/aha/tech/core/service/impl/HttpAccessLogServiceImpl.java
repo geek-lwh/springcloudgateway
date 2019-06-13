@@ -26,7 +26,7 @@ import java.net.URI;
 import java.util.Date;
 import java.util.concurrent.CompletableFuture;
 
-import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_CACHED_REQUEST_BODY_ATTR;
+import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_CACHED_ATTR;
 import static com.aha.tech.core.constant.HeaderFieldConstant.*;
 
 /**
@@ -116,7 +116,7 @@ public class HttpAccessLogServiceImpl implements AccessLogService {
             sb.append(System.lineSeparator());
 
             sb.append("请求体 : ");
-            String body = serverWebExchange.getAttributes().getOrDefault(GATEWAY_REQUEST_CACHED_REQUEST_BODY_ATTR, Strings.EMPTY).toString();
+            String body = serverWebExchange.getAttributes().getOrDefault(GATEWAY_REQUEST_CACHED_ATTR, Strings.EMPTY).toString();
             sb.append(body);
 
             logger.error("{}", sb);

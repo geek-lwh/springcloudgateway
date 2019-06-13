@@ -16,7 +16,7 @@ import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
 
-import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_CACHED_REQUEST_BODY_ATTR;
+import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_CACHED_ATTR;
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.COPY_BODY_FILTER;
 
 /**
@@ -42,7 +42,7 @@ public class CopyBodyFilter implements GlobalFilter, Ordered {
         CacheRequestEntity cacheRequestEntity = new CacheRequestEntity();
         cacheRequestEntity.setRequestLine(exchange.getRequest().getURI());
         cacheRequestEntity.setOriginalRequestHttpHeaders(request.getHeaders());
-        ExchangeSupport.put(exchange, GATEWAY_REQUEST_CACHED_REQUEST_BODY_ATTR, cacheRequestEntity);
+        ExchangeSupport.put(exchange, GATEWAY_REQUEST_CACHED_ATTR, cacheRequestEntity);
 
         if (httpMethod.equals(HttpMethod.POST) || httpMethod.equals(HttpMethod.PUT)) {
             return DataBufferUtils.join(request.getBody())

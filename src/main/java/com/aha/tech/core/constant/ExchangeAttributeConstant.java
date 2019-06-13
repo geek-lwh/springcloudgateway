@@ -23,7 +23,7 @@ public class ExchangeAttributeConstant {
     // 网关请求时添加的参数属性
     public static final String GATEWAY_REQUEST_ADD_PARAMS_ATTR = "GATEWAY_REQUEST_ADD_PARAMS_ATTR";
 
-    public static final String GATEWAY_REQUEST_CACHED_REQUEST_BODY_ATTR = "GATEWAY_REQUEST_CACHED_REQUEST_BODY_ATTR";
+    public static final String GATEWAY_REQUEST_CACHED_ATTR = "GATEWAY_REQUEST_CACHED_ATTR";
 
     public static final String IS_SKIP_AUTH_ATTR = "IS_SKIP_AUTH_ATTR";
 
