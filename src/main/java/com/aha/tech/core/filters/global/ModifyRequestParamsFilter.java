@@ -58,13 +58,13 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
 
         HttpMethod httpMethod = serverHttpRequest.getMethod();
         CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheRequest(exchange);
-        String cacheBody = cacheRequestEntity.getRequestBody();
-
-        RequestAddParamsDto requestAddParamsDto = ExchangeSupport.getRequestAddParamsDto(exchange);
         String routeHost = ExchangeSupport.getRouteRequestPath(exchange);
         logger.info("请求地址 : {},转发服务地址 : {}", cacheRequestEntity.getRequestLine(), routeHost);
         cacheRequestEntity.setRealServer(routeHost);
         ExchangeSupport.put(exchange, GATEWAY_REQUEST_CACHED_ATTR, cacheRequestEntity);
+
+        String cacheBody = cacheRequestEntity.getRequestBody();
+        RequestAddParamsDto requestAddParamsDto = ExchangeSupport.getRequestAddParamsDto(exchange);
 
         URI newUri = httpOverwriteParamService.modifyQueryParams(requestAddParamsDto, serverHttpRequest);
         Boolean needAddBodyParams = httpMethod.equals(HttpMethod.POST) || httpMethod.equals(HttpMethod.PUT);
