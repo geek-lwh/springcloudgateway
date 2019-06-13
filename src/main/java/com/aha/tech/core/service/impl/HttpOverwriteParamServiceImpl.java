@@ -131,8 +131,8 @@ public class HttpOverwriteParamServiceImpl implements OverwriteParamService {
         }
 
         if (requestAddParamsDto == null || requestAddParamsDto.getUserId() == null) {
-            logger.warn("需要添加的参数为空");
-            return uri;
+            logger.warn("user_id为null,赋值-1");
+            requestAddParamsDto.setUserId(-1l);
         }
 
         URI newURI = UriComponentsBuilder.fromUri(uri)
