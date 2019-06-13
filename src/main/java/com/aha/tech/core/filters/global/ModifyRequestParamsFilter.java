@@ -24,6 +24,7 @@ import javax.annotation.Resource;
 import java.net.URI;
 import java.util.Map;
 
+import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_CACHED_ATTR;
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.MODIFY_PARAMS_FILTER_ORDER;
 
 /**
@@ -56,13 +57,16 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
         MediaType mediaType = httpHeaders.getContentType();
 
         HttpMethod httpMethod = serverHttpRequest.getMethod();
-        String language = ExchangeSupport.getRequestLanguage(exchange);
         CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheRequest(exchange);
         String cacheBody = cacheRequestEntity.getRequestBody();
 
         RequestAddParamsDto requestAddParamsDto = ExchangeSupport.getRequestAddParamsDto(exchange);
+        String routeHost = ExchangeSupport.getRouteRequestPath(exchange);
+        logger.info("请求地址 : {},转发服务地址 : {}", cacheRequestEntity.getRequestLine(), routeHost);
+        cacheRequestEntity.setRealServer(routeHost);
+        ExchangeSupport.put(exchange, GATEWAY_REQUEST_CACHED_ATTR, cacheRequestEntity);
 
-        URI newUri = httpOverwriteParamService.modifyQueryParams(requestAddParamsDto, serverHttpRequest, language);
+        URI newUri = httpOverwriteParamService.modifyQueryParams(requestAddParamsDto, serverHttpRequest);
         Boolean needAddBodyParams = httpMethod.equals(HttpMethod.POST) || httpMethod.equals(HttpMethod.PUT);
         if (!needAddBodyParams) {
             ServerHttpRequest request = exchange.getRequest().mutate().uri(newUri).build();

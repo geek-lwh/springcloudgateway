@@ -11,6 +11,8 @@ public class ExchangeAttributeConstant {
     // 原始路径
     public static final String GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR = "GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR";
 
+    public static final String GATEWAY_REQUEST_ROUTE_HOST_ATTR = "GATEWAY_REQUEST_ROUTE_HOST_ATTR";
+
     // 请求中有效的路径属性
     public static final String GATEWAY_REQUEST_VALID_PATH_ATTR = "GATEWAY_REQUEST_VALID_PATH_ATTR";
 

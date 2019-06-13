@@ -80,16 +80,19 @@ public class ResponseSupport {
     public static String buildWarnLog(CacheRequestEntity cacheRequestEntity, ResponseVo responseVo, HttpStatus httpStatus) {
         Integer code = responseVo.getCode();
         StringBuffer sb = new StringBuffer();
-        sb.append("<<<<<<<<<<<");
-        sb.append(System.lineSeparator());
+
         if (code != ResponseConstants.SUCCESS || !httpStatus.equals(HttpStatus.OK)) {
+            sb.append(System.lineSeparator());
+            sb.append("<<<<<<<<<<<<<<<<<<");
+            sb.append(System.lineSeparator());
             sb.append("请求信息 : ").append(cacheRequestEntity).append(System.lineSeparator());
             sb.append("业务状态码 : ").append(responseVo);
             sb.append("http状态码 : ").append(httpStatus);
+            sb.append(System.lineSeparator());
+            sb.append(">>>>>>>>>>>>>>>>>>");
+            sb.append(System.lineSeparator());
         }
 
-        sb.append(System.lineSeparator());
-        sb.append(">>>>>>>>>>>>").append(System.lineSeparator());
         return sb.toString();
     }
 

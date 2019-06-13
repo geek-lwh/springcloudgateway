@@ -88,11 +88,10 @@ public class HttpOverwriteParamServiceImpl implements OverwriteParamService {
      * 兼容php get请求 传递数组问题 a[]=1&a[]=
      * @param requestAddParamsDto
      * @param request
-     * @param language
      * @return
      */
     @Override
-    public URI modifyQueryParams(RequestAddParamsDto requestAddParamsDto, ServerHttpRequest request, String language) {
+    public URI modifyQueryParams(RequestAddParamsDto requestAddParamsDto, ServerHttpRequest request) {
 //        StringBuilder query = new StringBuilder();
 //        String rawQuery = request.getURI().getRawQuery();
 //        String encoderRawQuery = StringUtils.isBlank(rawQuery) ? Strings.EMPTY : UriEncoder.decode(request.getURI().getRawQuery());
@@ -139,11 +138,10 @@ public class HttpOverwriteParamServiceImpl implements OverwriteParamService {
      * 修改mediaType=application/x-www-form-urlencoded的请求参数
      * @param requestAddParamsDto
      * @param request
-     * @param language
      * @return
      */
     @Override
-    public URI modifyParamsWithFormUrlencoded(RequestAddParamsDto requestAddParamsDto, ServerHttpRequest request, String language) {
-        return this.modifyQueryParams(requestAddParamsDto, request, language);
+    public URI modifyParamsWithFormUrlencoded(RequestAddParamsDto requestAddParamsDto, ServerHttpRequest request) {
+        return this.modifyQueryParams(requestAddParamsDto, request);
     }
 }

@@ -27,18 +27,16 @@ public interface OverwriteParamService {
      * 修改GET请求的参数
      * @param requestAddParamsDto
      * @param request
-     * @param language
      * @return
      */
-    URI modifyQueryParams(RequestAddParamsDto requestAddParamsDto, ServerHttpRequest request, String language);
+    URI modifyQueryParams(RequestAddParamsDto requestAddParamsDto, ServerHttpRequest request);
 
     /**
      * 修改特殊的二进制body参数
      * @param requestAddParamsDto
      * @param request
-     * @param language
      * @return
      */
-    URI modifyParamsWithFormUrlencoded(RequestAddParamsDto requestAddParamsDto, ServerHttpRequest request, String language);
+    URI modifyParamsWithFormUrlencoded(RequestAddParamsDto requestAddParamsDto, ServerHttpRequest request);
 
 }

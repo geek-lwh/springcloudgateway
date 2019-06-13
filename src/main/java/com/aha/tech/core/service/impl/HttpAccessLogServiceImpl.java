@@ -101,7 +101,7 @@ public class HttpAccessLogServiceImpl implements AccessLogService {
             ServerHttpRequest serverHttpRequest = serverWebExchange.getRequest();
             HttpHeaders httpHeaders = serverHttpRequest.getHeaders();
             StringBuilder sb = new StringBuilder();
-            String url = ExchangeSupport.getRequestPath(serverWebExchange, serverHttpRequest.getURI().toString());
+            String url = ExchangeSupport.getOriginalRequestPath(serverWebExchange, serverHttpRequest.getURI().toString());
 
             sb.append("错误 : ");
             String error = serverWebExchange.getAttributes().getOrDefault(ServerWebExchangeUtils.HYSTRIX_EXECUTION_EXCEPTION_ATTR, e.getMessage()).toString();

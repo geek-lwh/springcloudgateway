@@ -193,6 +193,7 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
 //        String language = StringUtils.isBlank(routeEntity.getLanguage()) ? LanguageConstant.JAVA : routeEntity.getLanguage().toLowerCase();
 
         serverWebExchange.getAttributes().put(GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR, originalUrlPath);
+        serverWebExchange.getAttributes().put(GATEWAY_REQUEST_ROUTE_HOST_ATTR, routeEntity.getUri());
 //        serverWebExchange.getAttributes().put(REQUEST_LANGUAGE_ATTR, language);
         serverWebExchange.getAttributes().put(GATEWAY_REQUEST_VALID_PATH_ATTR, validPath);
         serverWebExchange.getAttributes().put(GATEWAY_REQUEST_REWRITE_PATH_ATTR, rewritePath);

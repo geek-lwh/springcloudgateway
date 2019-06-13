@@ -1,6 +1,5 @@
 package com.aha.tech.core.support;
 
-import com.aha.tech.core.constant.LanguageConstant;
 import com.aha.tech.core.model.dto.RequestAddParamsDto;
 import com.aha.tech.core.model.entity.CacheRequestEntity;
 import org.apache.commons.lang3.StringUtils;
@@ -8,7 +7,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.server.ServerWebExchange;
 
+import java.net.URI;
+
 import static com.aha.tech.core.constant.ExchangeAttributeConstant.*;
+import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.GATEWAY_REQUEST_URL_ATTR;
 
 /**
  * @Author: luweihong
@@ -20,22 +22,68 @@ public class ExchangeSupport {
 
     private static final Logger logger = LoggerFactory.getLogger(ExchangeSupport.class);
 
+    /**
+     * 获取key value default
+     * @param exchange
+     * @param key
+     * @param defaultValue
+     * @return
+     */
     public static Object get(ServerWebExchange exchange, String key, Object defaultValue) {
         return exchange.getAttributes().getOrDefault(key, defaultValue);
     }
 
+    /**
+     * 设置 key value
+     * @param exchange
+     * @param key
+     * @param value
+     */
     public static void put(ServerWebExchange exchange, String key, Object value) {
         exchange.getAttributes().put(key, value);
     }
 
-    public static String getRequestPath(ServerWebExchange exchange, String defaultPath) {
+    /**
+     * 获取请求的原始路径
+     * @param exchange
+     * @param defaultPath
+     * @return
+     */
+    public static String getOriginalRequestPath(ServerWebExchange exchange, String defaultPath) {
         return (String) exchange.getAttributes().getOrDefault(GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR, defaultPath);
     }
 
+    /**
+     * 获取路由的路径
+     * @param exchange
+     * @return
+     */
+    public static String getRouteRequestPath(ServerWebExchange exchange) {
+        URI realServer = (URI) exchange.getAttributes().getOrDefault(GATEWAY_REQUEST_URL_ATTR, null);
+        String routeHost;
+        if (realServer == null) {
+            routeHost = exchange.getAttributes().getOrDefault(GATEWAY_REQUEST_ROUTE_HOST_ATTR, StringUtils.EMPTY).toString();
+        } else {
+            routeHost = String.format("%s:%s", realServer.getHost(), realServer.getPort());
+        }
+
+        return routeHost;
+    }
+
+    /**
+     * 获取有效路径,去除版本号
+     * @param exchange
+     * @return
+     */
     public static String getRequestValidPath(ServerWebExchange exchange) {
         return (String) exchange.getAttributes().getOrDefault(GATEWAY_REQUEST_VALID_PATH_ATTR, StringUtils.EMPTY);
     }
 
+    /**
+     * 获取请求缓存
+     * @param exchange
+     * @return
+     */
     public static CacheRequestEntity getCacheRequest(ServerWebExchange exchange) {
         CacheRequestEntity cacheRequestEntity = (CacheRequestEntity) exchange.getAttributes().getOrDefault(GATEWAY_REQUEST_CACHED_ATTR, null);
         if (cacheRequestEntity == null) {
@@ -45,20 +93,29 @@ public class ExchangeSupport {
         return cacheRequestEntity;
     }
 
-    public static String getRequestLanguage(ServerWebExchange exchange) {
-        String language = (String) exchange.getAttributes().getOrDefault(REQUEST_LANGUAGE_ATTR, LanguageConstant.JAVA);
-
-        return language;
-    }
-
+    /**
+     * 获取是否跳过授权信息
+     * @param exchange
+     * @return
+     */
     public static Boolean getIsSkipAuth(ServerWebExchange exchange) {
         return (Boolean) exchange.getAttributes().getOrDefault(IS_SKIP_AUTH_ATTR, Boolean.FALSE);
     }
 
+    /**
+     * 获取是否跳过url防篡改
+     * @param exchange
+     * @return
+     */
     public static Boolean getIsSkipUrlTamperProof(ServerWebExchange exchange) {
         return (Boolean) exchange.getAttributes().getOrDefault(IS_SKIP_URL_TAMPER_PROOF_ATTR, Boolean.FALSE);
     }
 
+    /**
+     * 获取拦截添加的请求信息
+     * @param exchange
+     * @return
+     */
     public static RequestAddParamsDto getRequestAddParamsDto(ServerWebExchange exchange) {
         RequestAddParamsDto requestAddParamsDto = (RequestAddParamsDto) exchange.getAttributes().getOrDefault(GATEWAY_REQUEST_ADD_PARAMS_ATTR, null);
         if (requestAddParamsDto == null) {
