@@ -67,7 +67,6 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
 
         RequestAddParamsDto requestAddParamsDto = ExchangeSupport.getRequestAddParamsDto(exchange);
         String userId = requestAddParamsDto.getUserId() == null ? null : requestAddParamsDto.getUserId().toString();
-        httpHeaders.add(DEFAULT_ACCEPT_ENCODING, "gzip, deflate, br");
 
         httpHeaders.set(X_ENV_USER_ID, userId);
         httpHeaders.set(HEADER_X_FORWARDED_FOR, realIp);
