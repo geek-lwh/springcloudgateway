@@ -19,6 +19,8 @@ public class HeaderFieldConstant {
 
     public static final String DEFAULT_X_TOKEN_VALUE = "28ad87ef9fdce5d12dea093b860e8772";
 
+    public static final String DEFAULT_ACCEPT_ENCODING = "gzip, deflate, br";
+
     public static final String HEADER_AUTHORIZATION = "Authorization";
 
     public static final String HEADER_HOST = "Host";
