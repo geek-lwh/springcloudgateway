@@ -48,7 +48,7 @@ public class ModifyRequestHeaderFilter implements GlobalFilter, Ordered {
         CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheRequest(exchange);
         String remoteIp = serverHttpRequest.getRemoteAddress().getAddress().getHostAddress();
         HttpHeaders newHttpHeaders = httpRequestHandlerService.modifyRequestHeaders(exchange, httpHeaders, remoteIp);
-        logger.info("after modify request header : {} ", ResponseSupport.formatHttpHeaders(newHttpHeaders));
+        logger.debug("after modify request header : {} ", ResponseSupport.formatHttpHeaders(newHttpHeaders));
         cacheRequestEntity.setAfterModifyRequestHttpHeaders(newHttpHeaders);
 
         ServerHttpRequest newRequest = new ServerHttpRequestDecorator(serverHttpRequest) {
