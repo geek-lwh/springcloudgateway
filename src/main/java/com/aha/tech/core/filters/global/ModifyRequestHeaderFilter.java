@@ -3,6 +3,7 @@ package com.aha.tech.core.filters.global;
 import com.aha.tech.core.model.entity.CacheRequestEntity;
 import com.aha.tech.core.service.RequestHandlerService;
 import com.aha.tech.core.support.ExchangeSupport;
+import com.aha.tech.core.support.ResponseSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -46,7 +47,8 @@ public class ModifyRequestHeaderFilter implements GlobalFilter, Ordered {
         HttpHeaders httpHeaders = serverHttpRequest.getHeaders();
         CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheRequest(exchange);
         String remoteIp = serverHttpRequest.getRemoteAddress().getAddress().getHostAddress();
-        HttpHeaders newHttpHeaders = httpRequestHandlerService.modifyRequestHeaders(httpHeaders, remoteIp);
+        HttpHeaders newHttpHeaders = httpRequestHandlerService.modifyRequestHeaders(exchange, httpHeaders, remoteIp);
+        logger.info("after modify request header : {} ", ResponseSupport.formatHttpHeaders(newHttpHeaders));
         cacheRequestEntity.setAfterModifyRequestHttpHeaders(newHttpHeaders);
 
         ServerHttpRequest newRequest = new ServerHttpRequestDecorator(serverHttpRequest) {

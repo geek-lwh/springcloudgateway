@@ -1,8 +1,10 @@
 package com.aha.tech.core.service.impl;
 
 import com.aha.tech.commons.symbol.Separator;
+import com.aha.tech.core.model.dto.RequestAddParamsDto;
 import com.aha.tech.core.model.enums.WebClientTypeEnum;
 import com.aha.tech.core.service.ModifyHeaderService;
+import com.aha.tech.core.support.ExchangeSupport;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
@@ -14,6 +16,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.server.ServerWebExchange;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -46,10 +49,12 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
 
     /**
      * 初始化http请求头报文
+     * @param exchange
      * @param httpHeaders
+     * @param remoteIp
      */
     @Override
-    public void initHeaders(HttpHeaders httpHeaders, String remoteIp) {
+    public void initHeaders(ServerWebExchange exchange, HttpHeaders httpHeaders, String remoteIp) {
         MediaType mediaType = httpHeaders.getContentType();
         if (mediaType == null) {
             httpHeaders.setContentType(MediaType.APPLICATION_JSON_UTF8);
@@ -60,6 +65,10 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
             realIp = remoteIp;
         }
 
+        RequestAddParamsDto requestAddParamsDto = ExchangeSupport.getRequestAddParamsDto(exchange);
+        String userId = requestAddParamsDto.getUserId() == null ? null : requestAddParamsDto.getUserId().toString();
+
+        httpHeaders.set(X_ENV_USER_ID, userId);
         httpHeaders.set(HEADER_X_FORWARDED_FOR, realIp);
         httpHeaders.set(HEADER_TOKEN, DEFAULT_X_TOKEN_VALUE);
         httpHeaders.set(HEADER_OS, DEFAULT_OS);

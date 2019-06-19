@@ -273,15 +273,17 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
 
     /**
      * 修改请求头信息
+     * @param exchange
      * @param oldHeaders
+     * @param remoteIp
      * @return
      */
     @Override
-    public HttpHeaders modifyRequestHeaders(HttpHeaders oldHeaders, String remoteIp) {
+    public HttpHeaders modifyRequestHeaders(ServerWebExchange exchange, HttpHeaders oldHeaders, String remoteIp) {
         HttpHeaders newHeaders = new HttpHeaders();
         copyMultiValueMap(oldHeaders, newHeaders);
 
-        httpModifyHeaderService.initHeaders(newHeaders, remoteIp);
+        httpModifyHeaderService.initHeaders(exchange, newHeaders, remoteIp);
         httpModifyHeaderService.versionSetting(newHeaders);
         httpModifyHeaderService.xEnvSetting(newHeaders);
         httpModifyHeaderService.removeHeaders(newHeaders);

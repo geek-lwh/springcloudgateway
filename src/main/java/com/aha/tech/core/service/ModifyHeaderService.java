@@ -1,6 +1,7 @@
 package com.aha.tech.core.service;
 
 import org.springframework.http.HttpHeaders;
+import org.springframework.web.server.ServerWebExchange;
 
 /**
  * @Author: luweihong
@@ -8,7 +9,7 @@ import org.springframework.http.HttpHeaders;
  */
 public interface ModifyHeaderService {
 
-    void initHeaders(HttpHeaders httpHeaders, String remoteIp);
+    void initHeaders(ServerWebExchange exchange, HttpHeaders httpHeaders, String remoteIp);
 
     /**
      * 设置头部版本号信息

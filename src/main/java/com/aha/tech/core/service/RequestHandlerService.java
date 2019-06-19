@@ -63,10 +63,12 @@ public interface RequestHandlerService {
 
     /**
      * 修改请求头
+     * @param exchange
      * @param httpHeaders
+     * @param remoteIp
      * @return
      */
-    HttpHeaders modifyRequestHeaders(HttpHeaders httpHeaders, String remoteIp);
+    HttpHeaders modifyRequestHeaders(ServerWebExchange exchange, HttpHeaders httpHeaders, String remoteIp);
 
     /**
      * 重新创建一个response对象
