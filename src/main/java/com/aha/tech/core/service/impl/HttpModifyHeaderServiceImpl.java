@@ -13,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.server.ServerWebExchange;
@@ -55,10 +54,6 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
      */
     @Override
     public void initHeaders(ServerWebExchange exchange, HttpHeaders httpHeaders, String remoteIp) {
-        MediaType mediaType = httpHeaders.getContentType();
-        if (mediaType == null) {
-            httpHeaders.setContentType(MediaType.APPLICATION_JSON_UTF8);
-        }
         String realIp = parseHeaderIp(httpHeaders);
         if (StringUtils.isBlank(realIp)) {
             logger.warn("缺失x-forward-for , 使用 remoteIp : {}", remoteIp);
