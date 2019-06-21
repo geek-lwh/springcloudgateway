@@ -86,12 +86,12 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
                         .then(Mono.defer(() -> {
                             Flux<DataBuffer> messageBody = outputMessage.getBody();
                             HttpHeaders headers = getDelegate().getHeaders();
-//                            headers.remove(HttpHeaders.TRANSFER_ENCODING);
+                            headers.remove(HttpHeaders.TRANSFER_ENCODING);
                             crossAccessSetting(headers);
-//                            messageBody = messageBody.doOnNext(data -> headers.setContentLength(data.readableByteCount()));
-                            if (!headers.containsKey(HttpHeaders.TRANSFER_ENCODING)) {
-                                messageBody = messageBody.doOnNext(data -> headers.setContentLength(data.readableByteCount()));
-                            }
+                            messageBody = messageBody.doOnNext(data -> headers.setContentLength(data.readableByteCount()));
+//                            if (!headers.containsKey(HttpHeaders.TRANSFER_ENCODING)) {
+//                                messageBody = messageBody.doOnNext(data -> headers.setContentLength(data.readableByteCount()));
+//                            }
                             return getDelegate().writeWith(messageBody);
                         }));
             }
