@@ -2,6 +2,7 @@ package com.aha.tech.core.filters.global;
 
 import com.aha.tech.core.service.RequestHandlerService;
 import com.aha.tech.core.support.ExchangeSupport;
+import com.aha.tech.util.IdWorker;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
@@ -12,8 +13,7 @@ import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
 
-import static com.aha.tech.core.constant.ExchangeAttributeConstant.IS_SKIP_AUTH_ATTR;
-import static com.aha.tech.core.constant.ExchangeAttributeConstant.IS_SKIP_URL_TAMPER_PROOF_ATTR;
+import static com.aha.tech.core.constant.ExchangeAttributeConstant.*;
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.WHITE_LIST_REQUEST_FILTER;
 
 /**
@@ -40,6 +40,10 @@ public class WhiteListFilter implements GlobalFilter, Ordered {
 
         // 是否跳过url防篡改
         Boolean isSkipUrlTamperProof = httpRequestHandlerService.isSkipUrlTamperProof(rawPath, httpHeaders);
+
+        // create request id
+        String requestId = String.valueOf(IdWorker.getInstance().nextId());
+        ExchangeSupport.put(exchange, REQUEST_ID_ATTR, requestId);
 
         ExchangeSupport.put(exchange, IS_SKIP_AUTH_ATTR, isSkipAuth);
         ExchangeSupport.put(exchange, IS_SKIP_URL_TAMPER_PROOF_ATTR, isSkipUrlTamperProof);

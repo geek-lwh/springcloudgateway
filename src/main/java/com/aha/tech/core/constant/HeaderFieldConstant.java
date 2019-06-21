@@ -83,7 +83,11 @@ public class HeaderFieldConstant {
 
     public static final String X_ENV_FIELD_USER_ID = "user_id";
 
+    public static final String HEADER_USER_ID = "user_id";
+
     public static final String X_ENV_USER_ID = "X-Env-User-Id";
+
+    public static final String X_ENV_REQUEST_ID = "X-Request-Id";
 
     public static final String X_ENV_CHANNEL = "X-Env-Channel";
 

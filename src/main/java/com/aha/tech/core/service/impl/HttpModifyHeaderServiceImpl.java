@@ -62,8 +62,12 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
 
         RequestAddParamsDto requestAddParamsDto = ExchangeSupport.getRequestAddParamsDto(exchange);
         String userId = requestAddParamsDto.getUserId() == null ? null : requestAddParamsDto.getUserId().toString();
-
         httpHeaders.set(X_ENV_USER_ID, userId);
+        httpHeaders.set(HEADER_USER_ID, userId);
+
+        String requestId = ExchangeSupport.getRequestId(exchange);
+        httpHeaders.set(X_ENV_REQUEST_ID, requestId);
+
         httpHeaders.set(HEADER_X_FORWARDED_FOR, realIp);
         httpHeaders.set(HEADER_TOKEN, DEFAULT_X_TOKEN_VALUE);
         httpHeaders.set(HEADER_OS, DEFAULT_OS);

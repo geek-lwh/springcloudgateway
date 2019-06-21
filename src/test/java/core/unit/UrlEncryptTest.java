@@ -37,10 +37,10 @@ public class UrlEncryptTest {
     @DisplayName("GET请求加密测试类目")
     public void encryptGetRequest() {
         logger.info("<<<< {} 开始 [GET请求加密测试类目]", DateUtil.currentDateByDefaultFormat());
-        String url = "http://10.10.189.191:9700/v3/orderbff/recommends/home/get?gender=&age=&_=1560220064816";
+        String url = "http://10.10.189.191:9700/v3/appbff/config/get";
 
-        String signature = "936169becd4c6c68fdbb505a9334f1a5";
-        String timestamp = "1560222716661";
+        String signature = "76c9a7bb7fde9e92b141d8527c965208";
+        String timestamp = "1561013495222";
         String content = "b266f3154977f5dd6da84591b28fe0db";
         String version = "Froyo";
 

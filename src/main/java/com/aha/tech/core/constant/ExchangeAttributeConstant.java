@@ -31,7 +31,7 @@ public class ExchangeAttributeConstant {
 
     public static final String IS_SKIP_URL_TAMPER_PROOF_ATTR = "IS_SKIP_URL_TAMPER_PROOF_ATTR";
 
-    public static final String REQUEST_LANGUAGE_ATTR = "REQUEST_LANGUAGE_ATTR";
+    public static final String REQUEST_ID_ATTR = "REQUEST_ID_ATTR";
 
 //    public static final String IS_IP_LIMITER_WHITE_LIST_ATTR = "IS_IP_LIMITER_WHITE_LIST_ATTR";
 }

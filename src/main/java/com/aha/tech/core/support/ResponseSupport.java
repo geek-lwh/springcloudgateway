@@ -72,25 +72,22 @@ public class ResponseSupport {
 
     /**
      * 构建劲爆日志
+     * @param requestId
      * @param cacheRequestEntity
      * @param responseVo
      * @param httpStatus
      * @return
      */
-    public static String buildWarnLog(CacheRequestEntity cacheRequestEntity, ResponseVo responseVo, HttpStatus httpStatus) {
-        Integer code = responseVo.getCode();
+    public static String buildResponseLog(String requestId, CacheRequestEntity cacheRequestEntity, ResponseVo responseVo, HttpStatus httpStatus) {
         StringBuffer sb = new StringBuffer();
 
-        if (code != ResponseConstants.SUCCESS || !httpStatus.equals(HttpStatus.OK)) {
-            sb.append(System.lineSeparator());
-            sb.append("<<<<<<<<<<<<<<<<<<");
-            sb.append(System.lineSeparator());
-            sb.append("请求信息 : ").append(cacheRequestEntity).append(System.lineSeparator());
-            sb.append("业务状态码 : ").append(responseVo);
-            sb.append("http状态码 : ").append(httpStatus);
-            sb.append(System.lineSeparator());
-            sb.append(">>>>>>>>>>>>>>>>>>");
-            sb.append(System.lineSeparator());
+        sb.append("requestId : ").append(requestId).append(System.lineSeparator());
+        sb.append("业务状态码 : ").append(responseVo).append(System.lineSeparator());
+
+        Integer code = responseVo.getCode();
+        if (!code.equals(ResponseConstants.SUCCESS) || !httpStatus.equals(HttpStatus.OK)) {
+            sb.append("http状态码 : ").append(httpStatus).append(System.lineSeparator());
+            sb.append("详细信息 : ").append(cacheRequestEntity).append(System.lineSeparator());
         }
 
         return sb.toString();

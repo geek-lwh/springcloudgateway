@@ -2,6 +2,7 @@ package com.aha.tech.core.support;
 
 import com.aha.tech.core.model.dto.RequestAddParamsDto;
 import com.aha.tech.core.model.entity.CacheRequestEntity;
+import com.aha.tech.util.IdWorker;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -125,5 +126,15 @@ public class ExchangeSupport {
         }
 
         return requestAddParamsDto;
+    }
+
+    /**
+     * 获取requestId
+     * @param exchange
+     * @return
+     */
+    public static String getRequestId(ServerWebExchange exchange) {
+        String requestId = exchange.getAttributes().getOrDefault(REQUEST_ID_ATTR, String.valueOf(IdWorker.getInstance().nextId())).toString();
+        return requestId;
     }
 }
