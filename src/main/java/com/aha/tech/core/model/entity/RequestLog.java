@@ -12,6 +12,8 @@ import java.net.URI;
  */
 public class RequestLog {
 
+    private String requestId;
+
     private HttpHeaders httpHeaders;
 
     private URI uri;
@@ -53,9 +55,18 @@ public class RequestLog {
         this.cost = cost;
     }
 
+    public String getRequestId() {
+        return requestId;
+    }
+
+    public void setRequestId(String requestId) {
+        this.requestId = requestId;
+    }
+
     @Override
     public String toString() {
         StringBuffer sb = new StringBuffer();
+        sb.append("requestId").append(Separator.COLON_MARK).append(this.requestId).append(System.lineSeparator());
         sb.append("请求行").append(Separator.COLON_MARK).append(this.uri);
         sb.append(Separator.COMMA_MARK).append("耗时").append(Separator.COLON_MARK).append(this.cost).append(System.lineSeparator());
         sb.append("请求头").append(Separator.COLON_MARK).append(ResponseSupport.formatHttpHeaders(this.httpHeaders)).append(System.lineSeparator());
