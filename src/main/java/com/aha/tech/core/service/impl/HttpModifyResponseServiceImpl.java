@@ -6,6 +6,7 @@ import com.aha.tech.core.service.ModifyResponseService;
 import com.aha.tech.core.support.ExchangeSupport;
 import com.aha.tech.core.support.ResponseSupport;
 import com.alibaba.fastjson.JSON;
+import org.apache.commons.lang3.StringUtils;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,15 +67,16 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
                 httpHeaders.add(HttpHeaders.CONTENT_TYPE, originalResponseContentType);
                 ResponseAdapter responseAdapter = m.new ResponseAdapter(body, httpHeaders);
                 DefaultClientResponse clientResponse = new DefaultClientResponse(responseAdapter, ExchangeStrategies.withDefaults());
-//                boolean gzip = isGZipped(serverWebExchange.getRequest());
                 Mono modifiedBody = clientResponse.bodyToMono(String.class).flatMap(originalBody -> {
                     CompletableFuture.runAsync(() -> {
                         CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheRequest(serverWebExchange);
                         String requestId = ExchangeSupport.getRequestId(serverWebExchange);
                         ResponseVo responseVo = JSON.parseObject(originalBody, ResponseVo.class);
                         HttpStatus httpStatus = getDelegate().getStatusCode();
-                        String responseLog = ResponseSupport.buildResponseLog(requestId, cacheRequestEntity, responseVo, httpStatus);
-                        logger.info("{}", responseLog);
+                        String warnLog = ResponseSupport.buildWarnLog(requestId, cacheRequestEntity, responseVo, httpStatus);
+                        if (StringUtils.isNotBlank(warnLog)) {
+                            logger.warn("状态码异常 =======> {}", warnLog);
+                        }
                     }, writeLoggingThreadPool);
 
                     return Mono.just(originalBody);

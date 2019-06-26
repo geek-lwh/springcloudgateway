@@ -10,6 +10,14 @@ import org.springframework.web.server.ServerWebExchange;
  */
 public interface AccessLogService {
 
+    /**
+     * 打印请求信息
+     * @param exchange
+     * @param cost
+     * @return
+     */
+    String requestLog(ServerWebExchange exchange, Long cost);
+
     String printAccessLogging(ServerHttpRequest serverHttpRequest, Long startTime, Long endTime, HttpStatus status);
     /**
      * 当遇到错误时,打印详细信息

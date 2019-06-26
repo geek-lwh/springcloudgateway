@@ -34,7 +34,7 @@ public class LoadBalancingFilter implements GlobalFilter, Ordered {
         CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheRequest(exchange);
 
         String routeHost = ExchangeSupport.getRouteRequestPath(exchange);
-        logger.info("请求地址 : {},转发服务地址 : {}", cacheRequestEntity.getRequestLine(), routeHost);
+//        logger.info("请求地址 : {},转发服务地址 : {}", cacheRequestEntity.getRequestLine(), routeHost);
         cacheRequestEntity.setRealServer(routeHost);
         ExchangeSupport.put(exchange, GATEWAY_REQUEST_CACHED_ATTR, cacheRequestEntity);
 

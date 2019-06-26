@@ -5,8 +5,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
@@ -38,12 +36,10 @@ public class AccessLogFilter implements WebFilter {
     @Override
     public Mono<Void> filter(ServerWebExchange serverWebExchange, WebFilterChain webFilterChain) {
         Long startTime = System.currentTimeMillis();
-        ServerHttpRequest serverHttpRequest = serverWebExchange.getRequest();
         return webFilterChain.filter(serverWebExchange)
                 .doFinally((s) -> CompletableFuture.runAsync(() -> {
-                    Long endTime = System.currentTimeMillis();
-                    HttpStatus status = serverWebExchange.getResponse().getStatusCode();
-                    logger.info("{}", httpAccessLogService.printAccessLogging(serverHttpRequest, startTime, endTime, status));
+                    Long cost = System.currentTimeMillis() - startTime;
+                    logger.info("{}", httpAccessLogService.requestLog(serverWebExchange, cost));
                 }, writeLoggingThreadPool));
     }
 

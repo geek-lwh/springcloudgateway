@@ -1,8 +1,8 @@
 Application is running:
 ------------------------------------------------------------------------
     Application:     {}
-    Local IP:        {}://127.0.0.1:{}{}
-    Public IP:       {}://{}:{}{}
+    Local IP:        {}://127.0.0.1:{}/{}
+    Public IP:       {}://{}:{}/{}
     Profiles:        {}
     PID:             {}
     Charset:         {}

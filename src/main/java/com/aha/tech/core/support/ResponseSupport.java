@@ -78,19 +78,19 @@ public class ResponseSupport {
      * @param httpStatus
      * @return
      */
-    public static String buildResponseLog(String requestId, CacheRequestEntity cacheRequestEntity, ResponseVo responseVo, HttpStatus httpStatus) {
-        StringBuffer sb = new StringBuffer();
-
-        sb.append("requestId : ").append(requestId).append(System.lineSeparator());
-        sb.append("业务状态码 : ").append(responseVo).append(System.lineSeparator());
-
+    public static String buildWarnLog(String requestId, CacheRequestEntity cacheRequestEntity, ResponseVo responseVo, HttpStatus httpStatus) {
         Integer code = responseVo.getCode();
         if (!code.equals(ResponseConstants.SUCCESS) || !httpStatus.equals(HttpStatus.OK)) {
-            sb.append("http状态码 : ").append(httpStatus).append(System.lineSeparator());
-            sb.append("详细信息 : ").append(cacheRequestEntity).append(System.lineSeparator());
+            StringBuffer sb = new StringBuffer();
+            sb.append(System.lineSeparator());
+            sb.append("requestId : ").append(requestId).append(System.lineSeparator());
+            sb.append("response body: ").append(responseVo).append(System.lineSeparator());
+            sb.append("http status : ").append(httpStatus).append(System.lineSeparator());
+            sb.append("info : ").append(cacheRequestEntity).append(System.lineSeparator());
+            return sb.toString();
         }
 
-        return sb.toString();
+        return org.apache.commons.lang3.StringUtils.EMPTY;
     }
 
     /**

@@ -35,19 +35,19 @@
         </rollingPolicy>
     </appender>
 
-    <appender name="ACCESS_LOG_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>/data/log/${PROJECT_NAME}/access.log</file>
-        <encoder>
-            <pattern>%date %msg%n</pattern>
-            <charset>UTF-8</charset>
-        </encoder>
-        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>/data/log/${PROJECT_NAME}/history/access-%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
-            <MaxHistory>7</MaxHistory>
-            <maxFileSize>200MB</maxFileSize>
-            <totalSizeCap>500MB</totalSizeCap>
-        </rollingPolicy>
-    </appender>
+    <!--<appender name="ACCESS_LOG_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">-->
+    <!--<file>/data/log/${PROJECT_NAME}/access.log</file>-->
+    <!--<encoder>-->
+    <!--<pattern>%date %msg%n</pattern>-->
+    <!--<charset>UTF-8</charset>-->
+    <!--</encoder>-->
+    <!--<rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">-->
+    <!--<fileNamePattern>/data/log/${PROJECT_NAME}/history/access-%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>-->
+    <!--<MaxHistory>7</MaxHistory>-->
+    <!--<maxFileSize>200MB</maxFileSize>-->
+    <!--<totalSizeCap>500MB</totalSizeCap>-->
+    <!--</rollingPolicy>-->
+    <!--</appender>-->
 
     <appender name="RESPONSE_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>/data/log/${PROJECT_NAME}/response.log</file>
@@ -80,11 +80,11 @@
         <resetJUL>true</resetJUL>
     </contextListener>
 
-    <logger name="com.aha.tech.core.filters.web.AccessLogFilter" level="INFO" additivty="false">
-        <appender-ref ref="ACCESS_LOG_FILE"></appender-ref>
-    </logger>
+    <!--<logger name="com.aha.tech.core.filters.web.AccessLogFilter" level="INFO" additivty="false">-->
+    <!--<appender-ref ref="ACCESS_LOG_FILE"></appender-ref>-->
+    <!--</logger>-->
 
-    <logger name="com.aha.tech.core.service.impl.HttpModifyResponseServiceImpl" additivty="false">
+    <logger name="com.aha.tech.core.service.impl.HttpModifyResponseServiceImpl" additivty="false" level="INFO">
         <appender-ref ref="RESPONSE_FILE"></appender-ref>
     </logger>
 

@@ -2,6 +2,8 @@ package com.aha.tech.core.service.impl;
 
 import com.aha.tech.commons.symbol.Separator;
 import com.aha.tech.commons.utils.DateUtil;
+import com.aha.tech.core.model.entity.CacheRequestEntity;
+import com.aha.tech.core.model.entity.RequestLog;
 import com.aha.tech.core.service.AccessLogService;
 import com.aha.tech.core.support.ExchangeSupport;
 import com.aha.tech.core.support.ResponseSupport;
@@ -40,6 +42,25 @@ public class HttpAccessLogServiceImpl implements AccessLogService {
 
     @Resource
     private ThreadPoolTaskExecutor writeLoggingThreadPool;
+
+    /**
+     * 打印请求地址
+     * @param exchange
+     * @param cost
+     * @return
+     */
+    @Override
+    public String requestLog(ServerWebExchange exchange, Long cost) {
+        CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheRequest(exchange);
+
+        RequestLog requestLog = new RequestLog();
+        requestLog.setUri(cacheRequestEntity.getRequestLine());
+        requestLog.setHttpHeaders(cacheRequestEntity.getAfterModifyRequestHttpHeaders());
+        requestLog.setBody(cacheRequestEntity.getRequestBody());
+        requestLog.setCost(cost);
+
+        return requestLog.toString();
+    }
 
     /**
      * 构建访问日志前缀
