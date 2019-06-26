@@ -315,13 +315,13 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
     }
 
     /**
-     * 修改response header
-     * @param httpHeaders
-     */
-    @Override
-    public void modifyResponseHeader(HttpHeaders httpHeaders) {
-        httpModifyResponseService.crossAccessSetting(httpHeaders);
-    }
+     //     * 修改response header
+     //     * @param httpHeaders
+     //     */
+//    @Override
+//    public void modifyResponseHeader(HttpHeaders httpHeaders) {
+//        httpModifyResponseService.modifyResponseHeader(httpHeaders);
+//    }
 
     /**
      * 解析http header 中的Authorization

@@ -1,5 +1,6 @@
 package com.aha.tech.core.service.impl;
 
+import com.aha.tech.core.constant.HeaderFieldConstant;
 import com.aha.tech.core.model.entity.CacheRequestEntity;
 import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.ModifyResponseService;
@@ -82,15 +83,16 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
                     return Mono.just(originalBody);
                 });
 
+                HttpHeaders requestHeader = serverWebExchange.getRequest().getHeaders();
                 BodyInserter bodyInserter = BodyInserters.fromPublisher(modifiedBody, String.class);
                 CachedBodyOutputMessage outputMessage = new CachedBodyOutputMessage(serverWebExchange, oldResponse.getHeaders());
                 return bodyInserter.insert(outputMessage, new BodyInserterContext())
                         .then(Mono.defer(() -> {
                             Flux<DataBuffer> messageBody = outputMessage.getBody();
-                            HttpHeaders headers = getDelegate().getHeaders();
-                            headers.remove(HttpHeaders.TRANSFER_ENCODING);
-                            crossAccessSetting(headers);
-                            messageBody = messageBody.doOnNext(data -> headers.setContentLength(data.readableByteCount()));
+                            HttpHeaders responseHeader = getDelegate().getHeaders();
+                            responseHeader.remove(HttpHeaders.TRANSFER_ENCODING);
+                            modifyResponseHeader(responseHeader, requestHeader);
+                            messageBody = messageBody.doOnNext(data -> responseHeader.setContentLength(data.readableByteCount()));
 //                            if (!headers.containsKey(HttpHeaders.TRANSFER_ENCODING)) {
 //                                messageBody = messageBody.doOnNext(data -> headers.setContentLength(data.readableByteCount()));
 //                            }
@@ -106,16 +108,16 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
      * 跨域访问设置
      * httpHeaders.set 有则替换
      *
-     * @param httpHeaders
+     * @param responseHeader
+     * @param requestHeader
      */
-    @Override
-    public void crossAccessSetting(HttpHeaders httpHeaders) {
-        // crossDomain 设置了一次*,后端rs 又设置了一次*,所以需要在response的时候进行先删除,再设置
-//        httpHeaders.remove(HEADER_ACCESS_CONTROL_ALLOW_ORIGIN);
-        httpHeaders.setAccessControlAllowOrigin(HEADER_ALL_CONTROL_ALLOW_ORIGIN_ACCESS);
-        httpHeaders.setAccessControlAllowMethods(HEADER_CROSS_ACCESS_ALLOW_HTTP_METHODS);
-        httpHeaders.setAccessControlMaxAge(HEADER_CROSS_ACCESS_ALLOW_MAX_AGE);
-        httpHeaders.setAccessControlAllowHeaders(HEADER_CROSS_ACCESS_ALLOW_ALLOW_HEADERS);
+    public void modifyResponseHeader(HttpHeaders responseHeader, HttpHeaders requestHeader) {
+        responseHeader.setAccessControlAllowOrigin(HEADER_ALL_CONTROL_ALLOW_ORIGIN_ACCESS);
+        responseHeader.setAccessControlAllowMethods(HEADER_CROSS_ACCESS_ALLOW_HTTP_METHODS);
+        responseHeader.setAccessControlMaxAge(HEADER_CROSS_ACCESS_ALLOW_MAX_AGE);
+        responseHeader.setAccessControlAllowHeaders(HEADER_CROSS_ACCESS_ALLOW_ALLOW_HEADERS);
+        String keepAlive = requestHeader.getFirst(HeaderFieldConstant.HEADER_CONNECTION);
+        responseHeader.set(HeaderFieldConstant.HEADER_CONNECTION, StringUtils.isBlank(keepAlive) ? KEEP_ALIVE_VALUE : keepAlive);
     }
 
     /**

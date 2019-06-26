@@ -90,5 +90,5 @@ public interface RequestHandlerService {
      * @param httpHeaders
      * @return
      */
-    void modifyResponseHeader(HttpHeaders httpHeaders);
+//    void modifyResponseHeader(HttpHeaders httpHeaders);
 }

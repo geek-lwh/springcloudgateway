@@ -13,6 +13,17 @@ public class HeaderFieldConstant {
 
     public static final String HEADER_SKIP_URL_TAMPER_PROOF = "X-NO-TAMPER-PROOF";
 
+    public static final String HEADER_CONNECTION = "Connection";
+
+    public static final String HEADER_KEEP_ALIVE = "Keep-Alive";
+
+    public static final String HEADER_KEEP_ALIVE_VALUE = "timeout=30";
+
+    public static final String KEEP_ALIVE_VALUE = "keep-alive";
+
+    public static final String CLOSE_VALUE = "close";
+
+
     public static final String HEADER_TOKEN = "X-Token";
 
     public static final String HEADER_X_FORWARDED_FOR = "X-Forwarded-For";

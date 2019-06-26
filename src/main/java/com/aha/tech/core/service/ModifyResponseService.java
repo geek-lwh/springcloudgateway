@@ -1,6 +1,5 @@
 package com.aha.tech.core.service;
 
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.http.server.reactive.ServerHttpResponseDecorator;
 import org.springframework.web.server.ServerWebExchange;
@@ -17,11 +16,11 @@ public interface ModifyResponseService {
      * @return
      */
     ServerHttpResponseDecorator renewResponse(ServerWebExchange serverWebExchange, ServerHttpResponse serverHttpResponse);
-
-    /**
-     * 修改返回对象的报头
-     * @param httpHeaders
-     */
-    void crossAccessSetting(HttpHeaders httpHeaders);
+//
+//    /**
+//     * 修改返回对象的报头
+//     * @param httpHeaders
+//     */
+//    void modifyResponseHeader(HttpHeaders httpHeaders);
 
 }

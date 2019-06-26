@@ -72,6 +72,7 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
         httpHeaders.set(HEADER_TOKEN, DEFAULT_X_TOKEN_VALUE);
         httpHeaders.set(HEADER_OS, DEFAULT_OS);
         httpHeaders.set(HEADER_VERSION, DEFAULT_VERSION);
+        httpHeaders.set(HEADER_KEEP_ALIVE, HEADER_KEEP_ALIVE_VALUE);
     }
 
     /**
