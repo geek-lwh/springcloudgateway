@@ -20,6 +20,7 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
@@ -78,7 +79,34 @@ public class ResponseSupport {
      * @param httpStatus
      * @return
      */
-    public static String buildWarnLog(String requestId, CacheRequestEntity cacheRequestEntity, ResponseVo responseVo, HttpStatus httpStatus) {
+//    public static String buildWarnLog(String requestId, CacheRequestEntity cacheRequestEntity, ResponseVo responseVo, HttpStatus httpStatus) {
+//        Integer code = responseVo.getCode();
+//        if (!code.equals(ResponseConstants.SUCCESS) || !httpStatus.equals(HttpStatus.OK)) {
+//            StringBuffer sb = new StringBuffer();
+//            sb.append(System.lineSeparator());
+//            sb.append("requestId : ").append(requestId).append(System.lineSeparator());
+//            sb.append("response body: ").append(responseVo).append(System.lineSeparator());
+//            sb.append("http status : ").append(httpStatus).append(System.lineSeparator());
+//            sb.append("info : ").append(cacheRequestEntity).append(System.lineSeparator());
+//            return sb.toString();
+//        }
+//
+//        return org.apache.commons.lang3.StringUtils.EMPTY;
+//    }
+    public static String buildWarnLog(ServerWebExchange exchange, ResponseVo responseVo, HttpStatus httpStatus) {
+        CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheRequest(exchange);
+        String requestId = ExchangeSupport.getRequestId(exchange);
+
+        URI uri = cacheRequestEntity.getRequestLine();
+        if (uri == null) {
+            cacheRequestEntity.setRequestLine(exchange.getRequest().getURI());
+        }
+
+        HttpHeaders httpHeaders = cacheRequestEntity.getAfterModifyRequestHttpHeaders();
+        if (httpHeaders == null) {
+            cacheRequestEntity.setAfterModifyRequestHttpHeaders(exchange.getRequest().getHeaders());
+        }
+
         Integer code = responseVo.getCode();
         if (!code.equals(ResponseConstants.SUCCESS) || !httpStatus.equals(HttpStatus.OK)) {
             StringBuffer sb = new StringBuffer();

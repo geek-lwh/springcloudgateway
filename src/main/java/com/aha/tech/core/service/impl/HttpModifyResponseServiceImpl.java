@@ -1,10 +1,8 @@
 package com.aha.tech.core.service.impl;
 
 import com.aha.tech.core.constant.HeaderFieldConstant;
-import com.aha.tech.core.model.entity.CacheRequestEntity;
 import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.ModifyResponseService;
-import com.aha.tech.core.support.ExchangeSupport;
 import com.aha.tech.core.support.ResponseSupport;
 import com.alibaba.fastjson.JSON;
 import org.apache.commons.lang3.StringUtils;
@@ -70,11 +68,11 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
                 DefaultClientResponse clientResponse = new DefaultClientResponse(responseAdapter, ExchangeStrategies.withDefaults());
                 Mono modifiedBody = clientResponse.bodyToMono(String.class).flatMap(originalBody -> {
                     CompletableFuture.runAsync(() -> {
-                        CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheRequest(serverWebExchange);
-                        String requestId = ExchangeSupport.getRequestId(serverWebExchange);
+//                        CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheRequest(serverWebExchange);
+//                        String requestId = ExchangeSupport.getRequestId(serverWebExchange);
                         ResponseVo responseVo = JSON.parseObject(originalBody, ResponseVo.class);
                         HttpStatus httpStatus = getDelegate().getStatusCode();
-                        String warnLog = ResponseSupport.buildWarnLog(requestId, cacheRequestEntity, responseVo, httpStatus);
+                        String warnLog = ResponseSupport.buildWarnLog(serverWebExchange, responseVo, httpStatus);
                         if (StringUtils.isNotBlank(warnLog)) {
                             logger.warn("状态码异常 =======> {}", warnLog);
                         }
