@@ -84,7 +84,7 @@
     <!--<appender-ref ref="ACCESS_LOG_FILE"></appender-ref>-->
     <!--</logger>-->
 
-    <logger name="com.aha.tech.core.service.impl.HttpModifyResponseServiceImpl" additivty="false" level="INFO">
+    <logger name="com.aha.tech.core.service.impl.HttpModifyResponseServiceImpl" additivty="false" level="WARN">
         <appender-ref ref="RESPONSE_FILE"></appender-ref>
     </logger>
 
