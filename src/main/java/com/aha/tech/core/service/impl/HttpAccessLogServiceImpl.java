@@ -54,8 +54,18 @@ public class HttpAccessLogServiceImpl implements AccessLogService {
         CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheRequest(exchange);
 
         RequestLog requestLog = new RequestLog();
-        requestLog.setUri(cacheRequestEntity.getRequestLine());
-        requestLog.setHttpHeaders(cacheRequestEntity.getAfterModifyRequestHttpHeaders());
+        URI uri = cacheRequestEntity.getRequestLine();
+        if (uri == null) {
+            uri = exchange.getRequest().getURI();
+        }
+
+        HttpHeaders httpHeaders = cacheRequestEntity.getAfterModifyRequestHttpHeaders();
+        if (httpHeaders == null) {
+            httpHeaders = exchange.getRequest().getHeaders();
+        }
+
+        requestLog.setUri(uri);
+        requestLog.setHttpHeaders(httpHeaders);
         requestLog.setBody(cacheRequestEntity.getRequestBody());
         requestLog.setCost(cost);
 
