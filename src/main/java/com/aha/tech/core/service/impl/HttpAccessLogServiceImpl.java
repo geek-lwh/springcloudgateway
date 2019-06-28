@@ -69,6 +69,7 @@ public class HttpAccessLogServiceImpl implements AccessLogService {
         requestLog.setHttpHeaders(httpHeaders);
         requestLog.setBody(cacheRequestEntity.getRequestBody());
         requestLog.setCost(cost);
+        requestLog.setRealServer(cacheRequestEntity.getRealServer());
 
         return requestLog.toString();
     }

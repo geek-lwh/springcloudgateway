@@ -20,6 +20,7 @@ public class RequestLog {
 
     private String body;
 
+    private String realServer;
 
     private Long cost;
 
@@ -63,12 +64,21 @@ public class RequestLog {
         this.requestId = requestId;
     }
 
+    public String getRealServer() {
+        return realServer;
+    }
+
+    public void setRealServer(String realServer) {
+        this.realServer = realServer;
+    }
+
     @Override
     public String toString() {
         StringBuffer sb = new StringBuffer();
         sb.append("requestId").append(Separator.COLON_MARK).append(this.requestId).append(System.lineSeparator());
         sb.append("请求行").append(Separator.COLON_MARK).append(this.uri);
         sb.append(Separator.COMMA_MARK).append("耗时").append(Separator.COLON_MARK).append(this.cost).append(System.lineSeparator());
+        sb.append("转发路由").append(Separator.COLON_MARK).append(realServer).append(System.lineSeparator());
         sb.append("请求头").append(Separator.COLON_MARK).append(ResponseSupport.formatHttpHeaders(this.httpHeaders)).append(System.lineSeparator());
         sb.append("请求体").append(Separator.COLON_MARK).append(this.body).append(System.lineSeparator());
 
