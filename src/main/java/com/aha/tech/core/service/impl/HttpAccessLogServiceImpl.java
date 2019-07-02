@@ -26,6 +26,7 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.util.Date;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_CACHED_ATTR;
@@ -64,11 +65,17 @@ public class HttpAccessLogServiceImpl implements AccessLogService {
             httpHeaders = exchange.getRequest().getHeaders();
         }
 
+        Map<String, String> ipLimiterHeader = ExchangeSupport.getCurrentIpLimiter(exchange);
+
         requestLog.setRequestId(requestId);
         requestLog.setUri(uri);
         requestLog.setHttpHeaders(httpHeaders);
         requestLog.setBody(cacheRequestEntity.getRequestBody());
         requestLog.setCost(cost);
+        requestLog.setIpLimitRemaining(ipLimiterHeader.getOrDefault("X-RateLimit-Remaining", Strings.EMPTY));
+        requestLog.setIpLimitBurstCapacity(ipLimiterHeader.getOrDefault("X-RateLimit-Burst-Capacity", Strings.EMPTY));
+        requestLog.setIpLimitReplenishRate(ipLimiterHeader.getOrDefault("X-RateLimit-Replenish-Rate", Strings.EMPTY));
+        requestLog.setRealIp(ipLimiterHeader.getOrDefault("realIp", Strings.EMPTY));
 
         return requestLog.toString();
     }

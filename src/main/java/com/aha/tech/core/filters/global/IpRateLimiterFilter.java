@@ -56,7 +56,7 @@ public class IpRateLimiterFilter implements GlobalFilter, Ordered {
 
         String rawPath = exchange.getRequest().getURI().getRawPath();
         if (httpRequestHandlerService.isSkipIpLimiter(rawPath)) {
-            logger.info("跳过ip限流策略 : {}", rawPath);
+            logger.debug("跳过ip限流策略 : {}", rawPath);
             return chain.filter(exchange);
         }
 
