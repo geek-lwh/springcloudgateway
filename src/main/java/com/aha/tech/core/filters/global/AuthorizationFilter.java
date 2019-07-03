@@ -52,7 +52,7 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
 
         String message = authenticationResultEntity.getMessage();
         return Mono.defer(() -> {
-            String errorMsg = String.format("网关权限校验出现异常,错误信息 : %s", message);
+            String errorMsg = String.format("%s", message);
             ResponseVo rpcResponse = new ResponseVo(code, errorMsg);
             return ResponseSupport.write(exchange, rpcResponse);
         });
