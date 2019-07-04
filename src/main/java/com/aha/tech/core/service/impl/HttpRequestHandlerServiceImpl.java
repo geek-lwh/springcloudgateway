@@ -142,7 +142,7 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
             return Boolean.TRUE;
         }
 
-        logger.error("url防篡改校验失败 rawPath:{} , sortQueryParams : {},timestamp : {},signature : {}", rawPath, sortQueryParams, timestamp, signature);
+        logger.error("url防篡改校验失败 rawPath:{} , sortQueryParams : {},timestamp : {},signature : {}, encrypt : {}", rawPath, sortQueryParams, timestamp, signature, encryptStr);
 
         return Boolean.FALSE;
     }
