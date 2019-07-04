@@ -12,7 +12,7 @@ public interface VerifyRequestService {
      * @param timestamp
      * @return
      */
-    String verifyUrl(String rawPath, String uri, String timestamp);
+    String verifyUrl(String rawPath, String uri, String timestamp, String signature);
 
     /**
      * 校验body是否合法

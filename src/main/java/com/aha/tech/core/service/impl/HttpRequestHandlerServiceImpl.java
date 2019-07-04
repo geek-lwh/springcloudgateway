@@ -135,7 +135,7 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
 
         switch (version) {
             case VERSION_FROYO:
-                encryptStr = httpVerifyRequestService.verifyUrl(rawPath, sortQueryParams, timestamp);
+                encryptStr = httpVerifyRequestService.verifyUrl(rawPath, sortQueryParams, timestamp, signature);
                 break;
             default:
                 logger.error("URI防篡改版本错误 version={}", version);

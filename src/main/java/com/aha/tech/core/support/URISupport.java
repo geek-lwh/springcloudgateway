@@ -154,14 +154,14 @@ public class URISupport {
      * @param secretKey
      * @return
      */
-    public static String encryptUrl(String rawPath, String sortQueryParamsStr, String timestamp, String secretKey) {
+    public static String encryptUrl(String rawPath, String sortQueryParamsStr, String timestamp, String secretKey, String signature) {
         String lastMd5 = Strings.EMPTY;
         try {
             String str1 = rawPath + sortQueryParamsStr + timestamp;
             String firstMd5 = DigestUtils.md5DigestAsHex(str1.getBytes());
             String str2 = firstMd5 + secretKey;
             lastMd5 = DigestUtils.md5DigestAsHex(str2.getBytes());
-            logger.info("str1 : {},第一次md5 : {},str2 : {},lastMd5 : {},secretKey : {}", str1, firstMd5, str2, lastMd5, secretKey);
+            logger.info("str1 : {},第一次md5 : {},str2 : {},lastMd5 : {},secretKey : {},signature : {}", str1, firstMd5, str2, lastMd5, secretKey, signature);
         } catch (Exception e) {
             logger.error("url防篡改加密出现异常,raw_path={},sort_raw_query={},timestamp={}", rawPath, sortQueryParamsStr, timestamp, e);
         }

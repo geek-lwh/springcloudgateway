@@ -53,7 +53,7 @@ public class UrlEncryptTest {
         MultiValueMap<String, String> queryParams = URISupport.initQueryParams(rawQuery);
         String sortQueryParams = URISupport.queryParamsSort(queryParams);
 
-        String encryptStr = encryptUrl(uri.getRawPath(), sortQueryParams, timestamp, secretKey);
+        String encryptStr = encryptUrl(uri.getRawPath(), sortQueryParams, timestamp, secretKey, signature);
 
         Asserts.check(encryptStr.equals(signature), "签名与后端加密不一致");
 

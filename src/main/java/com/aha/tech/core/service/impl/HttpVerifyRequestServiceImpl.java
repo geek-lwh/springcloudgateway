@@ -33,8 +33,8 @@ public class HttpVerifyRequestServiceImpl implements VerifyRequestService {
      * @return
      */
     @Override
-    public String verifyUrl(String rawPath, String uri, String timestamp) {
-        String encryptStr = encryptUrl(rawPath, uri, timestamp, secretKey);
+    public String verifyUrl(String rawPath, String uri, String timestamp, String signature) {
+        String encryptStr = encryptUrl(rawPath, uri, timestamp, secretKey, signature);
         return encryptStr;
     }
 
