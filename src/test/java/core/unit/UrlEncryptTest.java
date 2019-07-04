@@ -37,11 +37,11 @@ public class UrlEncryptTest {
     @DisplayName("GET请求加密测试类目")
     public void encryptGetRequest() {
         logger.info("<<<< {} 开始 [GET请求加密测试类目]", DateUtil.currentDateByDefaultFormat());
-        String url = "http://10.10.189.191:9700/v3/appbff/config/get";
+        String url = "http://openapi2.ahaschool.com.cn/v3/orderbff/products/all?course_propertys=1%2C2%2C4&app_types=1&city_name=%E4%B8%8A%E6%B5%B7%E5%B8%82&act_type=%E8%8B%B1%E8%AF%AD&sort_type=4&limit=10&cursor=&kid_age=&_=1562228699153";
 
-        String signature = "76c9a7bb7fde9e92b141d8527c965208";
-        String timestamp = "1561013495222";
-        String content = "b266f3154977f5dd6da84591b28fe0db";
+        String signature = "8253855bbe5134d2501fe4adefd04877";
+        String timestamp = "1562228699373";
+        String content = "794c7c85679ff37a79a359624eea66bc";
         String version = "Froyo";
 
         URI uri = UriComponentsBuilder.fromUri(URI.create(url))
@@ -66,8 +66,33 @@ public class UrlEncryptTest {
     public void createContentSignature() throws IOException {
         String content = "45e8e948f8a275c7a03003e0ecd8b229";
         logger.info("<<<< {} 开始 [body加密测试类目]", DateUtil.currentDateByDefaultFormat());
+        String s = "{\"openid\":\"og1vg1BZFav6pNuKJ_OxOZsAMcRA\",\"option_id\":47932,\"pattern_id\":0,\"order_count\":1,\"apply_mode\":1,\"order_type\":2,\"order_price\":9.9,\"postage_price\":0,\"coupon_id\":0,\"coupon_title\":\"暂无可用优惠券\",\"payment_from\":3,\"remark\":\"\",\"product_id\":506048,\"groupbuy_id\":0,\"referee\":\"\",\"gift_title\":\"\",\"sum_discount\":0,\"return_url\":\"https://n.ahaschool.com" +
+                ".cn/groupbuy/share-guide/groupbuy_id/{groupbuy_id}/order_id/{order_id}/alipaysuccess/1?utm_source=promotion_ekysbxl&utm_medium=promotion&utm_campaign=20190703&utm_term=&utm_content=&pk=&pd=&ps=&pp=\",\"stranger_type\":0,\"form1\":\"\",\"form2\":\"\",\"address\":{\"address_id\":0,\"order_id\":0,\"country\":0,\"country_code\":\"\",\"province\":\"\",\"city_name\":\"\",\"district\":\"\",\"community_id\":0,\"community_name\":\"\",\"address\":\"\",\"poi_type\":1,\"contact_name\":\"aha3379144\",\"contact_mobile\":\"13521804870\"},\"app_type\":1,\"isInApp\":true,\"page_source\":\"product_detail\"}";
+
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("user_id", 2134);
+        jsonObject.put("openid", "og1vg1BZFav6pNuKJ_OxOZsAMcRA");
+        jsonObject.put("option_id", 47932);
+        jsonObject.put("pattern_id", 0);
+        jsonObject.put("order_count", 1);
+        jsonObject.put("apply_mode", 1);
+        jsonObject.put("order_type", 2);
+        jsonObject.put("order_price", 9.9);
+        jsonObject.put("postage_price", 0);
+//        jsonObject.put("coupon_id",0);url防篡改校验失败
+        jsonObject.put("coupon_title", "暂无可用优惠券");
+        jsonObject.put("payment_from", 3);
+        jsonObject.put("remark", "");
+        jsonObject.put("product_id", 506048);
+        jsonObject.put("groupbuy_id", 0);
+        jsonObject.put("referee", "");
+        jsonObject.put("gift_title", "");
+        jsonObject.put("sum_discount", 0);
+        jsonObject.put("return_url", "https://n.ahaschool.com.cn/groupbuy/share-guide/groupbuy_id/{groupbuy_id}/order_id/{order_id}/alipaysuccess/1?utm_source=promotion_ekysbxl&utm_medium=promotion&utm_campaign=20190703&utm_term=&utm_content=&pk=&pd=&ps=&pp=");
+        jsonObject.put("stranger_type", 0);
+        jsonObject.put("form1", "");
+        jsonObject.put("form2", "");
+
+
         String body = "";
         byte[] base64Body = Base64.encodeBase64(body.getBytes());
         String encodeBody = new String(base64Body, StandardCharsets.UTF_8);

@@ -158,11 +158,12 @@ public class URISupport {
         String lastMd5 = Strings.EMPTY;
         try {
             String str1 = rawPath + sortQueryParamsStr + timestamp;
+            logger.info("str1 : {}", str1);
             String firstMd5 = DigestUtils.md5DigestAsHex(str1.getBytes());
-            logger.debug("原串 : {} , 第一次md5 : {}", str1, firstMd5);
+            logger.info("原串 : {} , 第一次md5 : {}", str1, firstMd5);
             String str2 = firstMd5 + secretKey;
             lastMd5 = DigestUtils.md5DigestAsHex(str2.getBytes());
-            logger.debug("第二次 md5 : {},secret_key : {}", lastMd5, secretKey);
+            logger.info("第二次 md5 : {},secret_key : {}", lastMd5, secretKey);
         } catch (Exception e) {
             logger.error("url防篡改加密出现异常,raw_path={},sort_raw_query={},timestamp={}", rawPath, sortQueryParamsStr, timestamp, e);
         }
