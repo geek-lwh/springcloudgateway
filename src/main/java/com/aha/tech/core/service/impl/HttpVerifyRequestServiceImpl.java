@@ -46,7 +46,7 @@ public class HttpVerifyRequestServiceImpl implements VerifyRequestService {
      */
     @Override
     public String verifyBody(String body, String timestamp) {
-        byte[] base64Body = Base64.encodeBase64(body.getBytes());
+        byte[] base64Body = Base64.encodeBase64(body.getBytes(StandardCharsets.UTF_8));
         String encodeBody = new String(base64Body, StandardCharsets.UTF_8);
         return encryptBody(encodeBody, timestamp, secretKey);
     }
