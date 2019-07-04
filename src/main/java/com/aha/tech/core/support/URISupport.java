@@ -161,7 +161,9 @@ public class URISupport {
             String firstMd5 = DigestUtils.md5DigestAsHex(str1.getBytes());
             String str2 = firstMd5 + secretKey;
             lastMd5 = DigestUtils.md5DigestAsHex(str2.getBytes());
-            logger.info("str1 : {},第一次md5 : {},str2 : {},lastMd5 : {},secretKey : {},signature : {}", str1, firstMd5, str2, lastMd5, secretKey, signature);
+            if (!lastMd5.equals(signature)) {
+                logger.error("rawPath : {},sortQueryParamsStr: {},timestamp : {},signature : {} || str1 : {},第一次md5 : {},str2 : {},lastMd5 : {},secretKey : {}", rawPath, sortQueryParamsStr, timestamp, signature, str1, firstMd5, str2, lastMd5, secretKey);
+            }
         } catch (Exception e) {
             logger.error("url防篡改加密出现异常,raw_path={},sort_raw_query={},timestamp={}", rawPath, sortQueryParamsStr, timestamp, e);
         }
