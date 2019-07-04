@@ -9,6 +9,7 @@ import org.springframework.util.*;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -158,9 +159,9 @@ public class URISupport {
         String lastMd5 = Strings.EMPTY;
         try {
             String str1 = rawPath + sortQueryParamsStr + timestamp;
-            String firstMd5 = DigestUtils.md5DigestAsHex(str1.getBytes());
+            String firstMd5 = DigestUtils.md5DigestAsHex(str1.getBytes(StandardCharsets.UTF_8));
             String str2 = firstMd5 + secretKey;
-            lastMd5 = DigestUtils.md5DigestAsHex(str2.getBytes());
+            lastMd5 = DigestUtils.md5DigestAsHex(str2.getBytes(StandardCharsets.UTF_8));
             if (!lastMd5.equals(signature)) {
                 logger.error("rawPath : {},sortQueryParamsStr: {},timestamp : {},signature : {} || str1 : {},第一次md5 : {},str2 : {},lastMd5 : {},secretKey : {}", rawPath, sortQueryParamsStr, timestamp, signature, str1, firstMd5, str2, lastMd5, secretKey);
             }

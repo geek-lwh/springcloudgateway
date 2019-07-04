@@ -29,7 +29,7 @@ public class UrlEncryptTest {
     private static final Logger logger = LoggerFactory.getLogger(UrlEncryptTest.class);
 
     //    private String secretKey = "4470c4bd3d88be85f031cce6bd907329";
-    private String secretKey = "d1f1bd03e3b0e08d6ebbecaa60e14445";
+    private String secretKey = "4470c4bd3d88be85f031cce6bd907329";
 
     private String timestamp = "1";
 
@@ -37,10 +37,10 @@ public class UrlEncryptTest {
     @DisplayName("GET请求加密测试类目")
     public void encryptGetRequest() {
         logger.info("<<<< {} 开始 [GET请求加密测试类目]", DateUtil.currentDateByDefaultFormat());
-        String url = "http://openapi2.ahaschool.com.cn/v3/orderbff/products/all?course_propertys=1%2C2%2C4&app_types=1&city_name=%E4%B8%8A%E6%B5%B7%E5%B8%82&act_type=%E8%8B%B1%E8%AF%AD&sort_type=4&limit=10&cursor=&kid_age=&_=1562228699153";
+        String url = "http://openapi2.ahaschool.com.cn/v3/orderbff/products/all?course_propertys=1%2C2%2C4&app_types=1&city_name=%E4%B8%8A%E6%B5%B7%E5%B8%82&act_type=%E6%95%B0%E5%AD%A6&sort_type=4&limit=10&cursor=&kid_age=&_=1562232195105";
 
-        String signature = "8253855bbe5134d2501fe4adefd04877";
-        String timestamp = "1562228699373";
+        String signature = "7beaf857946a271468fd0446793dc837";
+        String timestamp = "1562232195152";
         String content = "794c7c85679ff37a79a359624eea66bc";
         String version = "Froyo";
 
