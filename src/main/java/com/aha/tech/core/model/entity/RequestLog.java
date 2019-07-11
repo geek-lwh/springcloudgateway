@@ -20,7 +20,13 @@ public class RequestLog {
 
     private String body;
 
-    private String realServer;
+    private String ipLimitRemaining;
+
+    private String ipLimitBurstCapacity;
+
+    private String ipLimitReplenishRate;
+
+    private String realIp;
 
     private Long cost;
 
@@ -64,23 +70,51 @@ public class RequestLog {
         this.requestId = requestId;
     }
 
-    public String getRealServer() {
-        return realServer;
+    public String getIpLimitRemaining() {
+        return ipLimitRemaining;
     }
 
-    public void setRealServer(String realServer) {
-        this.realServer = realServer;
+    public void setIpLimitRemaining(String ipLimitRemaining) {
+        this.ipLimitRemaining = ipLimitRemaining;
+    }
+
+    public String getIpLimitBurstCapacity() {
+        return ipLimitBurstCapacity;
+    }
+
+    public void setIpLimitBurstCapacity(String ipLimitBurstCapacity) {
+        this.ipLimitBurstCapacity = ipLimitBurstCapacity;
+    }
+
+    public String getIpLimitReplenishRate() {
+        return ipLimitReplenishRate;
+    }
+
+    public void setIpLimitReplenishRate(String ipLimitReplenishRate) {
+        this.ipLimitReplenishRate = ipLimitReplenishRate;
+    }
+
+    public String getRealIp() {
+        return realIp;
+    }
+
+    public void setRealIp(String realIp) {
+        this.realIp = realIp;
     }
 
     @Override
     public String toString() {
         StringBuffer sb = new StringBuffer();
         sb.append("requestId").append(Separator.COLON_MARK).append(this.requestId).append(System.lineSeparator());
-        sb.append("请求行").append(Separator.COLON_MARK).append(this.uri);
-        sb.append(Separator.COMMA_MARK).append("耗时").append(Separator.COLON_MARK).append(this.cost).append(System.lineSeparator());
-        sb.append("转发路由").append(Separator.COLON_MARK).append(realServer).append(System.lineSeparator());
+        sb.append("请求行").append(Separator.COLON_MARK).append(this.uri).append(System.lineSeparator());
+        sb.append("耗时").append(Separator.COLON_MARK).append(this.cost).append(System.lineSeparator());
         sb.append("请求头").append(Separator.COLON_MARK).append(ResponseSupport.formatHttpHeaders(this.httpHeaders)).append(System.lineSeparator());
         sb.append("请求体").append(Separator.COLON_MARK).append(this.body).append(System.lineSeparator());
+
+        sb.append("ip").append(Separator.COLON_MARK).append(this.realIp).append(System.lineSeparator());
+        sb.append("ip限流桶容量").append(Separator.COLON_MARK).append(this.ipLimitBurstCapacity).append(System.lineSeparator());
+        sb.append("ip限流剩余桶容量").append(Separator.COLON_MARK).append(this.ipLimitRemaining).append(System.lineSeparator());
+        sb.append("ip限流每秒新增桶容量").append(Separator.COLON_MARK).append(this.ipLimitReplenishRate).append(System.lineSeparator());
 
         return sb.toString();
     }

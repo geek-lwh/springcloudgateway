@@ -3,12 +3,16 @@ package com.aha.tech.core.support;
 import com.aha.tech.core.model.dto.RequestAddParamsDto;
 import com.aha.tech.core.model.entity.CacheRequestEntity;
 import com.aha.tech.util.IdWorker;
+import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cloud.gateway.filter.ratelimit.RateLimiter;
 import org.springframework.web.server.ServerWebExchange;
 
 import java.net.URI;
+import java.util.Collections;
+import java.util.Map;
 
 import static com.aha.tech.core.constant.ExchangeAttributeConstant.*;
 import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.GATEWAY_REQUEST_URL_ATTR;
@@ -136,5 +140,22 @@ public class ExchangeSupport {
     public static String getRequestId(ServerWebExchange exchange) {
         String requestId = exchange.getAttributes().getOrDefault(REQUEST_ID_ATTR, String.valueOf(IdWorker.getInstance().nextId())).toString();
         return requestId;
+    }
+
+    /**
+     *
+     * @param exchange
+     * @param response
+     * @param realIp
+     */
+    public static void setIpLimiterCache(ServerWebExchange exchange, RateLimiter.Response response, String realIp) {
+        Map<String, String> ipLimiterMap = Maps.newHashMap();
+        ipLimiterMap.putAll(response.getHeaders());
+        ipLimiterMap.put("realIp", realIp);
+        exchange.getAttributes().put(IP_LIMITER_ATTR, ipLimiterMap);
+    }
+
+    public static Map<String, String> getCurrentIpLimiter(ServerWebExchange exchange) {
+        return (Map<String, String>) exchange.getAttributes().getOrDefault(IP_LIMITER_ATTR, Collections.EMPTY_MAP);
     }
 }

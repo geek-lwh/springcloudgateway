@@ -9,6 +9,7 @@ import org.springframework.util.*;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -154,15 +155,17 @@ public class URISupport {
      * @param secretKey
      * @return
      */
-    public static String encryptUrl(String rawPath, String sortQueryParamsStr, String timestamp, String secretKey) {
+    public static String encryptUrl(String rawPath, String sortQueryParamsStr, String timestamp, String secretKey, String signature) {
         String lastMd5 = Strings.EMPTY;
         try {
+            // /v3/orderbff/products/allact_type=数学&app_types=1&city_name=上海市&course_propertys=1,2,4&cursor=&kid_age=&limit=10&sort_type=41562232195152
             String str1 = rawPath + sortQueryParamsStr + timestamp;
-            String firstMd5 = DigestUtils.md5DigestAsHex(str1.getBytes());
-            logger.debug("原串 : {} , 第一次md5 : {}", str1, firstMd5);
+            String firstMd5 = DigestUtils.md5DigestAsHex(str1.getBytes(StandardCharsets.UTF_8));
             String str2 = firstMd5 + secretKey;
-            lastMd5 = DigestUtils.md5DigestAsHex(str2.getBytes());
-            logger.debug("第二次 md5 : {},secret_key : {}", lastMd5, secretKey);
+            lastMd5 = DigestUtils.md5DigestAsHex(str2.getBytes(StandardCharsets.UTF_8));
+            if (!lastMd5.equals(signature)) {
+                logger.error("rawPath : {},sortQueryParamsStr: {},timestamp : {},signature : {} || str1 : {},第一次md5 : {},str2 : {},lastMd5 : {},secretKey : {}", rawPath, sortQueryParamsStr, timestamp, signature, str1, firstMd5, str2, lastMd5, secretKey);
+            }
         } catch (Exception e) {
             logger.error("url防篡改加密出现异常,raw_path={},sort_raw_query={},timestamp={}", rawPath, sortQueryParamsStr, timestamp, e);
         }
@@ -186,15 +189,20 @@ public class URISupport {
 //            }
 
             String str1 = encodeBody + timestamp;
-            String firstMd5 = DigestUtils.md5DigestAsHex(str1.getBytes());
+            String firstMd5 = DigestUtils.md5DigestAsHex(str1.getBytes(StandardCharsets.UTF_8));
 
             String str2 = firstMd5 + secretKey;
-            lastMd5 = DigestUtils.md5DigestAsHex(str2.getBytes());
+            lastMd5 = DigestUtils.md5DigestAsHex(str2.getBytes(StandardCharsets.UTF_8));
         } catch (Exception e) {
             logger.error("body防篡改加密出现异常 body={},timestamp={}", encodeBody, timestamp, e);
         }
 
         return lastMd5;
+    }
+
+    public static void main(String[] args) {
+        String s = "/v3/orderbff/products/allact_type=数学&app_types=1&city_name=上海市&course_propertys=1,2,4&cursor=&kid_age=&limit=10&sort_type=41562232195152";
+        System.out.println(DigestUtils.md5DigestAsHex(s.getBytes()));
     }
 
 }

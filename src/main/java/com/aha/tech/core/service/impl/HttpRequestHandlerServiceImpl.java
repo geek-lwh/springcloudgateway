@@ -14,6 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
@@ -49,6 +50,9 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
     private static final String VISITOR = "visitor";
 
     private static final String NEED_AUTHORIZATION = "serv-auth";
+
+    @Value("${gateway.secret.key:4470c4bd3d88be85f031cce6bd907329}")
+    private String secretKey;
 
     @Resource
     private VerifyRequestService httpVerifyRequestService;
@@ -131,7 +135,7 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
 
         switch (version) {
             case VERSION_FROYO:
-                encryptStr = httpVerifyRequestService.verifyUrl(rawPath, sortQueryParams, timestamp);
+                encryptStr = httpVerifyRequestService.verifyUrl(rawPath, sortQueryParams, timestamp, signature);
                 break;
             default:
                 logger.error("URI防篡改版本错误 version={}", version);
@@ -142,7 +146,7 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
             return Boolean.TRUE;
         }
 
-        logger.error("url防篡改校验失败 rawPath:{} , sortQueryParams : {},timestamp : {},signature : {}", rawPath, sortQueryParams, timestamp, signature);
+        logger.error("url防篡改校验失败 rawPath:{} , sortQueryParams : {},timestamp : {},signature : {}, encrypt : {}, secretKey : {}", rawPath, sortQueryParams, timestamp, signature, encryptStr, secretKey);
 
         return Boolean.FALSE;
     }

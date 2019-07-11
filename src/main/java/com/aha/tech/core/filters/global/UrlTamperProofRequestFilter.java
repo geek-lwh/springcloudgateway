@@ -63,7 +63,8 @@ public class UrlTamperProofRequestFilter implements GlobalFilter, Ordered {
         if (!isURIValid) {
             return Mono.defer(() -> {
                 String errorMsg = String.format("url防篡改校验失败,参数:%s", tamperProofEntity);
-                ResponseVo rpcResponse = new ResponseVo(HttpStatus.FORBIDDEN.value(), errorMsg);
+                logger.error("{}", errorMsg);
+                ResponseVo rpcResponse = new ResponseVo(HttpStatus.FORBIDDEN.value(), "url防篡改校验失败");
                 return ResponseSupport.write(exchange, rpcResponse);
             });
         }
