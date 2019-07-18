@@ -20,6 +20,6 @@ public interface VerifyRequestService {
      * @param timestamp
      * @return
      */
-    String verifyBody(String body, String timestamp);
+    String verifyBody(String body, String timestamp, String content);
 
 }

@@ -1,13 +1,10 @@
 package com.aha.tech.core.service.impl;
 
 import com.aha.tech.core.service.VerifyRequestService;
-import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
-import java.nio.charset.StandardCharsets;
 
 import static com.aha.tech.core.support.URISupport.encryptBody;
 import static com.aha.tech.core.support.URISupport.encryptUrl;
@@ -45,11 +42,7 @@ public class HttpVerifyRequestServiceImpl implements VerifyRequestService {
      * @return
      */
     @Override
-    public String verifyBody(String body, String timestamp) {
-        logger.debug("<<<<< 防篡改 body : {}", body);
-        byte[] base64Body = Base64.encodeBase64(body.getBytes(StandardCharsets.UTF_8));
-        String encodeBody = new String(base64Body, StandardCharsets.UTF_8);
-        logger.debug("<<<<< 防篡改 base64 body : {}", body);
-        return encryptBody(encodeBody, timestamp, secretKey);
+    public String verifyBody(String body, String timestamp, String content) {
+        return encryptBody(body, timestamp, content, secretKey);
     }
 }

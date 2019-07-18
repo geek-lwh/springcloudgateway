@@ -2,6 +2,7 @@ package com.aha.tech.core.support;
 
 import com.aha.tech.commons.symbol.Separator;
 import com.google.common.collect.Lists;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -174,25 +175,34 @@ public class URISupport {
 
     /**
      * body加密
-     * @param encodeBody
+     * @param body
      * @param timestamp
+     * @param content
      * @param secretKey
      * @return
      */
-    public static String encryptBody(String encodeBody, String timestamp, String secretKey) {
+    public static String encryptBody(String body, String timestamp, String content, String secretKey) {
         String lastMd5 = Strings.EMPTY;
         try {
+            byte[] base64Body = Base64.encodeBase64(body.getBytes(StandardCharsets.UTF_8));
+            String encodeBody = new String(base64Body, StandardCharsets.UTF_8);
+
             String str1 = encodeBody + timestamp;
-            logger.debug("<<<<<<< str1 = base64 body + timestamp : {}", str1);
 
             String firstMd5 = DigestUtils.md5DigestAsHex(str1.getBytes(StandardCharsets.UTF_8));
-            logger.debug("<<<<<<< firstMd5 : {}", firstMd5);
             String str2 = firstMd5 + secretKey;
-            logger.debug("<<<<<<< str2 = firstMd5 + secretKey : {}", str2);
             lastMd5 = DigestUtils.md5DigestAsHex(str2.getBytes(StandardCharsets.UTF_8));
-            logger.debug("<<<<<<< lastMd5 : {}", lastMd5);
+
+            if (!lastMd5.equals(content)) {
+                logger.warn("<<<<<<< body : {},timestamp : {}", body, timestamp);
+                logger.warn("<<<<<<< str1 = base64 body + timestamp : {}", str1);
+                logger.warn("<<<<<<< firstMd5 : {}", firstMd5);
+                logger.warn("<<<<<<< str2 = firstMd5 + secretKey : {}", str2);
+                logger.warn("<<<<<<< lastMd5 : {}", lastMd5);
+            }
+
         } catch (Exception e) {
-            logger.error("body防篡改加密出现异常 body={},timestamp={}", encodeBody, timestamp, e);
+            logger.error("body防篡改加密出现异常 body={},timestamp={}", body, timestamp, e);
         }
 
         return lastMd5;

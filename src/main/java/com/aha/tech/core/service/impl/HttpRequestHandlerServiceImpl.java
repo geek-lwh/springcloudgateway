@@ -162,6 +162,7 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
         String encryptStr = Strings.EMPTY;
 
         if ("{}".equals(body)) {
+            logger.info("body 是{},赋值为空字符串");
             body = Strings.EMPTY;
         }
 
@@ -177,16 +178,13 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
 
         switch (version) {
             case VERSION_FROYO:
-                encryptStr = httpVerifyRequestService.verifyBody(body, timestamp);
+                encryptStr = httpVerifyRequestService.verifyBody(body, timestamp, content);
                 break;
             default:
                 logger.error("URI防篡改版本错误 version={}", version);
                 break;
         }
 
-        if (!encryptStr.equals(content)) {
-            logger.debug("<<<<< 防篡改 body 验证失败: server : {},content : {}", encryptStr, content);
-        }
         return encryptStr.equals(content);
     }
 
