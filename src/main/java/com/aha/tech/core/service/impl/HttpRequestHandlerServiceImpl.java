@@ -161,9 +161,8 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
     public Boolean bodyTamperProof(String version, String body, String timestamp, String content) {
         String encryptStr = Strings.EMPTY;
 
-        if (StringUtils.isBlank(body)) {
-            logger.error("body防篡改body缺失");
-            return Boolean.FALSE;
+        if ("{}".equals(body)) {
+            body = Strings.EMPTY;
         }
 
         if (StringUtils.isBlank(timestamp)) {
@@ -185,6 +184,9 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
                 break;
         }
 
+        if (!encryptStr.equals(content)) {
+            logger.debug("<<<<< 防篡改 body 验证失败: server : {},content : {}", encryptStr, content);
+        }
         return encryptStr.equals(content);
     }
 

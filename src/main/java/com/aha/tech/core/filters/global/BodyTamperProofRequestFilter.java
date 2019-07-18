@@ -96,6 +96,7 @@ public class BodyTamperProofRequestFilter implements GlobalFilter, Ordered {
             String version = tamperProofEntity.getVersion();
             String content = tamperProofEntity.getContent();
             String timestamp = tamperProofEntity.getTimestamp();
+            logger.info("接收到的 body 防篡改参数 : {}", tamperProofEntity);
             return httpRequestHandlerService.bodyTamperProof(version, body, timestamp, content);
         }
 

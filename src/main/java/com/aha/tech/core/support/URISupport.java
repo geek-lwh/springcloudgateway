@@ -158,7 +158,6 @@ public class URISupport {
     public static String encryptUrl(String rawPath, String sortQueryParamsStr, String timestamp, String secretKey, String signature) {
         String lastMd5 = Strings.EMPTY;
         try {
-            // /v3/orderbff/products/allact_type=数学&app_types=1&city_name=上海市&course_propertys=1,2,4&cursor=&kid_age=&limit=10&sort_type=41562232195152
             String str1 = rawPath + sortQueryParamsStr + timestamp;
             String firstMd5 = DigestUtils.md5DigestAsHex(str1.getBytes(StandardCharsets.UTF_8));
             String str2 = firstMd5 + secretKey;
@@ -183,16 +182,15 @@ public class URISupport {
     public static String encryptBody(String encodeBody, String timestamp, String secretKey) {
         String lastMd5 = Strings.EMPTY;
         try {
-//            if (StringUtils.isEmpty(encodeBody)) {
-//                logger.error("body防篡改加密时出现body为空");
-//                return Strings.EMPTY;
-//            }
-
             String str1 = encodeBody + timestamp;
-            String firstMd5 = DigestUtils.md5DigestAsHex(str1.getBytes(StandardCharsets.UTF_8));
+            logger.debug("<<<<<<< str1 = base64 body + timestamp : {}", str1);
 
+            String firstMd5 = DigestUtils.md5DigestAsHex(str1.getBytes(StandardCharsets.UTF_8));
+            logger.debug("<<<<<<< firstMd5 : {}", firstMd5);
             String str2 = firstMd5 + secretKey;
+            logger.debug("<<<<<<< str2 = firstMd5 + secretKey : {}", str2);
             lastMd5 = DigestUtils.md5DigestAsHex(str2.getBytes(StandardCharsets.UTF_8));
+            logger.debug("<<<<<<< lastMd5 : {}", lastMd5);
         } catch (Exception e) {
             logger.error("body防篡改加密出现异常 body={},timestamp={}", encodeBody, timestamp, e);
         }

@@ -2,7 +2,6 @@ package core.unit;
 
 import com.aha.tech.commons.utils.DateUtil;
 import com.aha.tech.core.support.URISupport;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.http.util.Asserts;
 import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
@@ -13,9 +12,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 
-import static com.aha.tech.core.support.URISupport.encryptBody;
 import static com.aha.tech.core.support.URISupport.encryptUrl;
 
 /**
@@ -66,15 +63,32 @@ public class UrlEncryptTest {
         String content = "6062124e5c23902372f704006e4009bd";
         logger.info("<<<< {} 开始 [body加密测试类目]", DateUtil.currentDateByDefaultFormat());
 
-        String body = "{\"avatar\":\"https://wx.qlogo.cn/mmopen/vi_32/Q0j4TwGTfTKsym35icUIsx0IVE4RdOVCgOXo9hmw3rA5jgsy6icr1z37bC71F5t5GjvWicbJOeRe2VOm4yFaWfia4g/132\",\"name\":\"芊芊心结\uD83D\uDCAF\",\"gender\":2,\"city_name\":\"\",\"country\":\"China\",\"province\":\"Shanghai\",\"app_types\":\"5\",\"stack\":\"pages/me/index/index->\"}";
+        String body = "{\"name\":\"✘⌒༄྄ེིོུCoco༊࿔.ོ༂࿐\",\"user_id\":1000459}";
+        String body2 = "{\"name\":\"✘⌒༄྄ེིོུCoco༊࿔.ོ༂࿐\",\"user_id\":1000459}";
 //        body = body.trim().replaceAll("\n","").trim();
-        byte[] base64Body = Base64.encodeBase64(body.getBytes(StandardCharsets.UTF_8));
-        String encodeBody = new String(base64Body, StandardCharsets.UTF_8);
-        Long timestamp = 1562661403786L;
+        String a = "✘⌒༄྄ེིོུCoco༊࿔.ོ༂࿐";
+        String b = "✘⌒༄྄ེིོུCoco༊࿔.ོ༂࿐";
+        String c = "✘⌒༄྄ེིོུCoco༊࿔.ོ༂࿐";
+        System.out.println(a.equals(b));
+        System.out.println(b.equals(c));
+        System.out.println(a.equals(c));
 
-        String encryptBody = encryptBody(encodeBody, String.valueOf(timestamp), secretKey);
-        System.out.println(encryptBody);
-        System.out.println(encryptBody.equals(content));
+//        byte[] a1 = a.getBytes(StandardCharsets.ISO_8859_1);
+//        byte[] b1 = b.getBytes(StandardCharsets.ISO_8859_1);
+//
+//        String newA = new String(a1,StandardCharsets.UTF_8);
+//        String newB = new String(b1,StandardCharsets.UTF_8);
+//        System.out.println(newA.equals(newB));
+
+//        byte[] base64Body = Base64.encodeBase64(body.getBytes(StandardCharsets.UTF_8));
+//        byte[] base64Body2 = Base64.encodeBase64(body2.getBytes(StandardCharsets.UTF_8));
+//        String encodeBody = new String(base64Body, StandardCharsets.UTF_8);
+//        String encodeBody2 = new String(base64Body2, StandardCharsets.UTF_8);
+//        Long timestamp = 1562661403786L;
+//
+//        String encryptBody = encryptBody(encodeBody, String.valueOf(timestamp), secretKey);
+//        System.out.println(encryptBody);
+//        System.out.println(encryptBody.equals(content));
     }
 
 }
