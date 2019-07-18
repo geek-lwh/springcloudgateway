@@ -17,7 +17,8 @@
     </appender>
 
     <!-- 需要特别屏蔽的日志,例如kafka频繁的debug信息 -->
-    <logger name="org.apache.kafka" level="INFO"/>
+    <logger name="sun.net.www" level="INFO"/>
+    <!--<logger name="com.alibaba.nacos.client.naming.updater" level="OFF"/>-->
 
 
     <!-- 引入项目核心配置 -->
