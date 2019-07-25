@@ -30,7 +30,7 @@ public class FallBackController {
 
     private static final Logger logger = LoggerFactory.getLogger(FallBackController.class);
 
-    private static final String HYSTRIX_ERROR_MESSAGE_PREFIX = "接口熔断,未捕获到具体错误!";
+    private static final String DEFAULT_SYSTEM_ERROR = "我好像开了个小差!";
 
     @Resource
     private AccessLogService httpAccessLogService;
@@ -46,7 +46,8 @@ public class FallBackController {
         if (c == null) {
             httpAccessLogService.printWhenError(serverWebExchange, new Exception("未捕获到hystrix异常!"));
             ResponseVo responseVo = ResponseVo.defaultFailureResponseVo();
-            responseVo.setMessage(HYSTRIX_ERROR_MESSAGE_PREFIX);
+            logger.error("接口熔断,未捕获到具体错误!");
+            responseVo.setMessage(DEFAULT_SYSTEM_ERROR);
             return Mono.just(responseVo);
         }
 
@@ -67,10 +68,10 @@ public class FallBackController {
      */
     private ResponseVo<HystrixDataVo> buildHystrixResponse(Throwable executionException, ServerWebExchange serverWebExchange) {
         ResponseVo responseVo = ResponseVo.defaultFailureResponseVo();
-        responseVo.setMessage(HYSTRIX_ERROR_MESSAGE_PREFIX);
+        responseVo.setMessage(DEFAULT_SYSTEM_ERROR);
 
         HystrixDataVo hystrixDataVo = new HystrixDataVo();
-        String errorMessage = String.format("%s:%s", HYSTRIX_ERROR_MESSAGE_PREFIX, executionException.toString());
+        String errorMessage = String.format("%s", executionException.toString());
         hystrixDataVo.setMessage(errorMessage);
 
         hystrixDataVo.setTime(DateUtil.currentDateByDefaultFormat());
