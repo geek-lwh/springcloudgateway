@@ -2,17 +2,21 @@ package core.unit;
 
 import com.aha.tech.commons.utils.DateUtil;
 import com.aha.tech.core.support.URISupport;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.http.util.Asserts;
 import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.DigestUtils;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 
+import static com.aha.tech.core.support.URISupport.encryptBody;
 import static com.aha.tech.core.support.URISupport.encryptUrl;
 
 /**
@@ -73,22 +77,44 @@ public class UrlEncryptTest {
         System.out.println(b.equals(c));
         System.out.println(a.equals(c));
 
-//        byte[] a1 = a.getBytes(StandardCharsets.ISO_8859_1);
-//        byte[] b1 = b.getBytes(StandardCharsets.ISO_8859_1);
-//
-//        String newA = new String(a1,StandardCharsets.UTF_8);
-//        String newB = new String(b1,StandardCharsets.UTF_8);
-//        System.out.println(newA.equals(newB));
+        byte[] base64Body = Base64.encodeBase64(body.getBytes());
+        String encodeBody = new String(base64Body, StandardCharsets.UTF_8);
+        Long timestamp = 1560395388l;
 
-//        byte[] base64Body = Base64.encodeBase64(body.getBytes(StandardCharsets.UTF_8));
-//        byte[] base64Body2 = Base64.encodeBase64(body2.getBytes(StandardCharsets.UTF_8));
+        String encryptBody = encryptBody(encodeBody, String.valueOf(timestamp), content, secretKey);
+        System.out.println(encryptBody);
+        System.out.println(encryptBody.equals(content));
+    }
+
+    @Test
+    public void createProof() {
+        String url = "http://openapi2.ahaschool.com.cn/v3/appbff/lesson/daily/all";
+
+        Long timestamp = System.currentTimeMillis();
+        String version = "Froyo";
+
+        URI uri = UriComponentsBuilder.fromUri(URI.create(url))
+                .build(true)
+                .toUri();
+
+        String rawQuery = uri.getRawQuery();
+        MultiValueMap<String, String> queryParams = URISupport.initQueryParams(rawQuery);
+        String sortQueryParams = URISupport.queryParamsSort(queryParams);
+
+        //    private String secretKey = "4470c4bd3d88be85f031cce6bd907329";
+        String key = "4470c4bd3d88be85f031cce6bd907329";
+
+        String str1 = uri.getRawPath() + sortQueryParams + timestamp;
+        String firstMd5 = DigestUtils.md5DigestAsHex(str1.getBytes(StandardCharsets.UTF_8));
+        String str2 = firstMd5 + key;
+        String signature = DigestUtils.md5DigestAsHex(str2.getBytes(StandardCharsets.UTF_8));
+
+        // body
+//        String body = "";
+//        byte[] base64Body = Base64.encodeBase64(body.getBytes());
 //        String encodeBody = new String(base64Body, StandardCharsets.UTF_8);
-//        String encodeBody2 = new String(base64Body2, StandardCharsets.UTF_8);
-//        Long timestamp = 1562661403786L;
-//
-//        String encryptBody = encryptBody(encodeBody, String.valueOf(timestamp), secretKey);
-//        System.out.println(encryptBody);
-//        System.out.println(encryptBody.equals(content));
+//        String encryptBody = encryptBody(encodeBody, String.valueOf(timestamp), content,secretKey);
+        logger.info("X-Ca-Signature : {},X-Ca-Timestamp:{},X-Ca-Version:{}", signature, timestamp, version);
     }
 
 }
