@@ -100,6 +100,8 @@ public class HeaderFieldConstant {
 
     public static final String X_ENV_REQUEST_ID = "X-Request-Id";
 
+    public static final String X_ENV_TRACE_ID = "X-Trace-Id";
+
     public static final String X_ENV_CHANNEL = "X-Env-Channel";
 
     public static final String HEADER_PRAGMA = "Pragma";

@@ -67,6 +67,7 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
 
         String requestId = ExchangeSupport.getRequestId(exchange);
         httpHeaders.set(X_ENV_REQUEST_ID, requestId);
+        httpHeaders.set(X_ENV_TRACE_ID, requestId);
 
         httpHeaders.set(HEADER_X_FORWARDED_FOR, realIp);
         httpHeaders.set(HEADER_TOKEN, DEFAULT_X_TOKEN_VALUE);
