@@ -2,7 +2,7 @@ package com.aha.tech.core.filters.global;
 
 import com.aha.tech.core.service.RequestHandlerService;
 import com.aha.tech.core.support.ExchangeSupport;
-import com.aha.tech.util.IdWorker;
+import org.apache.skywalking.apm.toolkit.trace.TraceContext;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
@@ -42,7 +42,8 @@ public class WhiteListFilter implements GlobalFilter, Ordered {
         Boolean isSkipUrlTamperProof = httpRequestHandlerService.isSkipUrlTamperProof(rawPath, httpHeaders);
 
         // create request id
-        String requestId = String.valueOf(IdWorker.getInstance().nextId());
+//        String requestId = String.valueOf(IdWorker.getInstance().nextId());
+        String requestId = TraceContext.traceId();
         ExchangeSupport.put(exchange, REQUEST_ID_ATTR, requestId);
 
         ExchangeSupport.put(exchange, IS_SKIP_AUTH_ATTR, isSkipAuth);

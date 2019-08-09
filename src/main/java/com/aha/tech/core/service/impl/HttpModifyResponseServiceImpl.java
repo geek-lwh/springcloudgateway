@@ -22,7 +22,6 @@ import org.springframework.http.codec.ServerCodecConfigurer;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.http.server.reactive.ServerHttpResponseDecorator;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserter;
 import org.springframework.web.reactive.function.BodyInserters;
@@ -30,9 +29,6 @@ import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import javax.annotation.Resource;
-import java.util.concurrent.CompletableFuture;
 
 import static com.aha.tech.core.constant.HeaderFieldConstant.*;
 import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.ORIGINAL_RESPONSE_CONTENT_TYPE_ATTR;
@@ -45,9 +41,6 @@ import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.O
 public class HttpModifyResponseServiceImpl implements ModifyResponseService {
 
     private static final Logger logger = LoggerFactory.getLogger(HttpModifyResponseServiceImpl.class);
-
-    @Resource
-    private ThreadPoolTaskExecutor writeLoggingThreadPool;
 
     /**
      * 修改返回体
@@ -67,17 +60,12 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
                 ResponseAdapter responseAdapter = m.new ResponseAdapter(body, httpHeaders);
                 DefaultClientResponse clientResponse = new DefaultClientResponse(responseAdapter, ExchangeStrategies.withDefaults());
                 Mono modifiedBody = clientResponse.bodyToMono(String.class).flatMap(originalBody -> {
-                    CompletableFuture.runAsync(() -> {
-//                        CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheRequest(serverWebExchange);
-//                        String requestId = ExchangeSupport.getRequestId(serverWebExchange);
-                        ResponseVo responseVo = JSON.parseObject(originalBody, ResponseVo.class);
-                        HttpStatus httpStatus = getDelegate().getStatusCode();
-                        String warnLog = ResponseSupport.buildWarnLog(serverWebExchange, responseVo, httpStatus);
-                        if (StringUtils.isNotBlank(warnLog)) {
-                            logger.warn("状态码异常 =======> {}", warnLog);
-                        }
-                    }, writeLoggingThreadPool);
-
+                    ResponseVo responseVo = JSON.parseObject(originalBody, ResponseVo.class);
+                    HttpStatus httpStatus = getDelegate().getStatusCode();
+                    String warnLog = ResponseSupport.buildWarnLog(serverWebExchange, responseVo, httpStatus);
+                    if (StringUtils.isNotBlank(warnLog)) {
+                        logger.warn("状态码异常 =======> {}", warnLog);
+                    }
                     return Mono.just(originalBody);
                 });
 
@@ -91,9 +79,6 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
                             responseHeader.remove(HttpHeaders.TRANSFER_ENCODING);
                             modifyResponseHeader(responseHeader, requestHeader);
                             messageBody = messageBody.doOnNext(data -> responseHeader.setContentLength(data.readableByteCount()));
-//                            if (!headers.containsKey(HttpHeaders.TRANSFER_ENCODING)) {
-//                                messageBody = messageBody.doOnNext(data -> headers.setContentLength(data.readableByteCount()));
-//                            }
                             return getDelegate().writeWith(messageBody);
                         }));
             }

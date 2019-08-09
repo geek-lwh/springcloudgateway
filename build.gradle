@@ -81,7 +81,8 @@ dependencies {
 
     // skywalking
     compile 'org.apache.skywalking:apm-toolkit-logback-1.x:6.2.0'
-    
+    compile 'org.apache.skywalking:apm-toolkit-trace:6.2.0'
+
     // test dependency
     testCompile("org.springframework.boot:spring-boot-starter-test")
     testCompile group: 'junit', name: 'junit', version: '4.12'
