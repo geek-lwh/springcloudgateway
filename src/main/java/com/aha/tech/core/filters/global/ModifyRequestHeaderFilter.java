@@ -44,11 +44,12 @@ public class ModifyRequestHeaderFilter implements GlobalFilter, Ordered {
         logger.debug("开始进行修改请求头网关过滤器");
 
         ServerHttpRequest serverHttpRequest = exchange.getRequest();
-        HttpHeaders httpHeaders = serverHttpRequest.getHeaders();
+        HttpHeaders originalHeaders = serverHttpRequest.getHeaders();
         CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheRequest(exchange);
         String remoteIp = serverHttpRequest.getRemoteAddress().getAddress().getHostAddress();
-        HttpHeaders newHttpHeaders = httpRequestHandlerService.modifyRequestHeaders(exchange, httpHeaders, remoteIp);
+        HttpHeaders newHttpHeaders = httpRequestHandlerService.modifyRequestHeaders(exchange, originalHeaders, remoteIp);
         logger.debug("after modify request header : {} ", ResponseSupport.formatHttpHeaders(newHttpHeaders));
+        cacheRequestEntity.setOriginalRequestHttpHeaders(originalHeaders);
         cacheRequestEntity.setAfterModifyRequestHttpHeaders(newHttpHeaders);
 
         ServerHttpRequest newRequest = new ServerHttpRequestDecorator(serverHttpRequest) {

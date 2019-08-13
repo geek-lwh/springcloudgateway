@@ -60,8 +60,12 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
                 ResponseAdapter responseAdapter = m.new ResponseAdapter(body, httpHeaders);
                 DefaultClientResponse clientResponse = new DefaultClientResponse(responseAdapter, ExchangeStrategies.withDefaults());
                 Mono modifiedBody = clientResponse.bodyToMono(String.class).flatMap(originalBody -> {
-                    logger.info("originalBody : {}", originalBody);
-                    ResponseVo responseVo = JSON.parseObject(originalBody, ResponseVo.class);
+                    ResponseVo responseVo = ResponseVo.defaultFailureResponseVo();
+                    try {
+                        responseVo = JSON.parseObject(originalBody, ResponseVo.class);
+                    } catch (Exception e) {
+                        logger.error("网关解析返回值异常 originalBody : {}", originalBody, e);
+                    }
                     HttpStatus httpStatus = getDelegate().getStatusCode();
                     String warnLog = ResponseSupport.buildWarnLog(serverWebExchange, responseVo, httpStatus);
                     if (StringUtils.isNotBlank(warnLog)) {
