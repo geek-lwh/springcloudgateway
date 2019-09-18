@@ -2,8 +2,6 @@ package com.aha.tech.core.filters.global;
 
 import com.aha.tech.core.model.entity.CacheRequestEntity;
 import com.aha.tech.core.support.ExchangeSupport;
-import com.alibaba.nacos.api.annotation.NacosInjected;
-import com.alibaba.nacos.api.naming.NamingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -25,9 +23,6 @@ public class LoadBalancingFilter implements GlobalFilter, Ordered {
 
     private static final Logger logger = LoggerFactory.getLogger(LoadBalancingFilter.class);
 
-    @NacosInjected
-    private NamingService namingService;
-
     @Override
     public int getOrder() {
         return LOAD_BALANCING__FILTER;
@@ -44,7 +39,7 @@ public class LoadBalancingFilter implements GlobalFilter, Ordered {
 
         CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheRequest(exchange);
         String routeHost = ExchangeSupport.getRouteRequestPath(exchange);
-        logger.debug("请求地址 : {},转发服务地址 : {}", cacheRequestEntity.getRequestLine(), routeHost);
+        logger.info("请求地址 : {},转发服务地址 : {}", cacheRequestEntity.getRequestLine(), routeHost);
         cacheRequestEntity.setRealServer(routeHost);
         ExchangeSupport.put(exchange, GATEWAY_REQUEST_CACHED_ATTR, cacheRequestEntity);
 //        namingService.getAllInstances("",);

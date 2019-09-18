@@ -4,12 +4,12 @@ PROJECT_NAME="gateway"
 DESC="aha-${PROJECT_NAME}-server"
 MAIN_CLASS="aha-${PROJECT_NAME}-server.jar"
 PROFILE="spring.profiles.active="$2
-SKYWALKING_NAME=$2_gatewayserver
+
 
 
 d_start() {
     echo "profile ======> ${PROFILE}"
-    nohup ${JAVA_HOME}/bin/java -D${PROFILE} -Dspring.profiles.active=dev -javaagent:/Users/luweihong/Downloads/apache-skywalking-apm-bin/agent/skywalking-agent.jar=agent.service_name=${SKYWALKING_NAME} -jar -Xms256m -Xmx512m ${MAIN_CLASS}  >/dev/null 2>&1 &
+    nohup ${JAVA_HOME}/bin/java -D${PROFILE} -jar -Xms256m -Xmx512m ${MAIN_CLASS}  >/dev/null 2>&1 &
 }
 
 d_stop() {
