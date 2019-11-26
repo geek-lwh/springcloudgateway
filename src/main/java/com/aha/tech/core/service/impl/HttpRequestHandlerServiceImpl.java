@@ -1,6 +1,5 @@
 package com.aha.tech.core.service.impl;
 
-import com.aha.tech.commons.constants.ResponseConstants;
 import com.aha.tech.core.constant.SystemConstant;
 import com.aha.tech.core.exception.MissAuthorizationHeaderException;
 import com.aha.tech.core.exception.ParseAuthorizationHeaderException;
@@ -9,6 +8,7 @@ import com.aha.tech.core.model.entity.PairEntity;
 import com.aha.tech.core.model.entity.RouteEntity;
 import com.aha.tech.core.service.*;
 import com.aha.tech.core.support.ExchangeSupport;
+import com.aha.tech.passportserver.facade.code.AuthorizationCode;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
@@ -269,7 +269,7 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
         }
 
         AuthenticationResultEntity authenticationResultEntity = new AuthenticationResultEntity();
-        authenticationResultEntity.setCode(ResponseConstants.FAILURE);
+        authenticationResultEntity.setCode(AuthorizationCode.SESSION_EXPIRED);
         authenticationResultEntity.setMessage(String.format("无效的user_name : %s", userName));
 
         return authenticationResultEntity;
