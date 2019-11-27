@@ -12,9 +12,9 @@
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
             <fileNamePattern>/data/log/${PROJECT_NAME}/history/service-%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
-            <MaxHistory>90</MaxHistory>
+            <MaxHistory>200</MaxHistory>
             <maxFileSize>100MB</maxFileSize>
-            <totalSizeCap>500MB</totalSizeCap>
+            <totalSizeCap>20GB</totalSizeCap>
         </rollingPolicy>
     </appender>
 
@@ -33,9 +33,9 @@
         </filter>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
             <fileNamePattern>/data/log/${PROJECT_NAME}/history/service-error-%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
-            <MaxHistory>7</MaxHistory>
+            <MaxHistory>200</MaxHistory>
             <maxFileSize>50MB</maxFileSize>
-            <totalSizeCap>100MB</totalSizeCap>
+            <totalSizeCap>20GB</totalSizeCap>
         </rollingPolicy>
     </appender>
 
