@@ -137,8 +137,8 @@ public class ExchangeSupport {
      * @param exchange
      * @return
      */
-    public static String getRequestId(ServerWebExchange exchange) {
-        String requestId = exchange.getAttributes().getOrDefault(REQUEST_ID_ATTR, String.valueOf(IdWorker.getInstance().nextId())).toString();
+    public static String getTraceId(ServerWebExchange exchange) {
+        String requestId = exchange.getAttributes().getOrDefault(TRACE_ID_ATTR, String.valueOf(IdWorker.getInstance().nextId())).toString();
         return requestId;
     }
 

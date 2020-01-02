@@ -1,31 +1,25 @@
 <included>
-    <property name="FILE_PATTERN" value="%date [%tid] %level [%thread][%c] : %msg%n"/>
-    <property name="PROJECT_NAME" value="gatewayserver"/>
+    <property name="FILE_PATTERN" value="[%X{traceId}] %date %level [%thread] [%c] : %msg%n"/>
+    <springProperty scope="context" name="PROJECT_NAME" source="app.id" defaultValue="gatewayserver"/>
 
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>/data/log/${PROJECT_NAME}/service.log</file>
-        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
-            <layout class="org.apache.skywalking.apm.toolkit.log.logback.v1.x.TraceIdPatternLogbackLayout">
-                <pattern>${FILE_PATTERN}</pattern>
-            </layout>
-            <charset>UTF-8</charset>
-        </encoder>
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>${FILE_PATTERN}</pattern>
+        </layout>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
             <fileNamePattern>/data/log/${PROJECT_NAME}/history/service-%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
             <MaxHistory>200</MaxHistory>
             <maxFileSize>100MB</maxFileSize>
-            <totalSizeCap>20GB</totalSizeCap>
+            <totalSizeCap>500MB</totalSizeCap>
         </rollingPolicy>
     </appender>
 
     <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>/data/log/${PROJECT_NAME}/service-error.log</file>
-        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
-            <layout class="org.apache.skywalking.apm.toolkit.log.logback.v1.x.TraceIdPatternLogbackLayout">
-                <pattern>${FILE_PATTERN}</pattern>
-            </layout>
-            <charset>UTF-8</charset>
-        </encoder>
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>${FILE_PATTERN}</pattern>
+        </layout>
         <filter class="ch.qos.logback.classic.filter.LevelFilter">
             <level>error</level>
             <onMatch>ACCEPT</onMatch>
@@ -35,18 +29,15 @@
             <fileNamePattern>/data/log/${PROJECT_NAME}/history/service-error-%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
             <MaxHistory>200</MaxHistory>
             <maxFileSize>50MB</maxFileSize>
-            <totalSizeCap>20GB</totalSizeCap>
+            <totalSizeCap>100MB</totalSizeCap>
         </rollingPolicy>
     </appender>
 
     <appender name="RESPONSE_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>/data/log/${PROJECT_NAME}/response.log</file>
-        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
-            <layout class="org.apache.skywalking.apm.toolkit.log.logback.v1.x.TraceIdPatternLogbackLayout">
-                <pattern>%date [%tid] %msg%n</pattern>
-            </layout>
-            <charset>UTF-8</charset>
-        </encoder>
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>${FILE_PATTERN}</pattern>
+        </layout>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
             <fileNamePattern>/data/log/${PROJECT_NAME}/history/response-%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
             <MaxHistory>7</MaxHistory>
@@ -71,10 +62,6 @@
     <contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator">
         <resetJUL>true</resetJUL>
     </contextListener>
-
-    <!--<logger name="com.aha.tech.core.filters.web.AccessLogFilter" level="INFO" additivty="false">-->
-    <!--<appender-ref ref="ACCESS_LOG_FILE"></appender-ref>-->
-    <!--</logger>-->
 
     <logger name="com.aha.tech.core.service.impl.HttpModifyResponseServiceImpl" additivty="false" level="WARN">
         <appender-ref ref="RESPONSE_FILE"></appender-ref>

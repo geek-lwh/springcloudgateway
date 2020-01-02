@@ -53,7 +53,7 @@ public class HttpAccessLogServiceImpl implements AccessLogService {
     @Override
     public String requestLog(ServerWebExchange exchange, Long cost) {
         CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheRequest(exchange);
-        String requestId = ExchangeSupport.getRequestId(exchange);
+        String traceId = ExchangeSupport.getTraceId(exchange);
         RequestLog requestLog = new RequestLog();
         URI uri = cacheRequestEntity.getRequestLine();
         if (uri == null) {
@@ -67,7 +67,7 @@ public class HttpAccessLogServiceImpl implements AccessLogService {
 
         Map<String, String> ipLimiterHeader = ExchangeSupport.getCurrentIpLimiter(exchange);
 
-        requestLog.setRequestId(requestId);
+        requestLog.setRequestId(traceId);
         requestLog.setUri(uri);
         requestLog.setHttpHeaders(httpHeaders);
         requestLog.setBody(cacheRequestEntity.getRequestBody());

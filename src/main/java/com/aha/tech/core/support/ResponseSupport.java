@@ -95,7 +95,7 @@ public class ResponseSupport {
 //    }
     public static String buildWarnLog(ServerWebExchange exchange, ResponseVo responseVo, HttpStatus httpStatus) {
         CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheRequest(exchange);
-        String requestId = ExchangeSupport.getRequestId(exchange);
+        String requestId = ExchangeSupport.getTraceId(exchange);
 
         URI uri = cacheRequestEntity.getRequestLine();
         if (uri == null) {
