@@ -55,7 +55,7 @@ public class CopyBodyFilter implements GlobalFilter, Ordered {
                     .defaultIfEmpty(new byte[0])
                     .doOnNext(bytes -> {
                         String body = new String(bytes, StandardCharsets.UTF_8).trim();
-                        logger.debug("原始 body : {} ", body);
+                        logger.info("received request uri : {}, body : {} ", request.getURI().getRawPath(), body);
                         cacheRequestEntity.setRequestBody(body);
                     }).then(chain.filter(exchange));
         }
