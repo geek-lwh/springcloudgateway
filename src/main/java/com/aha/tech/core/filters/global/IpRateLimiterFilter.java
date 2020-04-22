@@ -4,9 +4,11 @@ import com.aha.tech.core.exception.LimiterException;
 import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.LimiterService;
 import com.aha.tech.core.service.RequestHandlerService;
+import com.aha.tech.core.support.ExchangeSupport;
 import com.aha.tech.core.support.ResponseSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
@@ -53,10 +55,11 @@ public class IpRateLimiterFilter implements GlobalFilter, Ordered {
         if (!isEnable) {
             return chain.filter(exchange);
         }
-
+        String traceId = ExchangeSupport.getTraceId(exchange);
+        MDC.put("traceId",traceId);
         String rawPath = exchange.getRequest().getURI().getRawPath();
         if (httpRequestHandlerService.isSkipIpLimiter(rawPath)) {
-            logger.debug("跳过ip限流策略 : {}", rawPath);
+            logger.info("跳过ip限流策略 : {}", rawPath);
             return chain.filter(exchange);
         }
 

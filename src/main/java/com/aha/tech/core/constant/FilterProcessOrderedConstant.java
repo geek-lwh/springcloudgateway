@@ -23,11 +23,8 @@ public class FilterProcessOrderedConstant {
     // ip限流
     public static int IP_RATE_LIMITER_FILTER_ORDER = QPS_RATE_LIMITER_FILTER_ORDER + STEP;
 
-    // 白名单列表
-    public static int WHITE_LIST_REQUEST_FILTER = IP_RATE_LIMITER_FILTER_ORDER + STEP;
-
     // 校验和缓存过滤器
-    public static int URL_TAMPER_PROOF_FILTER = WHITE_LIST_REQUEST_FILTER + STEP;
+    public static int URL_TAMPER_PROOF_FILTER = IP_RATE_LIMITER_FILTER_ORDER + STEP;
 
     public static int COPY_BODY_FILTER = URL_TAMPER_PROOF_FILTER + STEP;
 

@@ -3,6 +3,7 @@ package com.aha.tech.core.support;
 import com.aha.tech.core.model.dto.RequestAddParamsDto;
 import com.aha.tech.core.model.entity.CacheRequestEntity;
 import com.aha.tech.util.IdWorker;
+import com.dianping.cat.Cat;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -138,7 +139,7 @@ public class ExchangeSupport {
      * @return
      */
     public static String getTraceId(ServerWebExchange exchange) {
-        String requestId = exchange.getAttributes().getOrDefault(TRACE_ID_ATTR, String.valueOf(IdWorker.getInstance().nextId())).toString();
+        String requestId = exchange.getAttributes().getOrDefault(TRACE_ID_ATTR, Cat.createMessageId()).toString();
         return requestId;
     }
 

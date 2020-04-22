@@ -8,6 +8,7 @@ import com.aha.tech.core.support.ExchangeSupport;
 import com.aha.tech.core.support.ResponseSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
@@ -59,6 +60,8 @@ public class BodyTamperProofRequestFilter implements GlobalFilter, Ordered {
         }
         URI uri = request.getURI();
         Boolean isSkipUrlTamperProof = ExchangeSupport.getIsSkipUrlTamperProof(exchange);
+        String traceId = ExchangeSupport.getTraceId(exchange);
+        MDC.put("traceId",traceId);
         if (isSkipUrlTamperProof) {
             logger.info("跳过body防篡改,raw_path : {}", uri.getRawPath());
             return chain.filter(exchange);

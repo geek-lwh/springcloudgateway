@@ -14,6 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -32,7 +33,7 @@ import java.util.List;
 import static com.aha.tech.core.constant.ExchangeAttributeConstant.*;
 import static com.aha.tech.core.constant.HeaderFieldConstant.*;
 import static com.aha.tech.core.constant.SystemConstant.TEST;
-import static com.aha.tech.core.tools.BeanUtil.copyMultiValueMap;
+import static com.aha.tech.core.util.BeanUtil.copyMultiValueMap;
 
 /**
  * @Author: luweihong
@@ -233,6 +234,8 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
     public AuthenticationResultEntity authorize(ServerWebExchange serverWebExchange) {
         ServerHttpRequest serverHttpRequest = serverWebExchange.getRequest();
         Boolean isSkipAuth = ExchangeSupport.getIsSkipAuth(serverWebExchange);
+        String traceId = ExchangeSupport.getTraceId(serverWebExchange);
+        MDC.put("traceId",traceId);
         if (isSkipAuth) {
             logger.info("跳过授权认证 : {}", serverHttpRequest.getURI());
             return new AuthenticationResultEntity(isSkipAuth);
@@ -243,8 +246,6 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
         PairEntity<String> authorization = parseAuthorizationHeader(requestHeaders);
         String userName = authorization.getFirstEntity();
         String accessToken = authorization.getSecondEntity();
-
-        logger.debug("user name : {},access token : {},authorization : {}", userName, accessToken, authorization);
 
         AuthenticationResultEntity authenticationResultEntity = checkPermission(serverWebExchange, userName, accessToken);
         authenticationResultEntity.setWhiteList(isSkipAuth);

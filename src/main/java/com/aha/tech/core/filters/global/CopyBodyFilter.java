@@ -4,6 +4,7 @@ import com.aha.tech.core.model.entity.CacheRequestEntity;
 import com.aha.tech.core.support.ExchangeSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
@@ -43,7 +44,8 @@ public class CopyBodyFilter implements GlobalFilter, Ordered {
         cacheRequestEntity.setRequestLine(exchange.getRequest().getURI());
         cacheRequestEntity.setOriginalRequestHttpHeaders(request.getHeaders());
         ExchangeSupport.put(exchange, GATEWAY_REQUEST_CACHED_ATTR, cacheRequestEntity);
-
+        String traceId = ExchangeSupport.getTraceId(exchange);
+        MDC.put("traceId",traceId);
         if (httpMethod.equals(HttpMethod.POST) || httpMethod.equals(HttpMethod.PUT)) {
             return DataBufferUtils.join(request.getBody())
                     .map(dataBuffer -> {
@@ -55,7 +57,7 @@ public class CopyBodyFilter implements GlobalFilter, Ordered {
                     .defaultIfEmpty(new byte[0])
                     .doOnNext(bytes -> {
                         String body = new String(bytes, StandardCharsets.UTF_8).trim();
-                        logger.debug("原始 body : {} ", body);
+                        logger.info("原始 body : {} ", body);
                         cacheRequestEntity.setRequestBody(body);
                     }).then(chain.filter(exchange));
         }

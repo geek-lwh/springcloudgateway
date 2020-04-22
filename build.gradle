@@ -81,6 +81,9 @@ dependencies {
     // metrics
     compile 'io.micrometer:micrometer-registry-prometheus'
 
+    // cat
+    compile('com.dianping.cat:cat-client:3.0.0')
+
     // test dependency
     testCompile("org.springframework.boot:spring-boot-starter-test")
     testCompile group: 'junit', name: 'junit', version: '4.12'

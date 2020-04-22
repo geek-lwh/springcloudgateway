@@ -3,12 +3,14 @@ package com.aha.tech.core.service.impl;
 import com.aha.tech.core.constant.HeaderFieldConstant;
 import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.ModifyResponseService;
+import com.aha.tech.core.support.ExchangeSupport;
 import com.aha.tech.core.support.ResponseSupport;
 import com.alibaba.fastjson.JSON;
 import org.apache.commons.lang3.StringUtils;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.cloud.gateway.filter.factory.rewrite.ModifyResponseBodyGatewayFilterFactory;
 import org.springframework.cloud.gateway.filter.factory.rewrite.ModifyResponseBodyGatewayFilterFactory.ResponseAdapter;
 import org.springframework.cloud.gateway.support.BodyInserterContext;
@@ -52,7 +54,8 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
         ServerHttpResponseDecorator serverHttpResponseDecorator = new ServerHttpResponseDecorator(oldResponse) {
             @Override
             public Mono<Void> writeWith(Publisher<? extends DataBuffer> body) {
-
+                String traceId = ExchangeSupport.getTraceId(serverWebExchange);
+                MDC.put("traceId",traceId);
                 ModifyResponseBodyGatewayFilterFactory m = new ModifyResponseBodyGatewayFilterFactory(ServerCodecConfigurer.create());
                 String originalResponseContentType = serverWebExchange.getAttributeOrDefault(ORIGINAL_RESPONSE_CONTENT_TYPE_ATTR, MediaType.APPLICATION_JSON_UTF8_VALUE);
                 HttpHeaders httpHeaders = new HttpHeaders();

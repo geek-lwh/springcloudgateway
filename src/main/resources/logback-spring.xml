@@ -3,7 +3,7 @@
 
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%blue([%X{traceId}]) %green(%date) %highlight(%level) %boldMagenta([%thread]) %cyan([%C{10}]) : %msg%n</pattern>
+            <pattern>%green(%date) %blue([%X{traceId}]) %highlight(%level) %boldMagenta([%thread]) %cyan([%C{10}]) : %msg%n</pattern>
             <charset>UTF-8</charset>
         </encoder>
     </appender>

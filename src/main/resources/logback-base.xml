@@ -1,5 +1,5 @@
 <included>
-    <property name="FILE_PATTERN" value="[%X{traceId}] %date %level [%thread] [%c] : %msg%n"/>
+    <property name="FILE_PATTERN" value="%date [%X{traceId}] %level [%thread] [%c] : %msg%n"/>
     <springProperty scope="context" name="PROJECT_NAME" source="app.id" defaultValue="gatewayserver"/>
 
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">

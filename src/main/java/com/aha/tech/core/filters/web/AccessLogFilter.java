@@ -3,6 +3,7 @@ package com.aha.tech.core.filters.web;
 import com.aha.tech.core.service.AccessLogService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -22,7 +23,7 @@ import java.util.concurrent.CompletableFuture;
  * 访问日志打印过滤器
  */
 @Component
-@Order(Ordered.HIGHEST_PRECEDENCE)
+@Order(Ordered.HIGHEST_PRECEDENCE + 1)
 public class AccessLogFilter implements WebFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(AccessLogFilter.class);
