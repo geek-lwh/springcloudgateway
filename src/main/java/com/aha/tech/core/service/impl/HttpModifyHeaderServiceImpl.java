@@ -5,12 +5,14 @@ import com.aha.tech.core.model.dto.RequestAddParamsDto;
 import com.aha.tech.core.model.enums.WebClientTypeEnum;
 import com.aha.tech.core.service.ModifyHeaderService;
 import com.aha.tech.core.support.ExchangeSupport;
+import com.dianping.cat.Cat;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
@@ -54,6 +56,8 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
      */
     @Override
     public void initHeaders(ServerWebExchange exchange, HttpHeaders httpHeaders, String remoteIp) {
+        String traceId = ExchangeSupport.getTraceId(exchange);
+        MDC.put("traceId",traceId);
         String realIp = parseHeaderIp(httpHeaders);
         if (StringUtils.isBlank(realIp)) {
             logger.warn("缺失x-forward-for , 使用 remoteIp : {}", remoteIp);
@@ -65,8 +69,8 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
         httpHeaders.set(X_ENV_USER_ID, userId);
         httpHeaders.set(HEADER_USER_ID, userId);
 
-        String traceId = ExchangeSupport.getTraceId(exchange);
         httpHeaders.set(X_TRACE_ID, traceId);
+        httpHeaders.set(CONSUMER_SERVER_NAME, Cat.getManager().getDomain());
 
         httpHeaders.set(HEADER_X_FORWARDED_FOR, realIp);
         httpHeaders.set(HEADER_TOKEN, DEFAULT_X_TOKEN_VALUE);
