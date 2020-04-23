@@ -13,7 +13,7 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_CACHED_ATTR;
-import static com.aha.tech.core.constant.FilterProcessOrderedConstant.LOAD_BALANCING__FILTER;
+import static com.aha.tech.core.constant.FilterProcessOrderedConstant.LOAD_BALANCING_FILTER;
 
 /**
  * @Author: luweihong
@@ -26,7 +26,7 @@ public class LoadBalancingFilter implements GlobalFilter, Ordered {
 
     @Override
     public int getOrder() {
-        return LOAD_BALANCING__FILTER;
+        return LOAD_BALANCING_FILTER;
     }
 
     @Override
@@ -38,6 +38,7 @@ public class LoadBalancingFilter implements GlobalFilter, Ordered {
         String routeHost = ExchangeSupport.getRouteRequestPath(exchange);
         logger.info("请求地址 : {},转发服务地址 : {}", cacheRequestEntity.getRequestLine(), routeHost);
         cacheRequestEntity.setRealServer(routeHost);
+        ExchangeSupport.put(exchange, GATEWAY_REQUEST_CACHED_ATTR, cacheRequestEntity);
         ExchangeSupport.put(exchange, GATEWAY_REQUEST_CACHED_ATTR, cacheRequestEntity);
         return chain.filter(exchange);
     }

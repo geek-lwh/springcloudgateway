@@ -60,13 +60,13 @@ public class HttpAccessLogServiceImpl implements AccessLogService {
             uri = exchange.getRequest().getURI();
         }
 
+//        cacheRequestEntity.getOriginalRequestHttpHeaders()
         HttpHeaders httpHeaders = cacheRequestEntity.getAfterModifyRequestHttpHeaders();
         if (httpHeaders == null) {
             httpHeaders = exchange.getRequest().getHeaders();
         }
 
         Map<String, String> ipLimiterHeader = ExchangeSupport.getCurrentIpLimiter(exchange);
-
         requestLog.setRequestId(traceId);
         requestLog.setUri(uri);
         requestLog.setHttpHeaders(httpHeaders);

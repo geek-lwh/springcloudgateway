@@ -44,7 +44,7 @@ public class FilterProcessOrderedConstant {
     public static int MODIFY_PARAMS_FILTER_ORDER = MODIFY_REQUEST_HEADER_GATEWAY_FILTER_ORDER + STEP;
 
     // loadbalance 过滤器
-    public static int LOAD_BALANCING__FILTER = LoadBalancerClientFilter.LOAD_BALANCER_CLIENT_FILTER_ORDER + STEP;
+    public static int LOAD_BALANCING_FILTER = LoadBalancerClientFilter.LOAD_BALANCER_CLIENT_FILTER_ORDER + STEP;
 
     // 修改请求返回体过滤器
     public static int MODIFY_RESPONSE_GATEWAY_FILTER_ORDER = NettyWriteResponseFilter.WRITE_RESPONSE_FILTER_ORDER - STEP;

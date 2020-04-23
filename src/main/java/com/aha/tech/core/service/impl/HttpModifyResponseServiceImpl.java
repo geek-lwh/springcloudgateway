@@ -55,7 +55,7 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
             @Override
             public Mono<Void> writeWith(Publisher<? extends DataBuffer> body) {
                 String traceId = ExchangeSupport.getTraceId(serverWebExchange);
-                MDC.put("traceId",traceId);
+                MDC.put("traceId", traceId);
                 ModifyResponseBodyGatewayFilterFactory m = new ModifyResponseBodyGatewayFilterFactory(ServerCodecConfigurer.create());
                 String originalResponseContentType = serverWebExchange.getAttributeOrDefault(ORIGINAL_RESPONSE_CONTENT_TYPE_ATTR, MediaType.APPLICATION_JSON_UTF8_VALUE);
                 HttpHeaders httpHeaders = new HttpHeaders();
@@ -64,6 +64,7 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
                 DefaultClientResponse clientResponse = new DefaultClientResponse(responseAdapter, ExchangeStrategies.withDefaults());
                 Mono modifiedBody = clientResponse.bodyToMono(String.class).flatMap(originalBody -> {
                     ResponseVo responseVo = ResponseVo.defaultFailureResponseVo();
+                    logger.info("gateway response body : {}", originalBody);
                     try {
                         responseVo = JSON.parseObject(originalBody, ResponseVo.class);
                     } catch (Exception e) {

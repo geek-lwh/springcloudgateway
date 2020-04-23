@@ -209,8 +209,10 @@ public class URISupport {
     }
 
     public static void main(String[] args) {
-        String s = "/v3/orderbff/products/allact_type=数学&app_types=1&city_name=上海市&course_propertys=1,2,4&cursor=&kid_age=&limit=10&sort_type=41562232195152";
-        System.out.println(DigestUtils.md5DigestAsHex(s.getBytes()));
+        String s = "{\"completed_exam_time_cost\":23,\"completed_questions\":[{\"quesion_pool_id\":1,\"score\":40},{\"quesion_pool_id\":1161,\"score\":20},{\"quesion_pool_id\":1160,\"score\":20},{\"quesion_pool_id\":1159,\"score\":20}],\"source_questions\":[{\"quesion_pool_id\":1,\"score\":40},{\"quesion_pool_id\":1161,\"score\":20},{\"quesion_pool_id\":1160,\"score\":20},{\"quesion_pool_id\":1159,\"score\":20}],\"course_id\":\"1956\",\"exam_id\":2,\"is_clear\":true,\"user_completed\":4,\"user_perfect_answer\":4,\"user_score\":100,\"score\":80}";
+        byte[] base64Body = Base64.encodeBase64(s.getBytes(StandardCharsets.UTF_8));
+        String encodeBody = new String(base64Body, StandardCharsets.UTF_8);
+        System.out.println(encodeBody);
     }
 
 }
