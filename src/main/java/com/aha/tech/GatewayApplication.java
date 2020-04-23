@@ -47,9 +47,9 @@ public class GatewayApplication {
         SpringApplication app = new SpringApplication(GatewayApplication.class);
         try {
             int nThreads = Runtime.getRuntime().availableProcessors();
-//            String v = System.getProperty("reactor.netty.ioWorkerCount", String.valueOf(nThreads * 2 + 1));
-            String v = System.getProperty("reactor.netty.ioWorkerCount", String.valueOf(16));
+            String v = System.getProperty("reactor.netty.ioWorkerCount", String.valueOf(nThreads));
             System.setProperty("reactor.netty.ioWorkerCount", v);
+//            System.setProperty("com.alibaba.nacos.naming.log.level","info");
             ConfigurableApplicationContext configurableApplicationContext = app.run(args);
             Environment env = configurableApplicationContext.getEnvironment();
             validateProfiles(env, profile);
