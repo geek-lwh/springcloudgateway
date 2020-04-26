@@ -289,7 +289,7 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
 
         httpModifyHeaderService.initHeaders(exchange, newHeaders, remoteIp);
         httpModifyHeaderService.versionSetting(newHeaders);
-        httpModifyHeaderService.xEnvSetting(newHeaders);
+        httpModifyHeaderService.xEnvSetting(exchange,newHeaders);
         httpModifyHeaderService.removeHeaders(newHeaders);
 
         return newHeaders;

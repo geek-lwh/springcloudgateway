@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
+import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR;
 import static com.aha.tech.core.constant.HeaderFieldConstant.*;
 import static com.aha.tech.core.support.ParseHeadersSupport.parseHeaderIp;
 import static com.aha.tech.core.support.ParseHeadersSupport.verifyPp;
@@ -56,7 +57,8 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
     public void initHeaders(ServerWebExchange exchange, HttpHeaders httpHeaders, String remoteIp) {
         String realIp = parseHeaderIp(httpHeaders);
         if (StringUtils.isBlank(realIp)) {
-            logger.warn("缺失x-forward-for , 使用 remoteIp : {}", remoteIp);
+            String url = exchange.getAttributeOrDefault(GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR, "");
+            logger.warn("url : {} 缺失x-forward-for , 使用 remoteIp : {}", url, remoteIp);
             realIp = remoteIp;
         }
 
@@ -113,19 +115,19 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
      * @param httpHeaders
      */
     @Override
-    public void xEnvSetting(HttpHeaders httpHeaders) {
+    public void xEnvSetting(ServerWebExchange serverWebExchange, HttpHeaders httpHeaders) {
         List<String> xEnv = httpHeaders.get(HEADER_X_ENV);
         if (CollectionUtils.isEmpty(xEnv)) {
             return;
         }
-
+        String url = serverWebExchange.getAttributeOrDefault(GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR, "");
         byte[] decryptXEnv = Base64.decodeBase64(xEnv.get(0));
         try {
             Map<String, Object> xEnvMap = objectMapper.readValue(decryptXEnv, Map.class);
             for (Map.Entry<String, Object> entry : xEnvMap.entrySet()) {
                 String key = entry.getKey();
                 String value = String.valueOf(entry.getValue());
-                xEnvSetting(key, value, httpHeaders);
+                xEnvSetting(url, key, value, httpHeaders);
             }
         } catch (IOException e) {
             logger.error("parse core error", e);
@@ -138,13 +140,13 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
      * @param value
      * @param httpHeaders
      */
-    private void xEnvSetting(String key, String value, HttpHeaders httpHeaders) {
+    private void xEnvSetting(String url, String key, String value, HttpHeaders httpHeaders) {
         switch (key) {
             case X_ENV_FIELD_PK:
                 parseAndSetPk(value, httpHeaders);
                 break;
             case X_ENV_FIELD_PP:
-                parseAndSetPp(value, httpHeaders);
+                parseAndSetPp(url, value, httpHeaders);
                 break;
             case X_ENV_FIELD_PD:
                 httpHeaders.set(HEADER_PD, value);
@@ -238,7 +240,7 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
      * @param encodePP
      * @param httpHeaders
      */
-    private void parseAndSetPp(String encodePP, HttpHeaders httpHeaders) {
+    private void parseAndSetPp(String url, String encodePP, HttpHeaders httpHeaders) {
         if (StringUtils.isBlank(encodePP)) {
             httpHeaders.set(HEADER_PP, Strings.EMPTY);
             return;
@@ -246,13 +248,13 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
 
         String pp = new String(Base64.decodeBase64(encodePP), StandardCharsets.UTF_8);
         if (!pp.contains(Separator.DOLLAR_MARK)) {
-            logger.error("不合法的pp值,缺少'&'符号 pp : {},encode_pp : {}", pp, encodePP);
+            logger.error("url : {} 不合法的pp值,缺少'$'符号 pp : {},encode_pp : {}", url, pp, encodePP);
             httpHeaders.set(HEADER_PP, Strings.EMPTY);
             return;
         }
 
         if (!verifyPp(pp)) {
-            logger.error("pp验证不通过! pp : {},encode_pp : {}", pp, encodePP);
+            logger.error("url : {} pp验证不通过! pp : {},encode_pp : {}", url, pp, encodePP);
             httpHeaders.set(HEADER_PP, Strings.EMPTY);
             return;
         }
