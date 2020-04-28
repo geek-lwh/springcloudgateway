@@ -21,7 +21,7 @@ public interface ModifyHeaderService {
      * 解析X-unit 并且设置对应的值传递后端rs服务
      * @param httpHeaders
      */
-    void xEnvSetting(HttpHeaders httpHeaders);
+    void xEnvSetting(ServerWebExchange serverWebExchange,HttpHeaders httpHeaders);
 
     /**
      * 删除无效的头部信息
