@@ -1,11 +1,11 @@
 package com.aha.tech.core.service.impl;
 
+import com.aha.tech.commons.symbol.Separator;
 import com.aha.tech.core.constant.SystemConstant;
 import com.aha.tech.core.exception.MissAuthorizationHeaderException;
 import com.aha.tech.core.exception.ParseAuthorizationHeaderException;
 import com.aha.tech.core.model.entity.AuthenticationResultEntity;
 import com.aha.tech.core.model.entity.PairEntity;
-import com.aha.tech.core.model.entity.RouteEntity;
 import com.aha.tech.core.service.*;
 import com.aha.tech.core.support.ExchangeSupport;
 import com.aha.tech.passportserver.facade.code.AuthorizationCode;
@@ -197,23 +197,24 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
     public ServerHttpRequest rewriteRequestPath(ServerWebExchange serverWebExchange) {
         ServerHttpRequest serverHttpRequest = serverWebExchange.getRequest();
 
+        // 原始uri
         URI uri = serverHttpRequest.getURI();
+        // 原始raw path
         String originalUrlPath = uri.getRawPath();
-        logger.debug("开始重写请求路径,原路由路径 : {}", originalUrlPath);
+        // 去无效路径
         String validPath = httpRewritePathService.excludeInvalidPath(originalUrlPath, SKIP_STRIP_PREFIX_PART);
+        // 获取routeId
+        String routeId = StringUtils.substringBefore(validPath, Separator.SLASH_MARK);
+        // 重写path
+        String rewritePath = httpRewritePathService.rewritePath(routeId, validPath);
 
-        // 重写请求路径
-        RouteEntity routeEntity = httpRewritePathService.rewritePath(validPath);
-        String rewritePath = routeEntity.getRewritePath();
-        String id = routeEntity.getId();
-//        String language = StringUtils.isBlank(routeEntity.getLanguage()) ? LanguageConstant.JAVA : routeEntity.getLanguage().toLowerCase();
+        logger.info("uri : {},originalUrlPath : {},validPath : {},routeId : {},rewritePath : {}", uri, originalUrlPath, validPath, routeId, rewritePath);
 
         serverWebExchange.getAttributes().put(GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR, originalUrlPath);
-        serverWebExchange.getAttributes().put(GATEWAY_REQUEST_ROUTE_HOST_ATTR, routeEntity.getUri());
-//        serverWebExchange.getAttributes().put(REQUEST_LANGUAGE_ATTR, language);
+        serverWebExchange.getAttributes().put(GATEWAY_REQUEST_ROUTE_HOST_ATTR, uri);
         serverWebExchange.getAttributes().put(GATEWAY_REQUEST_VALID_PATH_ATTR, validPath);
         serverWebExchange.getAttributes().put(GATEWAY_REQUEST_REWRITE_PATH_ATTR, rewritePath);
-        serverWebExchange.getAttributes().put(GATEWAY_REQUEST_ROUTE_ID_ATTR, id);
+        serverWebExchange.getAttributes().put(GATEWAY_REQUEST_ROUTE_ID_ATTR, routeId);
         // 生成新的request对象
         ServerHttpRequest newRequest = serverHttpRequest.mutate()
                 .path(rewritePath)
@@ -289,7 +290,7 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
 
         httpModifyHeaderService.initHeaders(exchange, newHeaders, remoteIp);
         httpModifyHeaderService.versionSetting(newHeaders);
-        httpModifyHeaderService.xEnvSetting(exchange,newHeaders);
+        httpModifyHeaderService.xEnvSetting(exchange, newHeaders);
         httpModifyHeaderService.removeHeaders(newHeaders);
 
         return newHeaders;

@@ -4,7 +4,6 @@ import com.aha.tech.commons.symbol.Separator;
 import com.aha.tech.core.exception.NoSuchRouteException;
 import com.aha.tech.core.model.entity.RouteEntity;
 import com.aha.tech.core.service.RewritePathService;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -47,23 +46,18 @@ public class HttpRewritePathServiceImpl implements RewritePathService {
      * @return
      */
     @Override
-    public RouteEntity rewritePath(String realServerHost) {
-        String id = StringUtils.substringBefore(realServerHost, Separator.SLASH_MARK);
-        if (!routeEntityMap.containsKey(id)) {
-            logger.error("根据id : {} 查找不到对应的请求资源 : {}", id, routeEntityMap);
+    public String rewritePath(String routeId, String realServerHost) {
+        if (!routeEntityMap.containsKey(routeId)) {
+            logger.error("根据routeId : {} 查找不到对应的请求资源 : {}", routeId, routeEntityMap);
             throw new NoSuchRouteException();
         }
 
         // 重写新的路由
-        RouteEntity routeEntity = routeEntityMap.get(id);
-//        String realServerHost = StringUtils.substringAfter(validPath, Separator.SLASH_MARK);
+        RouteEntity routeEntity = routeEntityMap.get(routeId);
         String contextPath = routeEntity.getContextPath();
         String rewritePath = buildRewritePath(contextPath, realServerHost);
-
-        routeEntity.setRewritePath(rewritePath);
-        routeEntity.setId(id);
         logger.debug("重写后的路径是: {}", rewritePath);
 
-        return routeEntity;
+        return rewritePath;
     }
 }

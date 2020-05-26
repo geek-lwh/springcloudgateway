@@ -1,5 +1,6 @@
 package com.aha.tech.core.service;
 
+import com.aha.tech.core.model.entity.ImmutableRouteEntity;
 import com.aha.tech.core.model.entity.RouteEntity;
 
 /**
@@ -18,9 +19,10 @@ public interface RewritePathService {
 
     /**
      * 重写转发的请求地址
+     * @param routeId
      * @param oldPath
      * @return
      */
-    RouteEntity rewritePath(String oldPath);
+    String rewritePath(String routeId,String oldPath);
 
 }
