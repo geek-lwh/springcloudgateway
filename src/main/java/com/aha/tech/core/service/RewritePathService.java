@@ -1,8 +1,5 @@
 package com.aha.tech.core.service;
 
-import com.aha.tech.core.model.entity.ImmutableRouteEntity;
-import com.aha.tech.core.model.entity.RouteEntity;
-
 /**
  * @Author: luweihong
  * @Date: 2019/3/15
