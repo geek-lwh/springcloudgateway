@@ -6,6 +6,7 @@ import com.aha.tech.util.IdWorker;
 import com.dianping.cat.Cat;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.ratelimit.RateLimiter;
@@ -47,6 +48,23 @@ public class ExchangeSupport {
      */
     public static void put(ServerWebExchange exchange, String key, Object value) {
         exchange.getAttributes().put(key, value);
+    }
+
+    /**
+     * 设置responseBody
+     * @param exchange
+     * @param responseBody
+     */
+    public static void putResponseBody(ServerWebExchange exchange,String responseBody){
+        exchange.getAttributes().put(RESPONSE_BODY, responseBody);
+    }
+
+    /**
+     * 设置responseBody
+     * @param exchange
+     */
+    public static String getResponseBody(ServerWebExchange exchange){
+        return exchange.getAttributes().getOrDefault(RESPONSE_BODY, Strings.EMPTY).toString();
     }
 
     /**

@@ -16,7 +16,7 @@ public interface AccessLogService {
      * @param cost
      * @return
      */
-    String requestLog(ServerWebExchange exchange, Long cost);
+    String requestLog(ServerWebExchange exchange, Long cost,String responseVo);
 
     String printAccessLogging(ServerHttpRequest serverHttpRequest, Long startTime, Long endTime, HttpStatus status);
     /**

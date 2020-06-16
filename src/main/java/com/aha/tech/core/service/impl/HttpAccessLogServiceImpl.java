@@ -51,7 +51,7 @@ public class HttpAccessLogServiceImpl implements AccessLogService {
      * @return
      */
     @Override
-    public String requestLog(ServerWebExchange exchange, Long cost) {
+    public String requestLog(ServerWebExchange exchange, Long cost,String response) {
         CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheRequest(exchange);
         String traceId = ExchangeSupport.getTraceId(exchange);
         RequestLog requestLog = new RequestLog();
@@ -72,12 +72,13 @@ public class HttpAccessLogServiceImpl implements AccessLogService {
         requestLog.setHttpHeaders(httpHeaders);
         requestLog.setBody(cacheRequestEntity.getRequestBody());
         requestLog.setCost(cost);
+        requestLog.setResponseBody(response);
         requestLog.setIpLimitRemaining(ipLimiterHeader.getOrDefault("X-RateLimit-Remaining", Strings.EMPTY));
         requestLog.setIpLimitBurstCapacity(ipLimiterHeader.getOrDefault("X-RateLimit-Burst-Capacity", Strings.EMPTY));
         requestLog.setIpLimitReplenishRate(ipLimiterHeader.getOrDefault("X-RateLimit-Replenish-Rate", Strings.EMPTY));
         requestLog.setRealIp(ipLimiterHeader.getOrDefault("realIp", Strings.EMPTY));
 
-        return requestLog.toString();
+        return requestLog.getLog();
     }
 
     /**

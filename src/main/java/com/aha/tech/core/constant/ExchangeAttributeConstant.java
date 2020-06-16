@@ -34,4 +34,7 @@ public class ExchangeAttributeConstant {
     public static final String TRACE_ID_ATTR = "TRACE_ID_ATTR";
 
     public static final String IP_LIMITER_ATTR = "IP_LIMITER_ATTR";
+
+    public static final String RESPONSE_BODY = "RESPONSE_BODY";
+
 }

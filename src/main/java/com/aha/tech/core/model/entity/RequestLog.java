@@ -20,6 +20,8 @@ public class RequestLog {
 
     private String body;
 
+    private String responseBody;
+
     private String ipLimitRemaining;
 
     private String ipLimitBurstCapacity;
@@ -102,14 +104,22 @@ public class RequestLog {
         this.realIp = realIp;
     }
 
-    @Override
-    public String toString() {
+    public String getResponseBody() {
+        return responseBody;
+    }
+
+    public void setResponseBody(String responseBody) {
+        this.responseBody = responseBody;
+    }
+
+    public String getLog() {
         StringBuffer sb = new StringBuffer();
         sb.append("requestId").append(Separator.COLON_MARK).append(this.requestId).append(System.lineSeparator());
         sb.append("请求行").append(Separator.COLON_MARK).append(this.uri).append(System.lineSeparator());
         sb.append("耗时").append(Separator.COLON_MARK).append(this.cost).append(System.lineSeparator());
         sb.append("请求头").append(Separator.COLON_MARK).append(ResponseSupport.formatHttpHeaders(this.httpHeaders)).append(System.lineSeparator());
         sb.append("请求体").append(Separator.COLON_MARK).append(this.body).append(System.lineSeparator());
+        sb.append("返回体").append(Separator.COLON_MARK).append(this.responseBody).append(System.lineSeparator());
 
         sb.append("ip").append(Separator.COLON_MARK).append(this.realIp).append(System.lineSeparator());
         sb.append("ip限流桶容量").append(Separator.COLON_MARK).append(this.ipLimitBurstCapacity).append(System.lineSeparator());

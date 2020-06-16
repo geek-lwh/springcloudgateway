@@ -97,7 +97,6 @@ public class ResponseSupport {
         Integer code = responseVo.getCode();
         if (!code.equals(ResponseConstants.SUCCESS) || !httpStatus.equals(HttpStatus.OK)) {
             StringBuffer sb = new StringBuffer();
-            sb.append(System.lineSeparator());
             sb.append("requestId : ").append(requestId).append(System.lineSeparator());
             sb.append("response body: ").append(responseVo).append(System.lineSeparator());
             sb.append("http status : ").append(httpStatus).append(System.lineSeparator());

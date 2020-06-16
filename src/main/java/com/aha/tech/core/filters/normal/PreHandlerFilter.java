@@ -40,7 +40,6 @@ public class PreHandlerFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        // todo create trace id
         String traceId = Cat.createMessageId();
         ExchangeSupport.put(exchange, TRACE_ID_ATTR, traceId);
         MDC.put("traceId", traceId);
@@ -56,7 +55,7 @@ public class PreHandlerFilter implements GlobalFilter, Ordered {
         ExchangeSupport.put(exchange, IS_SKIP_URL_TAMPER_PROOF_ATTR, isSkipUrlTamperProof);
         ExchangeSupport.put(exchange, TRACE_ID_ATTR, traceId);
 
-        logger.info("PreHandler uri : {} isSkipAuth : {},isSkipUrlTamperProof : {}", rawPath, isSkipAuth, isSkipUrlTamperProof);
+//        logger.info("PreHandler uri : {} isSkipAuth : {},isSkipUrlTamperProof : {}", rawPath, isSkipAuth, isSkipUrlTamperProof);
         return chain.filter(exchange);
     }
 

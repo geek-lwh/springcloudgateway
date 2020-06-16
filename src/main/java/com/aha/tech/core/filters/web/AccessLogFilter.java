@@ -1,6 +1,5 @@
 package com.aha.tech.core.filters.web;
 
-import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.AccessLogService;
 import com.aha.tech.core.support.ExchangeSupport;
 import org.slf4j.Logger;
@@ -40,14 +39,11 @@ public class AccessLogFilter implements WebFilter {
     public Mono<Void> filter(ServerWebExchange serverWebExchange, WebFilterChain webFilterChain) {
         Long startTime = System.currentTimeMillis();
         String traceId = ExchangeSupport.getTraceId(serverWebExchange);
-
         return webFilterChain.filter(serverWebExchange)
                 .doFinally((s) -> CompletableFuture.runAsync(() -> {
                     MDC.put("traceId", traceId);
                     Long cost = System.currentTimeMillis() - startTime;
-                    Object responseVo = ExchangeSupport.get(serverWebExchange,"responseBody",null);
-                    logger.info("{}", responseVo);
-                    logger.info("{}", httpAccessLogService.requestLog(serverWebExchange, cost));
+                    logger.info("Request Info : {}", httpAccessLogService.requestLog(serverWebExchange, cost, ExchangeSupport.getResponseBody(serverWebExchange)));
                 }, writeLoggingThreadPool));
     }
 
