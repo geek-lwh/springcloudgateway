@@ -15,6 +15,7 @@ import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.cloud.gateway.support.ServerWebExchangeUtils;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -101,14 +102,14 @@ public class FallbackGatewayFilterFactory extends AbstractGatewayFilterFactory<F
                                 logger.error("降级出现超时");
                                 ResponseVo responseVo = ResponseVo.defaultFailureResponseVo();
                                 responseVo.setMessage(errorMsg);
-                                return ResponseSupport.write(exchange, responseVo, new GatewayException(throwable));
+                                return ResponseSupport.write(exchange, responseVo, HttpStatus.REQUEST_TIMEOUT, new GatewayException(throwable));
                             });
 
                         case COMMAND_EXCEPTION: {
                             return Mono.defer(() -> {
                                 ResponseVo responseVo = ResponseVo.defaultFailureResponseVo();
                                 responseVo.setMessage(errorMsg);
-                                return ResponseSupport.write(exchange, responseVo, new GatewayException(throwable));
+                                return ResponseSupport.write(exchange, responseVo, HttpStatus.BAD_REQUEST,new GatewayException(throwable));
                             });
                         }
 

@@ -40,15 +40,16 @@ public class ResponseSupport {
      * 写入response body
      * @param exchange
      * @param responseVo
+     * @param httpStatus
      * @return
      */
-    public static Mono<Void> write(ServerWebExchange exchange, ResponseVo responseVo, Exception e) {
+    public static Mono<Void> write(ServerWebExchange exchange, ResponseVo responseVo, HttpStatus httpStatus,Exception e) {
         final ServerHttpResponse resp = exchange.getResponse();
         byte[] bytes = JSON.toJSONString(responseVo).getBytes(StandardCharsets.UTF_8);
         DataBuffer buffer = resp.bufferFactory().wrap(bytes);
         resp.getHeaders().setContentLength(buffer.readableByteCount());
         resp.getHeaders().setContentType(MediaType.APPLICATION_JSON_UTF8);
-        setResponseStatus(exchange, HttpStatus.OK);
+        setResponseStatus(exchange, httpStatus);
         AccessLogService httpAccessLogService = (AccessLogService) SpringContextUtil.getBean("httpAccessLogService");
         httpAccessLogService.printWhenError(exchange, e);
         return resp.writeWith(Flux.just(buffer));
@@ -57,42 +58,28 @@ public class ResponseSupport {
     /**
      * 写入response body
      * @param exchange
+     * @param status
      * @param responseVo
      * @return
      */
-    public static Mono<Void> write(ServerWebExchange exchange, ResponseVo responseVo) {
+    public static Mono<Void> write(ServerWebExchange exchange,HttpStatus status, ResponseVo responseVo) {
         logger.warn(responseVo.getMessage());
         final ServerHttpResponse resp = exchange.getResponse();
         byte[] bytes = JSON.toJSONString(responseVo).getBytes(StandardCharsets.UTF_8);
         DataBuffer buffer = resp.bufferFactory().wrap(bytes);
         resp.getHeaders().setContentLength(buffer.readableByteCount());
         resp.getHeaders().setContentType(MediaType.APPLICATION_JSON_UTF8);
-        setResponseStatus(exchange, HttpStatus.OK);
+        setResponseStatus(exchange, status);
         return resp.writeWith(Flux.just(buffer));
     }
 
     /**
      * 构建劲爆日志
-     * @param requestId
-     * @param cacheRequestEntity
+     * @param exchange
      * @param responseVo
      * @param httpStatus
      * @return
      */
-//    public static String buildWarnLog(String requestId, CacheRequestEntity cacheRequestEntity, ResponseVo responseVo, HttpStatus httpStatus) {
-//        Integer code = responseVo.getCode();
-//        if (!code.equals(ResponseConstants.SUCCESS) || !httpStatus.equals(HttpStatus.OK)) {
-//            StringBuffer sb = new StringBuffer();
-//            sb.append(System.lineSeparator());
-//            sb.append("requestId : ").append(requestId).append(System.lineSeparator());
-//            sb.append("response body: ").append(responseVo).append(System.lineSeparator());
-//            sb.append("http status : ").append(httpStatus).append(System.lineSeparator());
-//            sb.append("info : ").append(cacheRequestEntity).append(System.lineSeparator());
-//            return sb.toString();
-//        }
-//
-//        return org.apache.commons.lang3.StringUtils.EMPTY;
-//    }
     public static String buildWarnLog(ServerWebExchange exchange, ResponseVo responseVo, HttpStatus httpStatus) {
         CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheRequest(exchange);
         String requestId = ExchangeSupport.getTraceId(exchange);

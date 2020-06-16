@@ -61,7 +61,7 @@ public class BodyTamperProofRequestFilter implements GlobalFilter, Ordered {
         URI uri = request.getURI();
         Boolean isSkipUrlTamperProof = ExchangeSupport.getIsSkipUrlTamperProof(exchange);
         String traceId = ExchangeSupport.getTraceId(exchange);
-        MDC.put("traceId",traceId);
+        MDC.put("traceId", traceId);
         if (isSkipUrlTamperProof) {
             logger.info("跳过body防篡改,raw_path : {}", uri.getRawPath());
             return chain.filter(exchange);
@@ -81,7 +81,7 @@ public class BodyTamperProofRequestFilter implements GlobalFilter, Ordered {
                 String errorMsg = String.format("uri: %s ,params : %s ,body : %s ,防篡改校验失败,参数:%s", uri.getRawPath(), uri.getRawQuery(), body, tamperProofEntity);
                 logger.error("{}", errorMsg);
                 ResponseVo rpcResponse = new ResponseVo(HttpStatus.FORBIDDEN.value(), "body防篡改失败");
-                return ResponseSupport.write(exchange, rpcResponse);
+                return ResponseSupport.write(exchange, HttpStatus.FORBIDDEN, rpcResponse);
             });
         }
 

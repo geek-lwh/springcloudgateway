@@ -40,11 +40,10 @@ public class PreHandlerFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        // create trace id
+        // todo create trace id
         String traceId = Cat.createMessageId();
         ExchangeSupport.put(exchange, TRACE_ID_ATTR, traceId);
         MDC.put("traceId", traceId);
-
         String rawPath = exchange.getRequest().getURI().getRawPath();
         HttpHeaders httpHeaders = exchange.getRequest().getHeaders();
         // 是否跳过授权
