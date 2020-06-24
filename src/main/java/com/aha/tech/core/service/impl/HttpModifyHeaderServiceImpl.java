@@ -58,7 +58,7 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
     @Override
     public void initHeaders(ServerWebExchange exchange, HttpHeaders httpHeaders, String remoteIp) {
         String traceId = ExchangeSupport.getTraceId(exchange);
-        MDC.put("traceId",traceId);
+        MDC.put("traceId", traceId);
         String realIp = parseHeaderIp(httpHeaders);
         if (StringUtils.isBlank(realIp)) {
             String url = exchange.getAttributeOrDefault(GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR, "");
@@ -150,7 +150,7 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
                 parseAndSetPk(value, httpHeaders);
                 break;
             case X_ENV_FIELD_PP:
-                parseAndSetPp(url, value, httpHeaders);
+                parseAndSetPP(url, value, httpHeaders);
                 break;
             case X_ENV_FIELD_PD:
                 httpHeaders.set(HEADER_PD, value);
@@ -240,11 +240,11 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
      * 解析header 并且设置 header 头字段 pp
      * var pp_raw = product_id:user_id:is_poster: group_id:open_group:poster_id
      * pp = pp_raw + '$' + 'pp' +md5("hjm?" + md5(string({"pp":pp_raw}) + "Aha^_^")
-     * pp = 505069:100325:0:6289:1:0$pp8eeee5de92771715f7782ff4cfc89141
+     * pp = 505069:100325:0:6289:1:0$pp85de92771715f7782ff4cfc89141
      * @param encodePP
      * @param httpHeaders
      */
-    private void parseAndSetPp(String url, String encodePP, HttpHeaders httpHeaders) {
+    private void parseAndSetPP(String url, String encodePP, HttpHeaders httpHeaders) {
         if (StringUtils.isBlank(encodePP)) {
             httpHeaders.set(HEADER_PP, Strings.EMPTY);
             return;
@@ -252,7 +252,7 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
 
         String pp = new String(Base64.decodeBase64(encodePP), StandardCharsets.UTF_8);
         if (!pp.contains(Separator.DOLLAR_MARK)) {
-            logger.warn("url : {} 不合法的pp值,缺少'$'符号 pp : {},encode_pp : {}", url, pp, encodePP);
+            logger.warn("url : {} ,httpHeaders : {} 不合法的pp值,缺少'$'符号 pp : {},encode_pp : {},pp.length = {}", url, httpHeaders.toString(),pp, encodePP, pp.length());
             httpHeaders.set(HEADER_PP, Strings.EMPTY);
             return;
         }
