@@ -46,9 +46,9 @@ public class GatewayApplication {
         Assert.notNull(profile, "请指定 [-Dspring.profiles.active]");
         SpringApplication app = new SpringApplication(GatewayApplication.class);
         try {
-            int nThreads = Runtime.getRuntime().availableProcessors();
-            String v = System.getProperty("reactor.netty.ioWorkerCount", String.valueOf(nThreads));
-            System.setProperty("reactor.netty.ioWorkerCount", v);
+//            int nThreads = Runtime.getRuntime().availableProcessors();
+//            String v = System.getProperty("reactor.netty.ioWorkerCount", String.valueOf(nThreads));
+            System.setProperty("reactor.netty.ioWorkerCount", "24");
 //            System.setProperty("com.alibaba.nacos.naming.log.level","info");
             ConfigurableApplicationContext configurableApplicationContext = app.run(args);
             Environment env = configurableApplicationContext.getEnvironment();
