@@ -70,8 +70,7 @@ public class IpRateLimiterFilter implements GlobalFilter, Ordered {
         }
 
         logger.warn("ip : {} 限流算法生效", exchange.getRequest().getRemoteAddress().getAddress().getHostAddress());
-        final ResponseVo responseVo = ResponseVo.defaultFailureResponseVo();
-        responseVo.setMessage(IP_RATE_LIMITER_ERROR_MSG);
+        final ResponseVo responseVo = new ResponseVo(HttpStatus.TOO_MANY_REQUESTS.value(),IP_RATE_LIMITER_ERROR_MSG);
         return Mono.defer(() -> ResponseSupport.write(exchange, responseVo, HttpStatus.TOO_MANY_REQUESTS, new LimiterException(IP_RATE_LIMITER_ERROR_MSG)));
     }
 

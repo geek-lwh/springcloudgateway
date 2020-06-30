@@ -23,10 +23,6 @@ import java.util.Map;
  */
 public class JsonExceptionHandler extends DefaultErrorWebExceptionHandler {
 
-    private static final int NO_MATCHING_HANDLER_ERROR_CODE = 404;
-
-    private static final String NO_MATCHING_HANDLER_ERROR_MSG = "无效的资源路径";
-
     /**
      * Create a new {@code DefaultErrorWebExceptionHandler} instance.
      * @param errorAttributes the error attributes
@@ -44,17 +40,15 @@ public class JsonExceptionHandler extends DefaultErrorWebExceptionHandler {
     @Override
     protected Map<String, Object> getErrorAttributes(ServerRequest request, boolean includeStackTrace) {
         int code = 500;
-        String message = "";
+        String message = "我好像开了个小差!";
         Throwable error = super.getError(request);
 
         if (error instanceof MethodNotAllowedException) {
             code = HttpStatus.METHOD_NOT_ALLOWED.value();
-            message = "Request method  not supported";
         }
 
         if (error instanceof NotFoundException || error instanceof ResponseStatusException) {
-            code = NO_MATCHING_HANDLER_ERROR_CODE;
-            message = NO_MATCHING_HANDLER_ERROR_MSG;
+            code = HttpStatus.NOT_FOUND.value();
         }
 
         if (error instanceof GatewayException) {
@@ -92,6 +86,7 @@ public class JsonExceptionHandler extends DefaultErrorWebExceptionHandler {
         } catch (Exception e) {
             httpStatus = HttpStatus.valueOf(500);
         }
+
         return httpStatus;
     }
 

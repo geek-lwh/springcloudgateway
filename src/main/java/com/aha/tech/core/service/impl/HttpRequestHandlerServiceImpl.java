@@ -2,8 +2,7 @@ package com.aha.tech.core.service.impl;
 
 import com.aha.tech.commons.symbol.Separator;
 import com.aha.tech.core.constant.SystemConstant;
-import com.aha.tech.core.exception.MissAuthorizationHeaderException;
-import com.aha.tech.core.exception.ParseAuthorizationHeaderException;
+import com.aha.tech.core.exception.AuthorizationFailedException;
 import com.aha.tech.core.model.entity.AuthenticationResultEntity;
 import com.aha.tech.core.model.entity.PairEntity;
 import com.aha.tech.core.service.*;
@@ -17,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.http.server.reactive.ServerHttpResponseDecorator;
@@ -236,7 +236,7 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
         ServerHttpRequest serverHttpRequest = serverWebExchange.getRequest();
         Boolean isSkipAuth = ExchangeSupport.getIsSkipAuth(serverWebExchange);
         String traceId = ExchangeSupport.getTraceId(serverWebExchange);
-        MDC.put("traceId",traceId);
+        MDC.put("traceId", traceId);
         if (isSkipAuth) {
             logger.info("跳过授权认证 : {}", serverHttpRequest.getURI());
             return new AuthenticationResultEntity(isSkipAuth);
@@ -245,6 +245,13 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
         HttpHeaders requestHeaders = serverHttpRequest.getHeaders();
         // 解析authorization
         PairEntity<String> authorization = parseAuthorizationHeader(requestHeaders);
+        if (authorization == null) {
+            AuthenticationResultEntity failure = new AuthenticationResultEntity();
+            failure.setWhiteList(Boolean.FALSE);
+            failure.setCode(HttpStatus.UNAUTHORIZED.value());
+            failure.setMessage(AuthorizationFailedException.AUTHORIZATION_FAILED_ERROR_MSG);
+            return failure;
+        }
         String userName = authorization.getFirstEntity();
         String accessToken = authorization.getSecondEntity();
 
@@ -338,8 +345,10 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
     private PairEntity parseAuthorizationHeader(HttpHeaders requestHeaders) {
         List<String> headersOfAuthorization = requestHeaders.get(HEADER_AUTHORIZATION);
         if (CollectionUtils.isEmpty(headersOfAuthorization)) {
-            throw new MissAuthorizationHeaderException();
+            logger.error("缺少Authorization 头对象 requestHeaders : {}", requestHeaders);
+            return null;
         }
+
         String[] arr;
         try {
             String authorizationHeader = headersOfAuthorization.get(0).substring(6);
@@ -347,8 +356,8 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
             arr = decodeAuthorization.split(":");
             return new PairEntity(arr[0], arr[1]);
         } catch (Exception e) {
-            logger.error("解析请求头Authorization字段出现异常,Authorization : {}", headersOfAuthorization);
-            throw new ParseAuthorizationHeaderException();
+            logger.error("Authorization 格式错误 ,Authorization : {}, requestHeaders : {}", headersOfAuthorization, requestHeaders);
+            return null;
         }
     }
 
