@@ -30,7 +30,7 @@ public class FallBackController {
 
     private static final Logger logger = LoggerFactory.getLogger(FallBackController.class);
 
-    private static final String DEFAULT_SYSTEM_ERROR = "我好像开了个小差!";
+    public static final String DEFAULT_SYSTEM_ERROR = "我好像开了个小差!";
 
     @Resource
     private AccessLogService httpAccessLogService;

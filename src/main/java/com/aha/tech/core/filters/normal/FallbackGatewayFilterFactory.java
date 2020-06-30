@@ -84,7 +84,7 @@ public class FallbackGatewayFilterFactory extends AbstractGatewayFilterFactory<F
 
         return (exchange, chain) -> {
             FallbackGatewayFilterFactory.RouteHystrixCommand command = new FallbackGatewayFilterFactory.RouteHystrixCommand(config.setter, config.fallbackUri, exchange, chain);
-
+            final String errorMsg = "我好像开了个小差!";
             return Mono.create(s -> {
                 Subscription sub = command.toObservable().subscribe(s::success, s::error, s::success);
                 s.onCancel(sub::unsubscribe);
@@ -92,31 +92,31 @@ public class FallbackGatewayFilterFactory extends AbstractGatewayFilterFactory<F
                 if (throwable instanceof HystrixRuntimeException) {
                     HystrixRuntimeException e = (HystrixRuntimeException) throwable;
                     HystrixRuntimeException.FailureType failureType = e.getFailureType();
-                    logger.error(e.getMessage(), e);
-                    String error = exchange.getAttributes().getOrDefault(ServerWebExchangeUtils.HYSTRIX_EXECUTION_EXCEPTION_ATTR, e.getMessage()).toString();
-                    String errorMsg = String.format("HystrixRuntimeExceptionType : %s,错误信息 : %s", failureType, error);
+
+                    String message = exchange.getAttributes().getOrDefault(ServerWebExchangeUtils.HYSTRIX_EXECUTION_EXCEPTION_ATTR, e.getMessage()).toString();
 
                     switch (failureType) {
                         case TIMEOUT:
                             return Mono.defer(() -> {
-                                logger.error("降级出现超时");
-                                ResponseVo responseVo = ResponseVo.defaultFailureResponseVo();
-                                responseVo.setMessage(errorMsg);
+                                logger.error("HYSTRIX TIMEOUT : {}", message, e);
+                                ResponseVo responseVo = new ResponseVo(HttpStatus.REQUEST_TIMEOUT.value(), errorMsg);
                                 return ResponseSupport.write(exchange, responseVo, HttpStatus.REQUEST_TIMEOUT, new GatewayException(throwable));
                             });
 
                         case COMMAND_EXCEPTION: {
                             return Mono.defer(() -> {
-                                ResponseVo responseVo = ResponseVo.defaultFailureResponseVo();
-                                responseVo.setMessage(errorMsg);
-                                return ResponseSupport.write(exchange, responseVo, HttpStatus.BAD_REQUEST,new GatewayException(throwable));
+                                logger.error("HYSTRIX COMMAND_EXCEPTION : {}", message, e);
+                                ResponseVo responseVo = new ResponseVo(HttpStatus.BAD_REQUEST.value(), errorMsg);
+                                return ResponseSupport.write(exchange, responseVo, HttpStatus.BAD_REQUEST, new GatewayException(throwable));
                             });
                         }
 
                         default:
+                            logger.error("HYSTRIX FALL BACK EXCEPTION : {}", message, e);
                             break;
                     }
                 }
+
                 return Mono.error(throwable);
             }).then();
         };

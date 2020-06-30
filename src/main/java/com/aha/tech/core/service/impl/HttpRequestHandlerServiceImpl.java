@@ -2,6 +2,7 @@ package com.aha.tech.core.service.impl;
 
 import com.aha.tech.commons.symbol.Separator;
 import com.aha.tech.core.constant.SystemConstant;
+import com.aha.tech.core.controller.FallBackController;
 import com.aha.tech.core.exception.AuthorizationFailedException;
 import com.aha.tech.core.model.entity.AuthenticationResultEntity;
 import com.aha.tech.core.model.entity.PairEntity;
@@ -279,7 +280,8 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
 
         AuthenticationResultEntity authenticationResultEntity = new AuthenticationResultEntity();
         authenticationResultEntity.setCode(AuthorizationCode.SESSION_EXPIRED);
-        authenticationResultEntity.setMessage(String.format("无效的user_name : %s", userName));
+        logger.error("无效的user_name,userName : {},accessToken : {}", userName, accessToken);
+        authenticationResultEntity.setMessage(FallBackController.DEFAULT_SYSTEM_ERROR);
 
         return authenticationResultEntity;
     }
