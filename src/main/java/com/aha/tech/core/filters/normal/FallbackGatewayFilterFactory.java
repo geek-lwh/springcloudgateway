@@ -113,7 +113,8 @@ public class FallbackGatewayFilterFactory extends AbstractGatewayFilterFactory<F
 
                         default:
                             logger.error("HYSTRIX FALL BACK EXCEPTION : {}", message, e);
-                            break;
+                            ResponseVo responseVo = new ResponseVo(HttpStatus.BAD_REQUEST.value(), errorMsg);
+                            return ResponseSupport.write(exchange, responseVo, HttpStatus.BAD_REQUEST, new GatewayException(throwable));
                     }
                 }
 
