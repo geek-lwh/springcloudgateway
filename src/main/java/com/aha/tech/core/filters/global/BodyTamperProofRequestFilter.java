@@ -1,5 +1,6 @@
 package com.aha.tech.core.filters.global;
 
+import com.aha.tech.core.controller.FallBackController;
 import com.aha.tech.core.model.entity.CacheRequestEntity;
 import com.aha.tech.core.model.entity.TamperProofEntity;
 import com.aha.tech.core.model.vo.ResponseVo;
@@ -80,7 +81,7 @@ public class BodyTamperProofRequestFilter implements GlobalFilter, Ordered {
             return Mono.defer(() -> {
                 String errorMsg = String.format("uri: %s ,params : %s ,body : %s ,防篡改校验失败,参数:%s", uri.getRawPath(), uri.getRawQuery(), body, tamperProofEntity);
                 logger.error("{}", errorMsg);
-                ResponseVo rpcResponse = new ResponseVo(HttpStatus.FORBIDDEN.value(), "body防篡改失败");
+                ResponseVo rpcResponse = new ResponseVo(HttpStatus.FORBIDDEN.value(), FallBackController.DEFAULT_SYSTEM_ERROR);
                 return ResponseSupport.write(exchange, HttpStatus.FORBIDDEN, rpcResponse);
             });
         }

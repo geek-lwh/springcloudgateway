@@ -1,6 +1,7 @@
 package com.aha.tech.core.handler;
 
 import com.aha.tech.commons.utils.DateUtil;
+import com.aha.tech.core.controller.FallBackController;
 import com.aha.tech.core.exception.GatewayException;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;
@@ -40,7 +41,7 @@ public class JsonExceptionHandler extends DefaultErrorWebExceptionHandler {
     @Override
     protected Map<String, Object> getErrorAttributes(ServerRequest request, boolean includeStackTrace) {
         int code = 500;
-        String message = "我好像开了个小差!";
+//        String message = "我好像开了个小差!";
         Throwable error = super.getError(request);
 
         if (error instanceof MethodNotAllowedException) {
@@ -54,14 +55,14 @@ public class JsonExceptionHandler extends DefaultErrorWebExceptionHandler {
         if (error instanceof GatewayException) {
             GatewayException e = (GatewayException) error;
             code = e.getCode();
-            message = e.getMessage();
+//            message = e.getMessage();
         }
 
         String method = request.methodName();
         URI uri = request.uri();
         String requestUrl = this.buildRequestUrl(method, uri);
 
-        return buildResponseData(error, code, requestUrl, message);
+        return buildResponseData(error, code, requestUrl, FallBackController.DEFAULT_SYSTEM_ERROR);
     }
 
     /**

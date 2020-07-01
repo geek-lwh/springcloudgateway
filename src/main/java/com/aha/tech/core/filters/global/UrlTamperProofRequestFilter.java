@@ -1,5 +1,6 @@
 package com.aha.tech.core.filters.global;
 
+import com.aha.tech.core.controller.FallBackController;
 import com.aha.tech.core.model.entity.TamperProofEntity;
 import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.RequestHandlerService;
@@ -64,7 +65,7 @@ public class UrlTamperProofRequestFilter implements GlobalFilter, Ordered {
             return Mono.defer(() -> {
                 String errorMsg = String.format("url防篡改校验失败,参数:%s", tamperProofEntity);
                 logger.error("{}", errorMsg);
-                ResponseVo rpcResponse = new ResponseVo(HttpStatus.FORBIDDEN.value(), "url防篡改校验失败");
+                ResponseVo rpcResponse = new ResponseVo(HttpStatus.FORBIDDEN.value(), FallBackController.DEFAULT_SYSTEM_ERROR);
                 return ResponseSupport.write(exchange, HttpStatus.FORBIDDEN,rpcResponse);
             });
         }
