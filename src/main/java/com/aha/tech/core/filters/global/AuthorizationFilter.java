@@ -55,7 +55,7 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
         String message = authenticationResultEntity.getMessage();
         logger.error("授权异常 : {}", message);
         return Mono.defer(() -> {
-            ResponseVo rpcResponse = new ResponseVo(code, FallBackController.DEFAULT_SYSTEM_ERROR);
+            ResponseVo rpcResponse = new ResponseVo(code, message);
             return ResponseSupport.write(exchange, HttpStatus.UNAUTHORIZED, rpcResponse);
         });
     }
