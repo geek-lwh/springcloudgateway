@@ -2,6 +2,7 @@ package com.aha.tech.core.filters.global;
 
 import com.aha.tech.commons.constants.ResponseConstants;
 import com.aha.tech.core.constant.FilterProcessOrderedConstant;
+import com.aha.tech.core.controller.FallBackController;
 import com.aha.tech.core.model.entity.AuthenticationResultEntity;
 import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.RequestHandlerService;
@@ -52,9 +53,9 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
         }
 
         String message = authenticationResultEntity.getMessage();
+        logger.error("授权异常 : {}", message);
         return Mono.defer(() -> {
-            String errorMsg = String.format("%s", message);
-            ResponseVo rpcResponse = new ResponseVo(code, errorMsg);
+            ResponseVo rpcResponse = new ResponseVo(code, FallBackController.DEFAULT_SYSTEM_ERROR);
             return ResponseSupport.write(exchange, HttpStatus.UNAUTHORIZED, rpcResponse);
         });
     }
