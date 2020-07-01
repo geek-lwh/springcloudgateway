@@ -250,7 +250,7 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
             AuthenticationResultEntity failure = new AuthenticationResultEntity();
             failure.setWhiteList(Boolean.FALSE);
             failure.setCode(HttpStatus.UNAUTHORIZED.value());
-            failure.setMessage(AuthorizationFailedException.AUTHORIZATION_FAILED_ERROR_MSG);
+            failure.setMessage(FallBackController.DEFAULT_SYSTEM_ERROR);
             return failure;
         }
         String userName = authorization.getFirstEntity();
