@@ -31,6 +31,7 @@ import java.util.Map;
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.MODIFY_PARAMS_FILTER_ORDER;
 import static com.aha.tech.core.constant.HeaderFieldConstant.REQUEST_ID;
 import static com.aha.tech.core.constant.HeaderFieldConstant.X_TRACE_ID;
+import static com.aha.tech.core.interceptor.FeignRequestInterceptor.TRACE_ID;
 
 /**
  * @Author: luweihong
@@ -68,7 +69,7 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
 
         List<String> clientRequestId = httpHeaders.get(REQUEST_ID);
         if (!CollectionUtils.isEmpty(clientRequestId)) {
-            MDC.put(X_TRACE_ID, clientRequestId.get(0));
+            MDC.put(TRACE_ID, clientRequestId.get(0));
         }
 
         URI newUri = httpOverwriteParamService.modifyQueryParams(requestAddParamsDto, serverHttpRequest);

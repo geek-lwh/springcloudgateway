@@ -6,6 +6,7 @@ import com.aha.tech.core.service.ModifyResponseService;
 import com.aha.tech.core.support.ExchangeSupport;
 import com.aha.tech.core.support.ResponseSupport;
 import com.alibaba.fastjson.JSON;
+import com.dianping.cat.Cat;
 import org.apache.commons.lang3.StringUtils;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
@@ -37,6 +38,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static com.aha.tech.core.constant.HeaderFieldConstant.*;
+import static com.aha.tech.core.interceptor.FeignRequestInterceptor.TRACE_ID;
 import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.ORIGINAL_RESPONSE_CONTENT_TYPE_ATTR;
 
 /**
@@ -64,10 +66,10 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
                 httpHeaders.add(HttpHeaders.CONTENT_TYPE, originalResponseContentType);
                 ResponseAdapter responseAdapter = m.new ResponseAdapter(body, httpHeaders);
                 DefaultClientResponse clientResponse = new DefaultClientResponse(responseAdapter, ExchangeStrategies.withDefaults());
-                String traceId =getDelegate().getHeaders().getOrDefault(X_TRACE_ID, Collections.emptyList()).get(0);
+                String traceId = Cat.getCurrentMessageId();
                 List<String> clientRequestId =getDelegate().getHeaders().get(REQUEST_ID);
                 if (!CollectionUtils.isEmpty(clientRequestId)) {
-                    MDC.put(X_TRACE_ID, clientRequestId.get(0));
+                    MDC.put(TRACE_ID, clientRequestId.get(0));
                 }
 
                 Mono modifiedBody = clientResponse.bodyToMono(String.class).flatMap(originalBody -> {

@@ -32,6 +32,7 @@ import java.util.List;
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.BODY_TAMPER_PROOF_FILTER;
 import static com.aha.tech.core.constant.HeaderFieldConstant.REQUEST_ID;
 import static com.aha.tech.core.constant.HeaderFieldConstant.X_TRACE_ID;
+import static com.aha.tech.core.interceptor.FeignRequestInterceptor.TRACE_ID;
 
 /**
  * @Author: luweihong
@@ -67,7 +68,7 @@ public class BodyTamperProofRequestFilter implements GlobalFilter, Ordered {
         Boolean isSkipUrlTamperProof = ExchangeSupport.getIsSkipUrlTamperProof(exchange);
         List<String> clientRequestId =request.getHeaders().get(REQUEST_ID);
         if (!CollectionUtils.isEmpty(clientRequestId)) {
-            MDC.put(X_TRACE_ID, clientRequestId.get(0));
+            MDC.put(TRACE_ID, clientRequestId.get(0));
         }
         if (isSkipUrlTamperProof) {
             logger.info("跳过body防篡改,raw_path : {}",uri.getRawPath());

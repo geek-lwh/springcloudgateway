@@ -11,6 +11,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.cloud.gateway.support.ServerWebExchangeUtils;
 import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpHeaders;
@@ -19,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.server.ServerWebExchange;
 
@@ -26,11 +28,13 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_CACHED_ATTR;
 import static com.aha.tech.core.constant.HeaderFieldConstant.*;
+import static com.aha.tech.core.interceptor.FeignRequestInterceptor.TRACE_ID;
 
 /**
  * @Author: luweihong
@@ -53,13 +57,15 @@ public class HttpAccessLogServiceImpl implements AccessLogService {
     @Override
     public String requestLog(ServerWebExchange exchange, Long cost,String response) {
         CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheRequest(exchange);
-        String traceId = ExchangeSupport.getTraceId(exchange);
+
         RequestLog requestLog = new RequestLog();
         URI uri = cacheRequestEntity.getRequestLine();
         if (uri == null) {
             uri = exchange.getRequest().getURI();
         }
 
+        List<String> clientRequestId =cacheRequestEntity.getAfterModifyRequestHttpHeaders().get(X_TRACE_ID);
+        String traceId = CollectionUtils.isEmpty(clientRequestId) ? "" : clientRequestId.get(0);
 //        cacheRequestEntity.getOriginalRequestHttpHeaders()
         HttpHeaders httpHeaders = cacheRequestEntity.getAfterModifyRequestHttpHeaders();
         if (httpHeaders == null) {

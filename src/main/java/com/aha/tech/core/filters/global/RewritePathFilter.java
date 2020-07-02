@@ -20,6 +20,7 @@ import java.util.List;
 
 import static com.aha.tech.core.constant.HeaderFieldConstant.REQUEST_ID;
 import static com.aha.tech.core.constant.HeaderFieldConstant.X_TRACE_ID;
+import static com.aha.tech.core.interceptor.FeignRequestInterceptor.TRACE_ID;
 
 
 /**
@@ -46,7 +47,7 @@ public class RewritePathFilter implements GlobalFilter, Ordered {
         logger.debug("进入重写请求路径网关过滤器");
         List<String> clientRequestId =exchange.getRequest().getHeaders().get(REQUEST_ID);
         if (!CollectionUtils.isEmpty(clientRequestId)) {
-            MDC.put(X_TRACE_ID, clientRequestId.get(0));
+            MDC.put(TRACE_ID, clientRequestId.get(0));
         }
         ServerHttpRequest newRequest = httpRequestHandlerService.rewriteRequestPath(exchange);
         return chain.filter(exchange.mutate().request(newRequest).build());

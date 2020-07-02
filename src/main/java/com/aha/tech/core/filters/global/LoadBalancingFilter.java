@@ -20,6 +20,7 @@ import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUE
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.LOAD_BALANCING_FILTER;
 import static com.aha.tech.core.constant.HeaderFieldConstant.REQUEST_ID;
 import static com.aha.tech.core.constant.HeaderFieldConstant.X_TRACE_ID;
+import static com.aha.tech.core.interceptor.FeignRequestInterceptor.TRACE_ID;
 
 /**
  * @Author: luweihong
@@ -41,14 +42,14 @@ public class LoadBalancingFilter implements GlobalFilter, Ordered {
 
         List<String> clientRequestId = exchange.getRequest().getHeaders().get(REQUEST_ID);
         if (!CollectionUtils.isEmpty(clientRequestId)) {
-            MDC.put(X_TRACE_ID, clientRequestId.get(0));
+            MDC.put(TRACE_ID, clientRequestId.get(0));
         }
 
         CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheRequest(exchange);
         String routeHost = ExchangeSupport.getRouteRequestPath(exchange);
-        logger.info("请求信息 : {} ", cacheRequestEntity);
         cacheRequestEntity.setRealServer(routeHost);
         ExchangeSupport.put(exchange, GATEWAY_REQUEST_CACHED_ATTR, cacheRequestEntity);
+        logger.info("route info : {} ", cacheRequestEntity);
         return chain.filter(exchange);
     }
 
