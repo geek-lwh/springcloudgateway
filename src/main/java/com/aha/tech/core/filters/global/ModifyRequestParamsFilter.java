@@ -9,6 +9,7 @@ import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
@@ -17,14 +18,19 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
 import java.net.URI;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.MODIFY_PARAMS_FILTER_ORDER;
+import static com.aha.tech.core.constant.HeaderFieldConstant.REQUEST_ID;
+import static com.aha.tech.core.constant.HeaderFieldConstant.X_TRACE_ID;
 
 /**
  * @Author: luweihong
@@ -59,6 +65,11 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
         CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheRequest(exchange);
         String cacheBody = cacheRequestEntity.getRequestBody();
         RequestAddParamsDto requestAddParamsDto = ExchangeSupport.getRequestAddParamsDto(exchange);
+
+        List<String> clientRequestId = httpHeaders.get(REQUEST_ID);
+        if (!CollectionUtils.isEmpty(clientRequestId)) {
+            MDC.put(X_TRACE_ID, clientRequestId.get(0));
+        }
 
         URI newUri = httpOverwriteParamService.modifyQueryParams(requestAddParamsDto, serverHttpRequest);
         Boolean needAddBodyParams = httpMethod.equals(HttpMethod.POST) || httpMethod.equals(HttpMethod.PUT);

@@ -236,8 +236,7 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
     public AuthenticationResultEntity authorize(ServerWebExchange serverWebExchange) {
         ServerHttpRequest serverHttpRequest = serverWebExchange.getRequest();
         Boolean isSkipAuth = ExchangeSupport.getIsSkipAuth(serverWebExchange);
-        String traceId = ExchangeSupport.getTraceId(serverWebExchange);
-        MDC.put("traceId", traceId);
+
         if (isSkipAuth) {
             logger.info("跳过授权认证 : {}", serverHttpRequest.getURI());
             return new AuthenticationResultEntity(isSkipAuth);

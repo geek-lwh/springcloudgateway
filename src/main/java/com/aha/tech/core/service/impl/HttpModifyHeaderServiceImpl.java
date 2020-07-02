@@ -57,8 +57,6 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
      */
     @Override
     public void initHeaders(ServerWebExchange exchange, HttpHeaders httpHeaders, String remoteIp) {
-        String traceId = ExchangeSupport.getTraceId(exchange);
-        MDC.put("traceId", traceId);
         String realIp = parseHeaderIp(httpHeaders);
         if (StringUtils.isBlank(realIp)) {
             String url = exchange.getAttributeOrDefault(GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR, "");
@@ -71,7 +69,7 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
         httpHeaders.set(X_ENV_USER_ID, userId);
         httpHeaders.set(HEADER_USER_ID, userId);
 
-        httpHeaders.set(X_TRACE_ID, traceId);
+        httpHeaders.set(X_TRACE_ID, Cat.createMessageId());
         httpHeaders.set(CONSUMER_SERVER_NAME, Cat.getManager().getDomain());
 
         httpHeaders.set(HEADER_X_FORWARDED_FOR, realIp);

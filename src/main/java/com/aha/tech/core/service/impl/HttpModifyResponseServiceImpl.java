@@ -25,12 +25,16 @@ import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.http.server.reactive.ServerHttpResponseDecorator;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.reactive.function.BodyInserter;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.Collections;
+import java.util.List;
 
 import static com.aha.tech.core.constant.HeaderFieldConstant.*;
 import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.ORIGINAL_RESPONSE_CONTENT_TYPE_ATTR;
@@ -54,25 +58,29 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
         ServerHttpResponseDecorator serverHttpResponseDecorator = new ServerHttpResponseDecorator(oldResponse) {
             @Override
             public Mono<Void> writeWith(Publisher<? extends DataBuffer> body) {
-                String traceId = ExchangeSupport.getTraceId(serverWebExchange);
-                MDC.put("traceId", traceId);
                 ModifyResponseBodyGatewayFilterFactory m = new ModifyResponseBodyGatewayFilterFactory(ServerCodecConfigurer.create());
                 String originalResponseContentType = serverWebExchange.getAttributeOrDefault(ORIGINAL_RESPONSE_CONTENT_TYPE_ATTR, MediaType.APPLICATION_JSON_UTF8_VALUE);
                 HttpHeaders httpHeaders = new HttpHeaders();
                 httpHeaders.add(HttpHeaders.CONTENT_TYPE, originalResponseContentType);
                 ResponseAdapter responseAdapter = m.new ResponseAdapter(body, httpHeaders);
                 DefaultClientResponse clientResponse = new DefaultClientResponse(responseAdapter, ExchangeStrategies.withDefaults());
+                String traceId =getDelegate().getHeaders().getOrDefault(X_TRACE_ID, Collections.emptyList()).get(0);
+                List<String> clientRequestId =getDelegate().getHeaders().get(REQUEST_ID);
+                if (!CollectionUtils.isEmpty(clientRequestId)) {
+                    MDC.put(X_TRACE_ID, clientRequestId.get(0));
+                }
+
                 Mono modifiedBody = clientResponse.bodyToMono(String.class).flatMap(originalBody -> {
                     ResponseVo responseVo = ResponseVo.defaultFailureResponseVo();
                     try {
                         ExchangeSupport.putResponseBody(serverWebExchange,originalBody);
                         responseVo = JSON.parseObject(originalBody, ResponseVo.class);
                     } catch (Exception e) {
-                        logger.error("网关解析返回值异常 originalBody : {}", originalBody, e);
+                        logger.error("traceId : {} 网关解析返回值异常 originalBody : {}",traceId, originalBody, e);
                     }
                     String warnLog = ResponseSupport.buildWarnLog(serverWebExchange, responseVo, getDelegate().getStatusCode());
                     if (StringUtils.isNotBlank(warnLog)) {
-                        logger.warn("状态码异常! {}", warnLog);
+                        logger.warn("traceId : {} 状态码异常! {}", traceId,warnLog);
                     }
                     return Mono.just(originalBody);
                 });

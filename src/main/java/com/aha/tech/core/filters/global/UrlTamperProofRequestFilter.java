@@ -9,6 +9,7 @@ import com.aha.tech.core.support.ResponseSupport;
 import com.aha.tech.core.support.URISupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
@@ -17,14 +18,19 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
 import java.net.URI;
+import java.util.Collections;
+import java.util.List;
 
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.URL_TAMPER_PROOF_FILTER;
+import static com.aha.tech.core.constant.HeaderFieldConstant.REQUEST_ID;
+import static com.aha.tech.core.constant.HeaderFieldConstant.X_TRACE_ID;
 
 /**
  * @Author: luweihong
@@ -53,20 +59,25 @@ public class UrlTamperProofRequestFilter implements GlobalFilter, Ordered {
         ServerHttpRequest request = exchange.getRequest();
         URI uri = request.getURI();
         String rawPath = uri.getRawPath();
+        HttpHeaders httpHeaders = request.getHeaders();
+        TamperProofEntity tamperProofEntity = new TamperProofEntity(httpHeaders, uri);
+        List<String> clientRequestId =request.getHeaders().get(REQUEST_ID);
+        if (!CollectionUtils.isEmpty(clientRequestId)) {
+            MDC.put(X_TRACE_ID, clientRequestId.get(0));
+        }
+
         if (ExchangeSupport.getIsSkipUrlTamperProof(exchange)) {
             logger.info("跳过url防篡改 : {}", rawPath);
             return chain.filter(exchange);
         }
 
-        HttpHeaders httpHeaders = request.getHeaders();
-        TamperProofEntity tamperProofEntity = new TamperProofEntity(httpHeaders, uri);
+
         boolean isURIValid = urlTamperProof(tamperProofEntity, uri.getRawQuery(), rawPath);
         if (!isURIValid) {
             return Mono.defer(() -> {
-                String errorMsg = String.format("url防篡改校验失败,参数:%s", tamperProofEntity);
-                logger.error("{}", errorMsg);
+                logger.error("url防篡改校验失败,参数: {}", tamperProofEntity);
                 ResponseVo rpcResponse = new ResponseVo(HttpStatus.FORBIDDEN.value(), FallBackController.DEFAULT_SYSTEM_ERROR);
-                return ResponseSupport.write(exchange, HttpStatus.FORBIDDEN,rpcResponse);
+                return ResponseSupport.write(exchange, HttpStatus.FORBIDDEN, rpcResponse);
             });
         }
 

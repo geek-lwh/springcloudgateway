@@ -1,5 +1,6 @@
 package com.aha.tech.core.interceptor;
 
+import com.aha.tech.util.IdWorker;
 import com.dianping.cat.Cat;
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
@@ -26,11 +27,7 @@ public class FeignRequestInterceptor implements RequestInterceptor {
 
     @Override
     public void apply(RequestTemplate requestTemplate) {
-        String traceId = MDC.get(TRACE_ID);
-        if (StringUtils.isBlank(traceId)) {
-            traceId = Cat.createMessageId();
-        }
-
+        String traceId = Cat.createMessageId();
         requestTemplate.header(X_TRACE_ID, traceId);
     }
 

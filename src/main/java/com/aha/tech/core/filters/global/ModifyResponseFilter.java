@@ -3,6 +3,7 @@ package com.aha.tech.core.filters.global;
 import com.aha.tech.core.service.RequestHandlerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
@@ -13,7 +14,11 @@ import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
 
+import java.util.Collections;
+
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.MODIFY_RESPONSE_GATEWAY_FILTER_ORDER;
+import static com.aha.tech.core.constant.HeaderFieldConstant.REQUEST_ID;
+import static com.aha.tech.core.constant.HeaderFieldConstant.X_TRACE_ID;
 
 /**
  * @Author: luweihong

@@ -40,9 +40,9 @@ public class PreHandlerFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        String traceId = Cat.createMessageId();
-        ExchangeSupport.put(exchange, TRACE_ID_ATTR, traceId);
-        MDC.put("traceId", traceId);
+//        String traceId = Cat.createMessageId();
+//        ExchangeSupport.put(exchange, TRACE_ID_ATTR, traceId);
+//        MDC.put("traceId", traceId);
         String rawPath = exchange.getRequest().getURI().getRawPath();
         HttpHeaders httpHeaders = exchange.getRequest().getHeaders();
         // 是否跳过授权
@@ -53,7 +53,7 @@ public class PreHandlerFilter implements GlobalFilter, Ordered {
 
         ExchangeSupport.put(exchange, IS_SKIP_AUTH_ATTR, isSkipAuth);
         ExchangeSupport.put(exchange, IS_SKIP_URL_TAMPER_PROOF_ATTR, isSkipUrlTamperProof);
-        ExchangeSupport.put(exchange, TRACE_ID_ATTR, traceId);
+//        ExchangeSupport.put(exchange, TRACE_ID_ATTR, traceId);
 
 //        logger.info("PreHandler uri : {} isSkipAuth : {},isSkipUrlTamperProof : {}", rawPath, isSkipAuth, isSkipUrlTamperProof);
         return chain.filter(exchange);

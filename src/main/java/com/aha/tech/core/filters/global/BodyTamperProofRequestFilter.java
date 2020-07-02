@@ -20,13 +20,18 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
 import java.net.URI;
+import java.util.Collections;
+import java.util.List;
 
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.BODY_TAMPER_PROOF_FILTER;
+import static com.aha.tech.core.constant.HeaderFieldConstant.REQUEST_ID;
+import static com.aha.tech.core.constant.HeaderFieldConstant.X_TRACE_ID;
 
 /**
  * @Author: luweihong
@@ -53,7 +58,6 @@ public class BodyTamperProofRequestFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheRequest(exchange);
-
         ServerHttpRequest request = exchange.getRequest();
         HttpMethod httpMethod = request.getMethod();
         if (!httpMethod.equals(HttpMethod.POST)) {
@@ -61,17 +65,19 @@ public class BodyTamperProofRequestFilter implements GlobalFilter, Ordered {
         }
         URI uri = request.getURI();
         Boolean isSkipUrlTamperProof = ExchangeSupport.getIsSkipUrlTamperProof(exchange);
-        String traceId = ExchangeSupport.getTraceId(exchange);
-        MDC.put("traceId", traceId);
+        List<String> clientRequestId =request.getHeaders().get(REQUEST_ID);
+        if (!CollectionUtils.isEmpty(clientRequestId)) {
+            MDC.put(X_TRACE_ID, clientRequestId.get(0));
+        }
         if (isSkipUrlTamperProof) {
-            logger.info("跳过body防篡改,raw_path : {}", uri.getRawPath());
+            logger.info("跳过body防篡改,raw_path : {}",uri.getRawPath());
             return chain.filter(exchange);
         }
 
         HttpHeaders httpHeaders = request.getHeaders();
         MediaType mediaType = httpHeaders.getContentType();
         if (mediaType != null && mediaType.isCompatibleWith(MediaType.APPLICATION_FORM_URLENCODED)) {
-            logger.info("media type不是json : {}", mediaType);
+            logger.info("media type不是json : {}",mediaType);
             return chain.filter(exchange);
         }
 
@@ -79,8 +85,7 @@ public class BodyTamperProofRequestFilter implements GlobalFilter, Ordered {
         String body = cacheRequestEntity.getRequestBody();
         if (!bodyTamperProof(body, tamperProofEntity)) {
             return Mono.defer(() -> {
-                String errorMsg = String.format("uri: %s ,params : %s ,body : %s ,防篡改校验失败,参数:%s", uri.getRawPath(), uri.getRawQuery(), body, tamperProofEntity);
-                logger.error("{}", errorMsg);
+                logger.error("uri: {}} ,params : {}} ,body : {}} ,防篡改校验失败,参数:{}}",uri.getRawPath(),uri.getRawQuery(), body, tamperProofEntity);
                 ResponseVo rpcResponse = new ResponseVo(HttpStatus.FORBIDDEN.value(), FallBackController.DEFAULT_SYSTEM_ERROR);
                 return ResponseSupport.write(exchange, HttpStatus.FORBIDDEN, rpcResponse);
             });
