@@ -346,7 +346,7 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
     private PairEntity parseAuthorizationHeader(HttpHeaders requestHeaders) {
         List<String> headersOfAuthorization = requestHeaders.get(HEADER_AUTHORIZATION);
         if (CollectionUtils.isEmpty(headersOfAuthorization)) {
-            logger.error("缺少Authorization 头对象 requestHeaders : {}", requestHeaders);
+            logger.error("缺少Authorization 头对象 requestHeaders : {}", requestHeaders.toSingleValueMap().toString());
             return null;
         }
 
@@ -357,7 +357,7 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
             arr = decodeAuthorization.split(":");
             return new PairEntity(arr[0], arr[1]);
         } catch (Exception e) {
-            logger.error("Authorization 格式错误 ,Authorization : {}, requestHeaders : {}", headersOfAuthorization, requestHeaders);
+            logger.error("Authorization 格式错误 ,Authorization : {}, requestHeaders : {}", headersOfAuthorization, requestHeaders.toSingleValueMap().toString());
             return null;
         }
     }

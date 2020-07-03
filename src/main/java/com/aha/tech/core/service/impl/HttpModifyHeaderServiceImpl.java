@@ -250,13 +250,13 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
 
         String pp = new String(Base64.decodeBase64(encodePP), StandardCharsets.UTF_8);
         if (!pp.contains(Separator.DOLLAR_MARK)) {
-            logger.warn("url : {} ,httpHeaders : {} 不合法的pp值,缺少'$'符号 pp : {},encode_pp : {},pp.length = {}", url, httpHeaders.toString(),pp, encodePP, pp.length());
+            logger.warn("url : {} ,httpHeaders : {} 不合法的pp值,缺少'$'符号 pp : {},encode_pp : {},pp.length = {}", url, httpHeaders.toSingleValueMap().toString(),pp, encodePP, pp.length());
             httpHeaders.set(HEADER_PP, Strings.EMPTY);
             return;
         }
 
         if (!verifyPp(pp)) {
-            logger.warn("url : {} pp验证不通过! pp : {},encode_pp : {}", url, pp, encodePP);
+            logger.warn("url : {} httpHeader : {} pp验证不通过! pp : {},encode_pp : {}", url, httpHeaders.toSingleValueMap().toString(),pp, encodePP);
             httpHeaders.set(HEADER_PP, Strings.EMPTY);
             return;
         }

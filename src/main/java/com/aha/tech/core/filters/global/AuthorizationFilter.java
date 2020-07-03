@@ -15,14 +15,17 @@ import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
 import java.util.Collections;
+import java.util.List;
 
 import static com.aha.tech.core.constant.HeaderFieldConstant.REQUEST_ID;
 import static com.aha.tech.core.constant.HeaderFieldConstant.X_TRACE_ID;
+import static com.aha.tech.core.interceptor.FeignRequestInterceptor.TRACE_ID;
 
 /**
  * @Author: luweihong
@@ -46,8 +49,11 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         logger.debug("开始执行权限校验网关过滤器");
-        String requestId =exchange.getRequest().getHeaders().getOrDefault(REQUEST_ID, Collections.emptyList()).get(0);
-        MDC.put(X_TRACE_ID,requestId);
+        List<String> clientRequestId =exchange.getRequest().getHeaders().get(REQUEST_ID);
+        if (!CollectionUtils.isEmpty(clientRequestId)) {
+            MDC.put(TRACE_ID, clientRequestId.get(0));
+        }
+
         AuthenticationResultEntity authenticationResultEntity = httpRequestHandlerService.authorize(exchange);
         Boolean isWhiteList = authenticationResultEntity.getWhiteList();
         if (isWhiteList) {
