@@ -7,8 +7,10 @@ import com.aha.tech.core.service.AccessLogService;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.cloud.gateway.support.ServerWebExchangeUtils;
 import org.springframework.http.HttpStatus;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,8 +19,12 @@ import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
 
+import java.util.List;
+
 import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR;
 import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_REWRITE_PATH_ATTR;
+import static com.aha.tech.core.constant.HeaderFieldConstant.REQUEST_ID;
+import static com.aha.tech.core.interceptor.FeignRequestInterceptor.TRACE_ID;
 
 /**
  * @Author: luweihong
@@ -43,12 +49,16 @@ public class FallBackController {
      */
     @RequestMapping(value = "/fallback", method = RequestMethod.GET)
     public Mono<ResponseVo> fallBack(ServerWebExchange serverWebExchange) {
+        List<String> clientRequestId =serverWebExchange.getRequest().getHeaders().get(REQUEST_ID);
+        if (!CollectionUtils.isEmpty(clientRequestId)) {
+            MDC.put(TRACE_ID, clientRequestId.get(0));
+        }
+
         Object c = serverWebExchange.getAttributes().get(ServerWebExchangeUtils.HYSTRIX_EXECUTION_EXCEPTION_ATTR);
         if (c == null) {
             httpAccessLogService.printWhenError(serverWebExchange, new Exception("未捕获到hystrix异常!"));
-            ResponseVo responseVo = ResponseVo.defaultFailureResponseVo();
+            ResponseVo responseVo = new ResponseVo(HttpStatus.BAD_GATEWAY.value(),DEFAULT_SYSTEM_ERROR);
             logger.error("接口熔断,未捕获到具体错误!");
-            responseVo.setMessage(DEFAULT_SYSTEM_ERROR);
             return Mono.just(responseVo);
         }
 
