@@ -17,7 +17,7 @@ public class HeaderFieldConstant {
 
     public static final String HEADER_KEEP_ALIVE = "Keep-Alive";
 
-    public static final String HEADER_KEEP_ALIVE_VALUE = "timeout=30";
+    public static final String HEADER_KEEP_ALIVE_VALUE = "10000";
 
     public static final String KEEP_ALIVE_VALUE = "keep-alive";
 
