@@ -17,12 +17,11 @@ public class HeaderFieldConstant {
 
     public static final String HEADER_KEEP_ALIVE = "Keep-Alive";
 
-    public static final String HEADER_KEEP_ALIVE_VALUE = "10000";
+    public static final String HEADER_KEEP_ALIVE_VALUE = "3000";
 
     public static final String KEEP_ALIVE_VALUE = "keep-alive";
 
     public static final String CLOSE_VALUE = "close";
-
 
     public static final String HEADER_TOKEN = "X-Token";
 

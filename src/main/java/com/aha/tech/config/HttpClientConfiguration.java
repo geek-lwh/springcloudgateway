@@ -48,7 +48,7 @@ public class HttpClientConfiguration {
     private static final int MAX_TOTAL_CONNECTIONS = 100;
 
     // keep alive保持长连接不断开的时间
-    private static final int DEFAULT_KEEP_ALIVE_TIME_MILLIS = 10 * 1000;
+    private static final int DEFAULT_KEEP_ALIVE_TIME_MILLIS = 3 * 1000;
 
     // 关闭空闲http资源的时间
     private static final int CLOSE_IDLE_CONNECTION_WAIT_TIME_SECS = 30;
