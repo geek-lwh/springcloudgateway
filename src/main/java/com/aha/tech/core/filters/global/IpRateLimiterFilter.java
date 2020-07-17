@@ -1,5 +1,6 @@
 package com.aha.tech.core.filters.global;
 
+import com.aha.tech.core.constant.HeaderFieldConstant;
 import com.aha.tech.core.controller.FallBackController;
 import com.aha.tech.core.exception.LimiterException;
 import com.aha.tech.core.model.vo.ResponseVo;
@@ -24,7 +25,6 @@ import java.util.List;
 
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.IP_RATE_LIMITER_FILTER_ORDER;
 import static com.aha.tech.core.constant.HeaderFieldConstant.REQUEST_ID;
-import static com.aha.tech.core.constant.HeaderFieldConstant.X_TRACE_ID;
 import static com.aha.tech.core.interceptor.FeignRequestInterceptor.TRACE_ID;
 
 /**
@@ -78,7 +78,7 @@ public class IpRateLimiterFilter implements GlobalFilter, Ordered {
             return chain.filter(exchange);
         }
 
-        logger.error("ip : {} 限流算法生效", exchange.getRequest().getRemoteAddress().getAddress().getHostAddress());
+        logger.error("ip : {} 限流算法生效", exchange.getRequest().getHeaders().get(HeaderFieldConstant.HEADER_X_FORWARDED_FOR));
         final ResponseVo responseVo = new ResponseVo(HttpStatus.TOO_MANY_REQUESTS.value(), FallBackController.DEFAULT_SYSTEM_ERROR);
         return Mono.defer(() -> ResponseSupport.write(exchange, responseVo, HttpStatus.TOO_MANY_REQUESTS, new LimiterException(IP_RATE_LIMITER_ERROR_MSG)));
     }
