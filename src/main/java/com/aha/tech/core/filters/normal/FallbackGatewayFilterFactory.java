@@ -1,5 +1,6 @@
 package com.aha.tech.core.filters.normal;
 
+import com.aha.tech.core.constant.SystemConstant;
 import com.aha.tech.core.exception.GatewayException;
 import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.support.ResponseSupport;
@@ -84,7 +85,7 @@ public class FallbackGatewayFilterFactory extends AbstractGatewayFilterFactory<F
 
         return (exchange, chain) -> {
             FallbackGatewayFilterFactory.RouteHystrixCommand command = new FallbackGatewayFilterFactory.RouteHystrixCommand(config.setter, config.fallbackUri, exchange, chain);
-            final String errorMsg = "我好像开了个小差!";
+            final String errorMsg = SystemConstant.DEFAULT_ERROR_MESSAGE;
             return Mono.create(s -> {
                 Subscription sub = command.toObservable().subscribe(s::success, s::error, s::success);
                 s.onCancel(sub::unsubscribe);

@@ -2,7 +2,6 @@ package com.aha.tech.core.support;
 
 import com.aha.tech.core.model.dto.RequestAddParamsDto;
 import com.aha.tech.core.model.entity.CacheRequestEntity;
-import com.aha.tech.util.IdWorker;
 import com.dianping.cat.Cat;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;
@@ -177,4 +176,14 @@ public class ExchangeSupport {
     public static Map<String, String> getCurrentIpLimiter(ServerWebExchange exchange) {
         return (Map<String, String>) exchange.getAttributes().getOrDefault(IP_LIMITER_ATTR, Collections.EMPTY_MAP);
     }
+
+    /**
+     * 是否是老版本
+     * @param exchange
+     * @return
+     */
+    public static Boolean isOldVersion(ServerWebExchange exchange) {
+        return (Boolean) exchange.getAttributes().getOrDefault(IS_OLD_VERSION_ATTR, Boolean.FALSE);
+    }
+
 }

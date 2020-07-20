@@ -49,7 +49,12 @@ public class ResponseSupport {
         DataBuffer buffer = resp.bufferFactory().wrap(bytes);
         resp.getHeaders().setContentLength(buffer.readableByteCount());
         resp.getHeaders().setContentType(MediaType.APPLICATION_JSON_UTF8);
-        setResponseStatus(exchange, httpStatus);
+        Boolean isOldVersion = ExchangeSupport.isOldVersion(exchange);
+        if (isOldVersion) {
+            setResponseStatus(exchange, HttpStatus.OK);
+        } else {
+            setResponseStatus(exchange, httpStatus);
+        }
         AccessLogService httpAccessLogService = (AccessLogService) SpringContextUtil.getBean("httpAccessLogService");
         httpAccessLogService.printWhenError(exchange, e);
         return resp.writeWith(Flux.just(buffer));
@@ -69,7 +74,13 @@ public class ResponseSupport {
         DataBuffer buffer = resp.bufferFactory().wrap(bytes);
         resp.getHeaders().setContentLength(buffer.readableByteCount());
         resp.getHeaders().setContentType(MediaType.APPLICATION_JSON_UTF8);
-        setResponseStatus(exchange, status);
+        Boolean isOldVersion = ExchangeSupport.isOldVersion(exchange);
+        if (isOldVersion) {
+            setResponseStatus(exchange, HttpStatus.OK);
+        } else {
+            setResponseStatus(exchange, status);
+        }
+
         return resp.writeWith(Flux.just(buffer));
     }
 
