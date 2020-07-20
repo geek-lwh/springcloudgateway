@@ -46,8 +46,7 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         logger.debug("开始执行权限校验网关过滤器");
-        Object a = null;
-        a.toString();
+
         List<String> clientRequestId = exchange.getRequest().getHeaders().get(REQUEST_ID);
         if (!CollectionUtils.isEmpty(clientRequestId)) {
             MDC.put(TRACE_ID, clientRequestId.get(0));
