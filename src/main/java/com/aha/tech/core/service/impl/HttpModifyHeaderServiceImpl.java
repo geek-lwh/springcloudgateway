@@ -1,10 +1,11 @@
 package com.aha.tech.core.service.impl;
 
 import com.aha.tech.commons.symbol.Separator;
+import com.aha.tech.core.constant.SystemConstant;
 import com.aha.tech.core.model.dto.RequestAddParamsDto;
-import com.aha.tech.core.model.enums.WebClientTypeEnum;
 import com.aha.tech.core.service.ModifyHeaderService;
 import com.aha.tech.core.support.ExchangeSupport;
+import com.aha.tech.core.support.VersionSupport;
 import com.dianping.cat.Cat;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.binary.Base64;
@@ -12,7 +13,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
@@ -39,12 +39,6 @@ import static com.aha.tech.core.support.ParseHeadersSupport.verifyPp;
 public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
 
     private static final Logger logger = LoggerFactory.getLogger(HttpModifyHeaderServiceImpl.class);
-
-    private static final String DEFAULT_VERSION = "10";
-
-    private static final String DEFAULT_OS = "web";
-
-    private static final String STR_PREFIX = "ahaschool";
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -74,8 +68,8 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
 
         httpHeaders.set(HEADER_X_FORWARDED_FOR, realIp);
         httpHeaders.set(HEADER_TOKEN, DEFAULT_X_TOKEN_VALUE);
-        httpHeaders.set(HEADER_OS, DEFAULT_OS);
-        httpHeaders.set(HEADER_VERSION, DEFAULT_VERSION);
+        httpHeaders.set(HEADER_OS, SystemConstant.WEB_CLIENT);
+        httpHeaders.set(HEADER_VERSION, SystemConstant.DEFAULT_VERSION);
         httpHeaders.set(HEADER_KEEP_ALIVE, HEADER_KEEP_ALIVE_VALUE);
     }
 
@@ -92,23 +86,13 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
         }
 
         try {
-            String value = userAgent.get(0).toLowerCase();
-            int index = value.indexOf(STR_PREFIX);
-            if (index == -1) {
-                return;
-            }
-
-            String subStr = value.substring(index);
-            String[] arr = StringUtils.split(subStr, Separator.SLASH_MARK);
-            String os = arr[1];
-            String version = arr[2];
-            if (os.equals(WebClientTypeEnum.ANDROID.getName()) || os.equals(WebClientTypeEnum.IOS.getName())) {
-                httpHeaders.set(HEADER_OS, os);
-                httpHeaders.set(HEADER_VERSION, version);
-            }
+            String[] pair = VersionSupport.parseOsAndVersion(userAgent.get(0));
+            httpHeaders.set(HEADER_OS, pair[0]);
+            httpHeaders.set(HEADER_VERSION, pair[1]);
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
+
     }
 
     /**

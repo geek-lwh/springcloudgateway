@@ -1,6 +1,5 @@
 package com.aha.tech.core.filters.normal;
 
-import com.aha.tech.commons.symbol.Separator;
 import com.aha.tech.core.constant.HeaderFieldConstant;
 import com.aha.tech.core.constant.SystemConstant;
 import com.aha.tech.core.service.RequestHandlerService;
@@ -14,7 +13,6 @@ import org.springframework.core.Ordered;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
@@ -59,8 +57,8 @@ public class PreHandlerFilter implements GlobalFilter, Ordered {
         if (!CollectionUtils.isEmpty(agentList)) {
             String agent = agentList.get(0);
             // parse agent and version less than 6.1.6 is old version
-            String[] tmp = StringUtils.tokenizeToStringArray(agent, Separator.SLASH_MARK);
-            int result = VersionSupport.compareVersion(tmp[2], SystemConstant.NEW_VERSION);
+            String[] tmp = VersionSupport.parseOsAndVersion(agent);
+            int result = VersionSupport.compareVersion(tmp[1], SystemConstant.CURRENT_VERSION);
             if (result == -1) {
                 isOldVersion = Boolean.TRUE;
             }
