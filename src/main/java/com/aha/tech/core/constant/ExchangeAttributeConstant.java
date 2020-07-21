@@ -33,6 +33,10 @@ public class ExchangeAttributeConstant {
 
     public static final String IS_OLD_VERSION_ATTR = "IS_OLD_VERSION_ATTR";
 
+    public static final String APP_OS_ATTR = "APP_OS_ATTR";
+
+    public static final String APP_VERSION_ATTR = "APP_VERSION_ATTR";
+
     public static final String TRACE_ID_ATTR = "TRACE_ID_ATTR";
 
     public static final String IP_LIMITER_ATTR = "IP_LIMITER_ATTR";

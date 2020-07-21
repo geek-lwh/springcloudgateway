@@ -52,12 +52,16 @@ public class PreHandlerFilter implements GlobalFilter, Ordered {
         // 是否跳过url防篡改
         Boolean isSkipUrlTamperProof = httpRequestHandlerService.isSkipUrlTamperProof(rawPath, httpHeaders);
         // 获取版本号 判断新老版本
+        String os = SystemConstant.WEB_CLIENT;
+        String version = SystemConstant.DEFAULT_VERSION;
         Boolean isOldVersion = Boolean.FALSE;
         List<String> agentList = exchange.getRequest().getHeaders().getOrDefault(HeaderFieldConstant.HEADER_USER_AGENT, Collections.emptyList());
         if (!CollectionUtils.isEmpty(agentList)) {
             String agent = agentList.get(0);
             // parse agent and version less than 6.1.6 is old version
             String[] tmp = VersionSupport.parseOsAndVersion(agent);
+            os = tmp[0];
+            version = tmp[1];
             int result = VersionSupport.compareVersion(tmp[1], SystemConstant.CURRENT_VERSION);
             if (result == -1) {
                 isOldVersion = Boolean.TRUE;
@@ -67,6 +71,8 @@ public class PreHandlerFilter implements GlobalFilter, Ordered {
         ExchangeSupport.put(exchange, IS_SKIP_AUTH_ATTR, isSkipAuth);
         ExchangeSupport.put(exchange, IS_SKIP_URL_TAMPER_PROOF_ATTR, isSkipUrlTamperProof);
         ExchangeSupport.put(exchange, IS_OLD_VERSION_ATTR, isOldVersion);
+        ExchangeSupport.put(exchange, APP_OS_ATTR, os);
+        ExchangeSupport.put(exchange, APP_VERSION_ATTR, version);
 
         return chain.filter(exchange);
     }

@@ -14,8 +14,9 @@ public interface ModifyHeaderService {
     /**
      * 设置头部版本号信息
      * @param httpHeaders
+     * @param serverWebExchange
      */
-    void versionSetting(HttpHeaders httpHeaders);
+    void versionSetting(HttpHeaders httpHeaders, ServerWebExchange serverWebExchange);
 
     /**
      * 解析X-unit 并且设置对应的值传递后端rs服务

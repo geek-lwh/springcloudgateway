@@ -5,7 +5,6 @@ import com.aha.tech.core.constant.SystemConstant;
 import com.aha.tech.core.model.dto.RequestAddParamsDto;
 import com.aha.tech.core.service.ModifyHeaderService;
 import com.aha.tech.core.support.ExchangeSupport;
-import com.aha.tech.core.support.VersionSupport;
 import com.dianping.cat.Cat;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.binary.Base64;
@@ -24,7 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
-import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR;
+import static com.aha.tech.core.constant.ExchangeAttributeConstant.*;
 import static com.aha.tech.core.constant.HeaderFieldConstant.*;
 import static com.aha.tech.core.support.ParseHeadersSupport.parseHeaderIp;
 import static com.aha.tech.core.support.ParseHeadersSupport.verifyPp;
@@ -79,20 +78,11 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
      * @param httpHeaders
      */
     @Override
-    public void versionSetting(HttpHeaders httpHeaders) {
-        List<String> userAgent = httpHeaders.get(HEADER_USER_AGENT);
-        if (CollectionUtils.isEmpty(userAgent)) {
-            return;
-        }
-
-        try {
-            String[] pair = VersionSupport.parseOsAndVersion(userAgent.get(0));
-            httpHeaders.set(HEADER_OS, pair[0]);
-            httpHeaders.set(HEADER_VERSION, pair[1]);
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-        }
-
+    public void versionSetting(HttpHeaders httpHeaders, ServerWebExchange serverWebExchange) {
+        String os = serverWebExchange.getAttributes().getOrDefault(APP_OS_ATTR, SystemConstant.WEB_CLIENT).toString();
+        String version = serverWebExchange.getAttributes().getOrDefault(APP_VERSION_ATTR, SystemConstant.DEFAULT_VERSION).toString();
+        httpHeaders.set(HEADER_OS, os);
+        httpHeaders.set(HEADER_VERSION, version);
     }
 
     /**

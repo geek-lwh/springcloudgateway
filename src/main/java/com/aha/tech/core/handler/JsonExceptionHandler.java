@@ -1,7 +1,7 @@
 package com.aha.tech.core.handler;
 
 import com.aha.tech.commons.utils.DateUtil;
-import com.aha.tech.core.controller.FallBackController;
+import com.aha.tech.core.constant.SystemConstant;
 import com.aha.tech.core.exception.GatewayException;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;
@@ -62,7 +62,7 @@ public class JsonExceptionHandler extends DefaultErrorWebExceptionHandler {
         URI uri = request.uri();
         String requestUrl = this.buildRequestUrl(method, uri);
 
-        return buildResponseData(error, code, requestUrl, FallBackController.DEFAULT_SYSTEM_ERROR);
+        return buildResponseData(error, code, requestUrl, SystemConstant.DEFAULT_ERROR_MESSAGE);
     }
 
     /**

@@ -3,7 +3,6 @@ package com.aha.tech.core.service.impl;
 import com.aha.tech.commons.symbol.Separator;
 import com.aha.tech.core.constant.SystemConstant;
 import com.aha.tech.core.controller.FallBackController;
-import com.aha.tech.core.exception.AuthorizationFailedException;
 import com.aha.tech.core.model.entity.AuthenticationResultEntity;
 import com.aha.tech.core.model.entity.PairEntity;
 import com.aha.tech.core.service.*;
@@ -14,7 +13,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -298,7 +296,7 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
         copyMultiValueMap(oldHeaders, newHeaders);
 
         httpModifyHeaderService.initHeaders(exchange, newHeaders, remoteIp);
-        httpModifyHeaderService.versionSetting(newHeaders);
+        httpModifyHeaderService.versionSetting(newHeaders, exchange);
         httpModifyHeaderService.xEnvSetting(exchange, newHeaders);
         httpModifyHeaderService.removeHeaders(newHeaders);
 
