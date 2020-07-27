@@ -25,4 +25,6 @@ public class SystemConstant {
     public final static String DEFAULT_VERSION = "10";
 
     public final static String DEFAULT_ERROR_MESSAGE = "我好像开了个小差!";
+
+    public final static String APPLICATION_PORT = "9700";
 }

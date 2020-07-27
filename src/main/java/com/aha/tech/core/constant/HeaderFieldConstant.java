@@ -103,6 +103,8 @@ public class HeaderFieldConstant {
 
     public static final String CONSUMER_SERVER_NAME = "X-Consumer-Server-Name";
 
+    public static final String CONSUMER_SERVER_HOST = "X-Consumer-Server-Host";
+
     public static final String X_ENV_CHANNEL = "X-Env-Channel";
 
 
@@ -142,4 +144,7 @@ public class HeaderFieldConstant {
 
     // X-Ca-Version 中的值 代表版本号
     public static final String VERSION_FROYO = "Froyo";
+
+    public static final String CAT_HTTP_HEADER_ROOT_MESSAGE_ID = "X-CAT-ROOT-MESSAGE-ID";
+
 }

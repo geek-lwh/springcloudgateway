@@ -1,6 +1,7 @@
 package com.aha.tech.core.service.impl;
 
 import com.aha.tech.commons.symbol.Separator;
+import com.aha.tech.commons.utils.IpUtil;
 import com.aha.tech.core.constant.SystemConstant;
 import com.aha.tech.core.model.dto.RequestAddParamsDto;
 import com.aha.tech.core.service.ModifyHeaderService;
@@ -62,9 +63,18 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
         httpHeaders.set(X_ENV_USER_ID, userId);
         httpHeaders.set(HEADER_USER_ID, userId);
 
-        httpHeaders.set(X_TRACE_ID, Cat.createMessageId());
-        httpHeaders.set(CONSUMER_SERVER_NAME, Cat.getManager().getDomain());
+        String traceId = Cat.createMessageId();
+        String localAddress = exchange.getRequest().getRemoteAddress().getHostName();
+        try {
+            localAddress = IpUtil.getLocalHostAddress();
+        } catch (Exception e) {
+            logger.error("获取本地ip地址异常", e);
+        }
 
+        httpHeaders.set(CONSUMER_SERVER_NAME, Cat.getManager().getDomain());
+        httpHeaders.set(CONSUMER_SERVER_HOST, localAddress + Separator.COLON_MARK + SystemConstant.APPLICATION_PORT);
+        httpHeaders.set(CAT_HTTP_HEADER_ROOT_MESSAGE_ID, traceId);
+        httpHeaders.set(X_TRACE_ID, traceId);
         httpHeaders.set(HEADER_X_FORWARDED_FOR, realIp);
         httpHeaders.set(HEADER_TOKEN, DEFAULT_X_TOKEN_VALUE);
         httpHeaders.set(HEADER_OS, SystemConstant.WEB_CLIENT);
@@ -224,13 +234,13 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
 
         String pp = new String(Base64.decodeBase64(encodePP), StandardCharsets.UTF_8);
         if (!pp.contains(Separator.DOLLAR_MARK)) {
-            logger.warn("url : {} ,httpHeaders : {} 不合法的pp值,缺少'$'符号 pp : {},encode_pp : {},pp.length = {}", url, httpHeaders.toSingleValueMap().toString(),pp, encodePP, pp.length());
+            logger.warn("url : {} ,httpHeaders : {} 不合法的pp值,缺少'$'符号 pp : {},encode_pp : {},pp.length = {}", url, httpHeaders.toSingleValueMap().toString(), pp, encodePP, pp.length());
             httpHeaders.set(HEADER_PP, Strings.EMPTY);
             return;
         }
 
         if (!verifyPp(pp)) {
-            logger.warn("url : {} httpHeader : {} pp验证不通过! pp : {},encode_pp : {}", url, httpHeaders.toSingleValueMap().toString(),pp, encodePP);
+            logger.warn("url : {} httpHeader : {} pp验证不通过! pp : {},encode_pp : {}", url, httpHeaders.toSingleValueMap().toString(), pp, encodePP);
             httpHeaders.set(HEADER_PP, Strings.EMPTY);
             return;
         }
