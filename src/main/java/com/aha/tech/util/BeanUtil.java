@@ -1,4 +1,4 @@
-package com.aha.tech.core.util;
+package com.aha.tech.util;
 
 import org.springframework.util.MultiValueMap;
 
