@@ -1,7 +1,6 @@
 package com.aha.tech.core.service.impl;
 
 import com.aha.tech.commons.symbol.Separator;
-import com.aha.tech.commons.utils.IpUtil;
 import com.aha.tech.core.constant.SystemConstant;
 import com.aha.tech.core.model.dto.RequestAddParamsDto;
 import com.aha.tech.core.service.ModifyHeaderService;
@@ -63,12 +62,12 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
         httpHeaders.set(X_ENV_USER_ID, userId);
         httpHeaders.set(HEADER_USER_ID, userId);
 
-        String localAddress = exchange.getRequest().getRemoteAddress().getHostName();
-        try {
-            localAddress = IpUtil.getLocalHostAddress();
-        } catch (Exception e) {
-            logger.error("获取本地ip地址异常", e);
-        }
+//        String localAddress = exchange.getRequest().getRemoteAddress().getHostName();
+//        try {
+//            localAddress = IpUtil.getLocalHostAddress();
+//        } catch (Exception e) {
+//            logger.error("获取本地ip地址异常", e);
+//        }
 
 //        httpHeaders.set(CONSUMER_SERVER_NAME, Cat.getManager().getDomain());
 //        httpHeaders.set(CONSUMER_SERVER_HOST, localAddress + Separator.COLON_MARK + SystemConstant.APPLICATION_PORT);
