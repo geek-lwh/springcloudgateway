@@ -32,6 +32,7 @@ import java.util.List;
 import static com.aha.tech.core.constant.ExchangeAttributeConstant.*;
 import static com.aha.tech.core.constant.HeaderFieldConstant.*;
 import static com.aha.tech.core.constant.SystemConstant.TEST;
+import static com.aha.tech.core.support.VersionSupport.isAppRequest;
 import static com.aha.tech.util.BeanUtil.copyMultiValueMap;
 
 /**
@@ -277,7 +278,7 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
 
         AuthenticationResultEntity authenticationResultEntity = new AuthenticationResultEntity();
         authenticationResultEntity.setCode(AuthorizationCode.SESSION_EXPIRED);
-        logger.warn("无效的user_name,userName : {},accessToken : {},header : {}", userName, accessToken,swe.getRequest().getHeaders());
+        logger.warn("无效的user_name,userName : {},accessToken : {},header : {}", userName, accessToken, swe.getRequest().getHeaders());
         authenticationResultEntity.setMessage(FallBackController.DEFAULT_SYSTEM_ERROR);
 
         return authenticationResultEntity;
@@ -294,6 +295,19 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
     public HttpHeaders modifyRequestHeaders(ServerWebExchange exchange, HttpHeaders oldHeaders, String remoteIp) {
         HttpHeaders newHeaders = new HttpHeaders();
         copyMultiValueMap(oldHeaders, newHeaders);
+
+        // hotfix ios client request : userAgent replace 'ahaschool' to 'ahakid'
+        List<String> userAgentList = newHeaders.get(HEADER_USER_AGENT);
+        if (!CollectionUtils.isEmpty(userAgentList)) {
+            String userAgent = userAgentList.get(0);
+            Boolean isApp = isAppRequest(userAgent);
+            if (isApp) {
+                if (userAgent.startsWith("ahaschool")) {
+                    userAgent = userAgent.replace("ahaschool","ahakid");
+                    newHeaders.set(HEADER_USER_AGENT,userAgent);
+                }
+            }
+        }
 
         httpModifyHeaderService.initHeaders(exchange, newHeaders, remoteIp);
         httpModifyHeaderService.versionSetting(newHeaders, exchange);
@@ -344,7 +358,7 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
     private PairEntity parseAuthorizationHeader(HttpHeaders requestHeaders) {
         List<String> headersOfAuthorization = requestHeaders.get(HEADER_AUTHORIZATION);
         if (CollectionUtils.isEmpty(headersOfAuthorization)) {
-            logger.error("缺少Authorization 头对象 requestHeaders : {}", requestHeaders.toSingleValueMap().toString());
+            logger.warn("缺少Authorization 头对象 requestHeaders : {}", requestHeaders.toSingleValueMap().toString());
             return null;
         }
 
@@ -355,9 +369,16 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
             arr = decodeAuthorization.split(":");
             return new PairEntity(arr[0], arr[1]);
         } catch (Exception e) {
-            logger.error("Authorization 格式错误 ,Authorization : {}, requestHeaders : {}", headersOfAuthorization, requestHeaders.toSingleValueMap().toString());
+            logger.warn("Authorization 格式错误 ,Authorization : {}, requestHeaders : {}", headersOfAuthorization, requestHeaders.toSingleValueMap().toString());
             return null;
         }
     }
 
+    public static void main(String[] args) {
+        String a = "ahaschool/a/b/c";
+        if (a.startsWith("ahaschool")) {
+            String tmp = a.replace("ahaschool", "ahakid");
+            System.out.println(tmp);
+        }
+    }
 }
