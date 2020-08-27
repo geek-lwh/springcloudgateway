@@ -84,7 +84,7 @@ public class BodyTamperProofRequestFilter implements GlobalFilter, Ordered {
         String body = cacheRequestEntity.getRequestBody();
         if (!bodyTamperProof(body, tamperProofEntity)) {
             return Mono.defer(() -> {
-                logger.error("uri: {}} ,params : {}} ,body : {}} ,防篡改校验失败,参数:{}}", uri.getRawPath(), uri.getRawQuery(), body, tamperProofEntity);
+                logger.warn("uri: {}} ,params : {}} ,body : {}} ,防篡改校验失败,参数:{}}", uri.getRawPath(), uri.getRawQuery(), body, tamperProofEntity);
                 ResponseVo rpcResponse = new ResponseVo(HttpStatus.FORBIDDEN.value(), FallBackController.DEFAULT_SYSTEM_ERROR);
                 return ResponseSupport.write(exchange, HttpStatus.FORBIDDEN, rpcResponse);
             });
@@ -104,7 +104,7 @@ public class BodyTamperProofRequestFilter implements GlobalFilter, Ordered {
             String version = tamperProofEntity.getVersion();
             String content = tamperProofEntity.getContent();
             String timestamp = tamperProofEntity.getTimestamp();
-            logger.info("接收到的 body 防篡改参数 : {}", tamperProofEntity);
+            logger.debug("接收到的 body 防篡改参数 : {}", tamperProofEntity);
             return httpRequestHandlerService.bodyTamperProof(version, body, timestamp, content);
         }
 

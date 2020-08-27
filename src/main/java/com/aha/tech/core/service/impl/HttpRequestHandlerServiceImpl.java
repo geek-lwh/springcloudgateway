@@ -122,12 +122,12 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
     @Override
     public Boolean urlTamperProof(String version, String timestamp, String signature, String rawPath, String sortQueryParams) {
         if (StringUtils.isBlank(timestamp)) {
-            logger.error("URI防篡改timestamp缺失");
+            logger.warn("URI防篡改timestamp缺失");
             return Boolean.FALSE;
         }
 
         if (StringUtils.isBlank(signature)) {
-            logger.error("URI防篡改signature缺失");
+            logger.warn("URI防篡改signature缺失");
             return Boolean.FALSE;
         }
 
@@ -138,7 +138,7 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
                 encryptStr = httpVerifyRequestService.verifyUrl(rawPath, sortQueryParams, timestamp, signature);
                 break;
             default:
-                logger.error("URI防篡改版本错误 version={}", version);
+                logger.warn("URI防篡改版本错误 version={}", version);
                 break;
         }
 
@@ -146,7 +146,7 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
             return Boolean.TRUE;
         }
 
-        logger.error("url防篡改校验失败 rawPath:{} , sortQueryParams : {},timestamp : {},signature : {}, encrypt : {}, secretKey : {}", rawPath, sortQueryParams, timestamp, signature, encryptStr, secretKey);
+        logger.warn("url防篡改校验失败 rawPath:{} , sortQueryParams : {},timestamp : {},signature : {}, encrypt : {}, secretKey : {}", rawPath, sortQueryParams, timestamp, signature, encryptStr, secretKey);
 
         return Boolean.FALSE;
     }
@@ -162,17 +162,17 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
         String encryptStr = Strings.EMPTY;
 
         if ("{}".equals(body)) {
-            logger.info("body 是{},赋值为空字符串");
+            logger.debug("body 是{},赋值为空字符串");
             body = Strings.EMPTY;
         }
 
         if (StringUtils.isBlank(timestamp)) {
-            logger.error("body防篡改timestamp缺失");
+            logger.warn("body防篡改timestamp缺失");
             return Boolean.FALSE;
         }
 
         if (StringUtils.isBlank(content)) {
-            logger.error("body防篡改content缺失");
+            logger.warn("body防篡改content缺失");
             return Boolean.FALSE;
         }
 
@@ -181,7 +181,7 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
                 encryptStr = httpVerifyRequestService.verifyBody(body, timestamp, content);
                 break;
             default:
-                logger.error("URI防篡改版本错误 version={}", version);
+                logger.warn("URI防篡改版本错误 version={}", version);
                 break;
         }
 
@@ -277,7 +277,7 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
 
         AuthenticationResultEntity authenticationResultEntity = new AuthenticationResultEntity();
         authenticationResultEntity.setCode(AuthorizationCode.SESSION_EXPIRED);
-        logger.error("无效的user_name,userName : {},accessToken : {}", userName, accessToken);
+        logger.warn("无效的user_name,userName : {},accessToken : {},header : {}", userName, accessToken,swe.getRequest().getHeaders());
         authenticationResultEntity.setMessage(FallBackController.DEFAULT_SYSTEM_ERROR);
 
         return authenticationResultEntity;

@@ -16,6 +16,8 @@ public class VersionSupport {
 
     private static final String STR_PREFIX = "ahaschool";
 
+    private static final String STR_PREFIX2 = "ahakid";
+
 
     /**
      * 版本号比较
@@ -64,14 +66,16 @@ public class VersionSupport {
 
     /**
      * 判断是否是app请求
-     * @param agent
+     * @param userAgent
      * @return
      */
-    public static Boolean isAppRequest(String agent) {
-        String value = agent.toLowerCase();
-        int index = value.indexOf(STR_PREFIX);
+    public static Boolean isAppRequest(String userAgent) {
+        String tmp = userAgent.toLowerCase();
+        if(tmp.startsWith(STR_PREFIX) || tmp.startsWith(STR_PREFIX2)){
+            return Boolean.TRUE;
+        }
 
-        return index == -1 ? Boolean.FALSE : Boolean.TRUE;
+        return Boolean.FALSE;
     }
 
     /**

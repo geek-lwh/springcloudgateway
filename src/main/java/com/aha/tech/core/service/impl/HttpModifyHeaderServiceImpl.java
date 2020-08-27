@@ -62,15 +62,6 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
         httpHeaders.set(X_ENV_USER_ID, userId);
         httpHeaders.set(HEADER_USER_ID, userId);
 
-//        String localAddress = exchange.getRequest().getRemoteAddress().getHostName();
-//        try {
-//            localAddress = IpUtil.getLocalHostAddress();
-//        } catch (Exception e) {
-//            logger.error("获取本地ip地址异常", e);
-//        }
-
-//        httpHeaders.set(CONSUMER_SERVER_NAME, Cat.getManager().getDomain());
-//        httpHeaders.set(CONSUMER_SERVER_HOST, localAddress + Separator.COLON_MARK + SystemConstant.APPLICATION_PORT);
         httpHeaders.set(X_TRACE_ID, Cat.createMessageId());
         httpHeaders.set(HEADER_X_FORWARDED_FOR, realIp);
         httpHeaders.set(HEADER_TOKEN, DEFAULT_X_TOKEN_VALUE);

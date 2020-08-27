@@ -164,10 +164,10 @@ public class URISupport {
             String str2 = firstMd5 + secretKey;
             lastMd5 = DigestUtils.md5DigestAsHex(str2.getBytes(StandardCharsets.UTF_8));
             if (!lastMd5.equals(signature)) {
-                logger.error("rawPath : {},sortQueryParamsStr: {},timestamp : {},signature : {} || str1 : {},第一次md5 : {},str2 : {},lastMd5 : {},secretKey : {}", rawPath, sortQueryParamsStr, timestamp, signature, str1, firstMd5, str2, lastMd5, secretKey);
+                logger.warn("rawPath : {},sortQueryParamsStr: {},timestamp : {},signature : {} || str1 : {},第一次md5 : {},str2 : {},lastMd5 : {},secretKey : {}", rawPath, sortQueryParamsStr, timestamp, signature, str1, firstMd5, str2, lastMd5, secretKey);
             }
         } catch (Exception e) {
-            logger.error("url防篡改加密出现异常,raw_path={},sort_raw_query={},timestamp={}", rawPath, sortQueryParamsStr, timestamp, e);
+            logger.warn("url防篡改加密出现异常,raw_path={},sort_raw_query={},timestamp={}", rawPath, sortQueryParamsStr, timestamp, e);
         }
 
         return lastMd5;
@@ -202,7 +202,7 @@ public class URISupport {
             }
 
         } catch (Exception e) {
-            logger.error("body防篡改加密出现异常 body={},timestamp={}", body, timestamp, e);
+            logger.warn("body防篡改加密出现异常 body={},timestamp={}", body, timestamp, e);
         }
 
         return lastMd5;
