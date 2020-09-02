@@ -80,6 +80,7 @@ dependencies {
 
     // metrics
     compile 'io.micrometer:micrometer-registry-prometheus'
+    compile ("com.ecwid.consul:consul-api:1.4.5")
 
     // cat
     compile('com.dianping.cat:cat-client:3.0.0')
