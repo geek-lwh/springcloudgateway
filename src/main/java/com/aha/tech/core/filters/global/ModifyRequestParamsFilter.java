@@ -4,8 +4,13 @@ import com.aha.tech.core.model.dto.RequestAddParamsDto;
 import com.aha.tech.core.model.entity.CacheRequestEntity;
 import com.aha.tech.core.service.OverwriteParamService;
 import com.aha.tech.core.support.ExchangeSupport;
+import com.aha.tech.util.TracerUtils;
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Maps;
+import io.opentracing.Scope;
+import io.opentracing.Span;
+import io.opentracing.Tracer;
+import io.opentracing.util.GlobalTracer;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,20 +23,15 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
 import java.net.URI;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
+import static com.aha.tech.core.constant.ExchangeAttributeConstant.TRACE_LOG_ID;
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.MODIFY_PARAMS_FILTER_ORDER;
-import static com.aha.tech.core.constant.HeaderFieldConstant.REQUEST_ID;
-import static com.aha.tech.core.constant.HeaderFieldConstant.X_TRACE_ID;
-import static com.aha.tech.core.interceptor.FeignRequestInterceptor.TRACE_ID;
 
 /**
  * @Author: luweihong
@@ -56,8 +56,31 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        logger.debug("开始进入修改GET|POST请求参数过滤器");
+        Tracer tracer = GlobalTracer.get();
+        Tracer.SpanBuilder spanBuilder = GlobalTracer.get().buildSpan(this.getClass().getName());
 
+        Span parentSpan = ExchangeSupport.getSpan(exchange);
+        Span span = spanBuilder.asChildOf(parentSpan).start();
+        ExchangeSupport.setSpan(exchange, span);
+        try (Scope scope = tracer.scopeManager().activate(span)) {
+            TracerUtils.setClue(span);
+            ExchangeSupport.put(exchange, TRACE_LOG_ID, span.context().toTraceId());
+            return replaceParams(exchange, chain);
+        } catch (Exception e) {
+            TracerUtils.reportErrorTrace(e);
+            throw e;
+        } finally {
+            span.finish();
+        }
+    }
+
+    /**
+     * 重构params
+     * @param exchange
+     * @param chain
+     * @return
+     */
+    private Mono<Void> replaceParams(ServerWebExchange exchange, GatewayFilterChain chain) {
         ServerHttpRequest serverHttpRequest = exchange.getRequest();
         HttpHeaders httpHeaders = serverHttpRequest.getHeaders();
         MediaType mediaType = httpHeaders.getContentType();
@@ -67,10 +90,8 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
         String cacheBody = cacheRequestEntity.getRequestBody();
         RequestAddParamsDto requestAddParamsDto = ExchangeSupport.getRequestAddParamsDto(exchange);
 
-        List<String> clientRequestId = httpHeaders.get(REQUEST_ID);
-        if (!CollectionUtils.isEmpty(clientRequestId)) {
-            MDC.put(TRACE_ID, clientRequestId.get(0));
-        }
+        String traceId = exchange.getAttributeOrDefault(TRACE_LOG_ID, "MISS_TRACE_ID");
+        MDC.put("traceId", traceId);
 
         URI newUri = httpOverwriteParamService.modifyQueryParams(requestAddParamsDto, serverHttpRequest);
         Boolean needAddBodyParams = httpMethod.equals(HttpMethod.POST) || httpMethod.equals(HttpMethod.PUT);
@@ -79,7 +100,6 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
             return chain.filter(exchange.mutate().request(request).build());
         }
 
-        // MediaType.APPLICATION_FORM_URLENCODED 不转json
         String newBodyStr = cacheBody;
 
         if (mediaType.isCompatibleWith(MediaType.APPLICATION_JSON_UTF8)) {

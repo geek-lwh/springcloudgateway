@@ -5,7 +5,13 @@ import com.aha.tech.core.constant.FilterProcessOrderedConstant;
 import com.aha.tech.core.model.entity.AuthenticationResultEntity;
 import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.RequestHandlerService;
+import com.aha.tech.core.support.ExchangeSupport;
 import com.aha.tech.core.support.ResponseSupport;
+import com.aha.tech.util.TracerUtils;
+import io.opentracing.Scope;
+import io.opentracing.Span;
+import io.opentracing.Tracer;
+import io.opentracing.util.GlobalTracer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -14,15 +20,12 @@ import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
-import java.util.List;
 
-import static com.aha.tech.core.constant.HeaderFieldConstant.REQUEST_ID;
-import static com.aha.tech.core.interceptor.FeignRequestInterceptor.TRACE_ID;
+import static com.aha.tech.core.constant.ExchangeAttributeConstant.TRACE_LOG_ID;
 
 /**
  * @Author: luweihong
@@ -45,12 +48,32 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        logger.debug("开始执行权限校验网关过滤器");
-
-        List<String> clientRequestId = exchange.getRequest().getHeaders().get(REQUEST_ID);
-        if (!CollectionUtils.isEmpty(clientRequestId)) {
-            MDC.put(TRACE_ID, clientRequestId.get(0));
+        Tracer tracer = GlobalTracer.get();
+        Tracer.SpanBuilder spanBuilder = GlobalTracer.get().buildSpan(this.getClass().getName());
+        Span parentSpan = ExchangeSupport.getSpan(exchange);
+        Span span = spanBuilder.asChildOf(parentSpan).start();
+        ExchangeSupport.setSpan(exchange, span);
+        try (Scope scope = tracer.scopeManager().activate(span)) {
+            TracerUtils.setClue(span);
+            ExchangeSupport.put(exchange, TRACE_LOG_ID, span.context().toTraceId());
+            return isPassed(exchange, chain);
+        } catch (Exception e) {
+            TracerUtils.reportErrorTrace(e);
+            throw e;
+        } finally {
+            span.finish();
         }
+    }
+
+    /**
+     * 是否通过授权
+     * @param exchange
+     * @param chain
+     * @return
+     */
+    private Mono<Void> isPassed(ServerWebExchange exchange, GatewayFilterChain chain) {
+        String traceId = exchange.getAttributeOrDefault(TRACE_LOG_ID, "MISS_TRACE_ID");
+        MDC.put("traceId", traceId);
 
         AuthenticationResultEntity authenticationResultEntity = httpRequestHandlerService.authorize(exchange);
         Boolean isWhiteList = authenticationResultEntity.getWhiteList();

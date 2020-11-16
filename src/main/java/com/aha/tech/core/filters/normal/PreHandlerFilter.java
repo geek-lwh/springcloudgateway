@@ -5,6 +5,11 @@ import com.aha.tech.core.constant.SystemConstant;
 import com.aha.tech.core.service.RequestHandlerService;
 import com.aha.tech.core.support.ExchangeSupport;
 import com.aha.tech.core.support.VersionSupport;
+import com.aha.tech.util.TracerUtils;
+import io.opentracing.Scope;
+import io.opentracing.Span;
+import io.opentracing.Tracer;
+import io.opentracing.util.GlobalTracer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -44,6 +49,31 @@ public class PreHandlerFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+        Tracer tracer = GlobalTracer.get();
+        Tracer.SpanBuilder spanBuilder = tracer.buildSpan(this.getClass().getName());
+        Span parentSpan = ExchangeSupport.getSpan(exchange);
+        Span span = spanBuilder.asChildOf(parentSpan).start();
+        ExchangeSupport.setSpan(exchange, span);
+        try (Scope scope = tracer.scopeManager().activate(span)) {
+            TracerUtils.setClue(span);
+            ExchangeSupport.put(exchange, TRACE_LOG_ID, span.context().toTraceId());
+            return initParams(exchange, chain);
+        } catch (Exception e) {
+            TracerUtils.reportErrorTrace(e);
+            throw e;
+        } finally {
+            span.finish();
+        }
+
+    }
+
+    /**
+     * 初始化参数
+     * @param exchange
+     * @param chain
+     * @return
+     */
+    private Mono<Void> initParams(ServerWebExchange exchange, GatewayFilterChain chain) {
         String rawPath = exchange.getRequest().getURI().getRawPath();
         HttpHeaders httpHeaders = exchange.getRequest().getHeaders();
         // 是否跳过授权

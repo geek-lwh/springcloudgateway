@@ -6,7 +6,6 @@ import com.aha.tech.core.service.ModifyResponseService;
 import com.aha.tech.core.support.ExchangeSupport;
 import com.aha.tech.core.support.ResponseSupport;
 import com.alibaba.fastjson.JSON;
-import com.dianping.cat.Cat;
 import org.apache.commons.lang3.StringUtils;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
@@ -19,14 +18,12 @@ import org.springframework.cloud.gateway.support.CachedBodyOutputMessage;
 import org.springframework.cloud.gateway.support.DefaultClientResponse;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.ServerCodecConfigurer;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.http.server.reactive.ServerHttpResponseDecorator;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.reactive.function.BodyInserter;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.ExchangeStrategies;
@@ -34,11 +31,8 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.Collections;
-import java.util.List;
-
+import static com.aha.tech.core.constant.ExchangeAttributeConstant.TRACE_LOG_ID;
 import static com.aha.tech.core.constant.HeaderFieldConstant.*;
-import static com.aha.tech.core.interceptor.FeignRequestInterceptor.TRACE_ID;
 import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.ORIGINAL_RESPONSE_CONTENT_TYPE_ATTR;
 
 /**
@@ -66,19 +60,16 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
                 httpHeaders.add(HttpHeaders.CONTENT_TYPE, originalResponseContentType);
                 ResponseAdapter responseAdapter = m.new ResponseAdapter(body, httpHeaders);
                 DefaultClientResponse clientResponse = new DefaultClientResponse(responseAdapter, ExchangeStrategies.withDefaults());
-                String traceId = Cat.getCurrentMessageId();
-                List<String> clientRequestId =getDelegate().getHeaders().get(REQUEST_ID);
-                if (!CollectionUtils.isEmpty(clientRequestId)) {
-                    MDC.put(TRACE_ID, clientRequestId.get(0));
-                }
+                String traceId = serverWebExchange.getAttributeOrDefault(TRACE_LOG_ID, "MISS_TRACE_ID");
+                MDC.put("traceId", traceId);
 
                 Mono modifiedBody = clientResponse.bodyToMono(String.class).flatMap(originalBody -> {
                     ResponseVo responseVo = ResponseVo.defaultFailureResponseVo();
                     try {
-                        ExchangeSupport.putResponseBody(serverWebExchange,originalBody);
+                        ExchangeSupport.putResponseBody(serverWebExchange, originalBody);
                         responseVo = JSON.parseObject(originalBody, ResponseVo.class);
                     } catch (Exception e) {
-                        logger.error("traceId : {} 网关解析返回值异常 originalBody : {}",traceId, originalBody, e);
+                        logger.error("traceId : {} 网关解析返回值异常 originalBody : {}", traceId, originalBody, e);
                     }
                     String warnLog = ResponseSupport.buildWarnLog(serverWebExchange, responseVo, getDelegate().getStatusCode());
                     if (StringUtils.isNotBlank(warnLog)) {

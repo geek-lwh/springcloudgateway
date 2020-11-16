@@ -7,6 +7,11 @@ import com.aha.tech.core.service.RequestHandlerService;
 import com.aha.tech.core.support.ExchangeSupport;
 import com.aha.tech.core.support.ResponseSupport;
 import com.aha.tech.core.support.URISupport;
+import com.aha.tech.util.TracerUtils;
+import io.opentracing.Scope;
+import io.opentracing.Span;
+import io.opentracing.Tracer;
+import io.opentracing.util.GlobalTracer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -18,18 +23,15 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
 import java.net.URI;
-import java.util.List;
 
+import static com.aha.tech.core.constant.ExchangeAttributeConstant.TRACE_LOG_ID;
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.URL_TAMPER_PROOF_FILTER;
-import static com.aha.tech.core.constant.HeaderFieldConstant.REQUEST_ID;
-import static com.aha.tech.core.interceptor.FeignRequestInterceptor.TRACE_ID;
 
 /**
  * @Author: luweihong
@@ -55,26 +57,49 @@ public class UrlTamperProofRequestFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+        Tracer tracer = GlobalTracer.get();
+        Tracer.SpanBuilder spanBuilder = GlobalTracer.get().buildSpan(this.getClass().getName());
+
+        Span parentSpan = ExchangeSupport.getSpan(exchange);
+        Span span = spanBuilder.asChildOf(parentSpan).start();
+        ExchangeSupport.setSpan(exchange, span);
+        try (Scope scope = tracer.scopeManager().activate(span)) {
+            TracerUtils.setClue(span);
+            ExchangeSupport.put(exchange, TRACE_LOG_ID, span.context().toTraceId());
+            return getResult(exchange, chain);
+        } catch (Exception e) {
+            TracerUtils.reportErrorTrace(e);
+            throw e;
+        } finally {
+            span.finish();
+        }
+
+    }
+
+    /**
+     * 获取url防篡改结果
+     * @param exchange
+     * @param chain
+     * @return
+     */
+    private Mono<Void> getResult(ServerWebExchange exchange, GatewayFilterChain chain) {
         ServerHttpRequest request = exchange.getRequest();
         URI uri = request.getURI();
         String rawPath = uri.getRawPath();
         HttpHeaders httpHeaders = request.getHeaders();
         TamperProofEntity tamperProofEntity = new TamperProofEntity(httpHeaders, uri);
-        List<String> clientRequestId = request.getHeaders().get(REQUEST_ID);
-        if (!CollectionUtils.isEmpty(clientRequestId)) {
-            MDC.put(TRACE_ID, clientRequestId.get(0));
-        }
+        String traceId = exchange.getAttributeOrDefault(TRACE_LOG_ID, "MISS_TRACE_ID");
+        MDC.put("traceId", traceId);
 
         if (ExchangeSupport.getIsSkipUrlTamperProof(exchange)) {
             logger.info("跳过url防篡改 : {}", rawPath);
             return chain.filter(exchange);
         }
 
-
         boolean isURIValid = urlTamperProof(tamperProofEntity, uri.getRawQuery(), rawPath);
         if (!isURIValid) {
             return Mono.defer(() -> {
-                logger.error("url防篡改校验失败,参数: {}", tamperProofEntity);
+//                TracerUtils.reportErrorTrace(new UrlTamperProofException(String.format("url防篡改校验失败,参数:%s",tamperProofEntity)));
                 ResponseVo rpcResponse = new ResponseVo(HttpStatus.FORBIDDEN.value(), FallBackController.DEFAULT_SYSTEM_ERROR);
                 return ResponseSupport.write(exchange, HttpStatus.FORBIDDEN, rpcResponse);
             });

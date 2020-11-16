@@ -93,7 +93,7 @@ public class ResponseSupport {
      */
     public static String buildWarnLog(ServerWebExchange exchange, ResponseVo responseVo, HttpStatus httpStatus) {
         CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheRequest(exchange);
-        String requestId = ExchangeSupport.getTraceId(exchange);
+//       todo String requestId = ExchangeSupport.getTraceId(exchange);
 
         URI uri = cacheRequestEntity.getRequestLine();
         if (uri == null) {
@@ -108,7 +108,7 @@ public class ResponseSupport {
         Integer code = responseVo.getCode();
         if (!code.equals(ResponseConstants.SUCCESS) || !httpStatus.equals(HttpStatus.OK)) {
             StringBuffer sb = new StringBuffer();
-            sb.append("requestId : ").append(requestId).append(System.lineSeparator());
+//    todo        sb.append("requestId : ").append(requestId).append(System.lineSeparator());
             sb.append("response body: ").append(responseVo).append(System.lineSeparator());
             sb.append("http status : ").append(httpStatus).append(System.lineSeparator());
             sb.append("info : ").append(cacheRequestEntity).append(System.lineSeparator());

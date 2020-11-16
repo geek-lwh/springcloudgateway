@@ -37,10 +37,12 @@ public class ExchangeAttributeConstant {
 
     public static final String APP_VERSION_ATTR = "APP_VERSION_ATTR";
 
-    public static final String TRACE_ID_ATTR = "TRACE_ID_ATTR";
-
     public static final String IP_LIMITER_ATTR = "IP_LIMITER_ATTR";
 
     public static final String RESPONSE_BODY = "RESPONSE_BODY";
+
+    public static final String TRACE_LOG_ID = "TRACE_LOG_ID";
+
+    public static final String ACTIVE_SPAN = "ACTIVE_SPAN";
 
 }

@@ -2,8 +2,8 @@ package com.aha.tech.core.support;
 
 import com.aha.tech.core.model.dto.RequestAddParamsDto;
 import com.aha.tech.core.model.entity.CacheRequestEntity;
-import com.dianping.cat.Cat;
 import com.google.common.collect.Maps;
+import io.opentracing.Span;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
@@ -150,15 +150,6 @@ public class ExchangeSupport {
         return requestAddParamsDto;
     }
 
-    /**
-     * 获取requestId
-     * @param exchange
-     * @return
-     */
-    public static String getTraceId(ServerWebExchange exchange) {
-        String requestId = exchange.getAttributes().getOrDefault(TRACE_ID_ATTR, Cat.createMessageId()).toString();
-        return requestId;
-    }
 
     /**
      *
@@ -184,6 +175,14 @@ public class ExchangeSupport {
      */
     public static Boolean isOldVersion(ServerWebExchange exchange) {
         return (Boolean) exchange.getAttributes().getOrDefault(IS_OLD_VERSION_ATTR, Boolean.FALSE);
+    }
+
+    public static void setSpan(ServerWebExchange exchange, Span span) {
+        exchange.getAttributes().put(ACTIVE_SPAN, span);
+    }
+
+    public static Span getSpan(ServerWebExchange exchange) {
+        return (Span) exchange.getAttributes().getOrDefault(ACTIVE_SPAN, null);
     }
 
 }

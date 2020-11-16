@@ -2,6 +2,11 @@ package com.aha.tech.core.filters.global;
 
 import com.aha.tech.core.model.entity.CacheRequestEntity;
 import com.aha.tech.core.support.ExchangeSupport;
+import com.aha.tech.util.TracerUtils;
+import io.opentracing.Scope;
+import io.opentracing.Span;
+import io.opentracing.Tracer;
+import io.opentracing.util.GlobalTracer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -15,11 +20,10 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
 
 import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_CACHED_ATTR;
+import static com.aha.tech.core.constant.ExchangeAttributeConstant.TRACE_LOG_ID;
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.COPY_BODY_FILTER;
-import static com.aha.tech.core.constant.HeaderFieldConstant.REQUEST_ID;
 
 /**
  * @Author: luweihong
@@ -39,13 +43,37 @@ public class CopyBodyFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+        Tracer tracer = GlobalTracer.get();
+        Tracer.SpanBuilder spanBuilder = tracer.buildSpan(this.getClass().getName());
+
+        Span parentSpan = ExchangeSupport.getSpan(exchange);
+        Span span = spanBuilder.asChildOf(parentSpan).start();
+        ExchangeSupport.setSpan(exchange, span);
+        try (Scope scope = tracer.scopeManager().activate(span)) {
+            TracerUtils.setClue(span);
+            ExchangeSupport.put(exchange, TRACE_LOG_ID, span.context().toTraceId());
+            return readFromStream(exchange, chain);
+        } catch (Exception e) {
+            TracerUtils.reportErrorTrace(e);
+            throw e;
+        } finally {
+            span.finish();
+        }
+    }
+
+    /**
+     * 读取流
+     * @param exchange
+     * @param chain
+     * @return
+     */
+    private Mono<Void> readFromStream(ServerWebExchange exchange, GatewayFilterChain chain) {
         ServerHttpRequest request = exchange.getRequest();
         HttpMethod httpMethod = request.getMethod();
         CacheRequestEntity cacheRequestEntity = new CacheRequestEntity();
         cacheRequestEntity.setRequestLine(exchange.getRequest().getURI());
         cacheRequestEntity.setOriginalRequestHttpHeaders(request.getHeaders());
         ExchangeSupport.put(exchange, GATEWAY_REQUEST_CACHED_ATTR, cacheRequestEntity);
-//        String requestId =request.getHeaders().getOrDefault(REQUEST_ID, Collections.emptyList()).get(0);
 
         if (httpMethod.equals(HttpMethod.POST) || httpMethod.equals(HttpMethod.PUT)) {
             return DataBufferUtils.join(request.getBody())
