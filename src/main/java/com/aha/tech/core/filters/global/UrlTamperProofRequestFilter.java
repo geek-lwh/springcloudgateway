@@ -1,6 +1,7 @@
 package com.aha.tech.core.filters.global;
 
 import com.aha.tech.core.controller.FallBackController;
+import com.aha.tech.core.exception.UrlTamperProofException;
 import com.aha.tech.core.model.entity.TamperProofEntity;
 import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.RequestHandlerService;
@@ -11,7 +12,6 @@ import com.aha.tech.util.TracerUtils;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
-import io.opentracing.util.GlobalTracer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -50,6 +50,9 @@ public class UrlTamperProofRequestFilter implements GlobalFilter, Ordered {
     @Value("${gateway.tamper.proof.enable:false}")
     private boolean isEnable;
 
+    @Resource
+    private Tracer tracer;
+
     @Override
     public int getOrder() {
         return URL_TAMPER_PROOF_FILTER;
@@ -57,8 +60,7 @@ public class UrlTamperProofRequestFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        Tracer tracer = GlobalTracer.get();
-        Tracer.SpanBuilder spanBuilder = GlobalTracer.get().buildSpan(this.getClass().getName());
+        Tracer.SpanBuilder spanBuilder = tracer.buildSpan(this.getClass().getName());
 
         Span parentSpan = ExchangeSupport.getSpan(exchange);
         Span span = spanBuilder.asChildOf(parentSpan).start();
@@ -66,7 +68,7 @@ public class UrlTamperProofRequestFilter implements GlobalFilter, Ordered {
         try (Scope scope = tracer.scopeManager().activate(span)) {
             TracerUtils.setClue(span);
             ExchangeSupport.put(exchange, TRACE_LOG_ID, span.context().toTraceId());
-            return getResult(exchange, chain);
+            return decode(exchange, chain, span);
         } catch (Exception e) {
             TracerUtils.reportErrorTrace(e);
             throw e;
@@ -82,7 +84,7 @@ public class UrlTamperProofRequestFilter implements GlobalFilter, Ordered {
      * @param chain
      * @return
      */
-    private Mono<Void> getResult(ServerWebExchange exchange, GatewayFilterChain chain) {
+    private Mono<Void> decode(ServerWebExchange exchange, GatewayFilterChain chain, Span span) {
         ServerHttpRequest request = exchange.getRequest();
         URI uri = request.getURI();
         String rawPath = uri.getRawPath();
@@ -99,7 +101,8 @@ public class UrlTamperProofRequestFilter implements GlobalFilter, Ordered {
         boolean isURIValid = urlTamperProof(tamperProofEntity, uri.getRawQuery(), rawPath);
         if (!isURIValid) {
             return Mono.defer(() -> {
-//                TracerUtils.reportErrorTrace(new UrlTamperProofException(String.format("url防篡改校验失败,参数:%s",tamperProofEntity)));
+                // todo 403 的日志要出来
+                TracerUtils.reportErrorTrace(new UrlTamperProofException(String.format("url防篡改校验失败,参数:%s", tamperProofEntity)));
                 ResponseVo rpcResponse = new ResponseVo(HttpStatus.FORBIDDEN.value(), FallBackController.DEFAULT_SYSTEM_ERROR);
                 return ResponseSupport.write(exchange, HttpStatus.FORBIDDEN, rpcResponse);
             });

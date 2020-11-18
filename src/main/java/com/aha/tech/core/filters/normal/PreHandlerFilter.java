@@ -57,7 +57,7 @@ public class PreHandlerFilter implements GlobalFilter, Ordered {
         try (Scope scope = tracer.scopeManager().activate(span)) {
             TracerUtils.setClue(span);
             ExchangeSupport.put(exchange, TRACE_LOG_ID, span.context().toTraceId());
-            return initParams(exchange, chain);
+            return initParams(exchange, chain, span);
         } catch (Exception e) {
             TracerUtils.reportErrorTrace(e);
             throw e;
@@ -73,7 +73,7 @@ public class PreHandlerFilter implements GlobalFilter, Ordered {
      * @param chain
      * @return
      */
-    private Mono<Void> initParams(ServerWebExchange exchange, GatewayFilterChain chain) {
+    private Mono<Void> initParams(ServerWebExchange exchange, GatewayFilterChain chain, Span span) {
         String rawPath = exchange.getRequest().getURI().getRawPath();
         HttpHeaders httpHeaders = exchange.getRequest().getHeaders();
         // 是否跳过授权
@@ -103,6 +103,12 @@ public class PreHandlerFilter implements GlobalFilter, Ordered {
         ExchangeSupport.put(exchange, IS_OLD_VERSION_ATTR, isOldVersion);
         ExchangeSupport.put(exchange, APP_OS_ATTR, os);
         ExchangeSupport.put(exchange, APP_VERSION_ATTR, version);
+
+        span.setTag(IS_SKIP_AUTH_ATTR, isSkipAuth);
+        span.setTag(IS_SKIP_URL_TAMPER_PROOF_ATTR, isSkipUrlTamperProof);
+        span.setTag(IS_OLD_VERSION_ATTR, isOldVersion);
+        span.setTag(APP_OS_ATTR, os);
+        span.setTag(APP_VERSION_ATTR, version);
 
         return chain.filter(exchange);
     }

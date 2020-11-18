@@ -52,21 +52,25 @@ public class AccessLogFilter implements WebFilter {
             TracerUtils.setClue(span);
             Long startTime = System.currentTimeMillis();
             return webFilterChain.filter(serverWebExchange)
-                    .doFinally((s) -> CompletableFuture.runAsync(() -> {
-                        String traceId = serverWebExchange.getAttributeOrDefault(TRACE_LOG_ID, "MISS_TRACE_ID");
-                        MDC.put("traceId", traceId);
-                        Long cost = System.currentTimeMillis() - startTime;
-                        logger.info("response Info : {}", httpAccessLogService.requestLog(serverWebExchange, cost, ExchangeSupport.getResponseBody(serverWebExchange)));
-                    }, writeLoggingThreadPool));
+                    .doFinally((s) -> CompletableFuture.runAsync(() -> logging(serverWebExchange, startTime), writeLoggingThreadPool));
         } catch (Exception e) {
             TracerUtils.reportErrorTrace(e);
             throw e;
         } finally {
             span.finish();
         }
-
-
     }
 
+    /**
+     * 打印日志
+     * @param serverWebExchange
+     * @param startTime
+     */
+    private void logging(ServerWebExchange serverWebExchange, Long startTime) {
+        String traceId = serverWebExchange.getAttributeOrDefault(TRACE_LOG_ID, "MISS_TRACE_ID");
+        MDC.put("traceId", traceId);
+        Long cost = System.currentTimeMillis() - startTime;
+        logger.info("response Info : {}", httpAccessLogService.requestLog(serverWebExchange, cost, ExchangeSupport.getResponseBody(serverWebExchange)));
+    }
 
 }
