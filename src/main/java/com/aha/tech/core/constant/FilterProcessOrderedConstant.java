@@ -1,7 +1,6 @@
 package com.aha.tech.core.constant;
 
 import org.springframework.cloud.gateway.filter.LoadBalancerClientFilter;
-import org.springframework.cloud.gateway.filter.NettyWriteResponseFilter;
 
 /**
  * @Author: luweihong
@@ -47,6 +46,7 @@ public class FilterProcessOrderedConstant {
     public static int LOAD_BALANCING_FILTER = LoadBalancerClientFilter.LOAD_BALANCER_CLIENT_FILTER_ORDER + STEP;
 
     // 修改请求返回体过滤器
-    public static int MODIFY_RESPONSE_GATEWAY_FILTER_ORDER = NettyWriteResponseFilter.WRITE_RESPONSE_FILTER_ORDER - STEP;
+//    public static int MODIFY_RESPONSE_GATEWAY_FILTER_ORDER = NettyWriteResponseFilter.WRITE_RESPONSE_FILTER_ORDER - STEP;
+    public static int MODIFY_RESPONSE_GATEWAY_FILTER_ORDER = LOAD_BALANCING_FILTER + STEP;
 
 }

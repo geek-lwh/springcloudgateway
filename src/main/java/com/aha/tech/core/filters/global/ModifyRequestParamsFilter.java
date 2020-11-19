@@ -4,6 +4,7 @@ import com.aha.tech.core.model.dto.RequestAddParamsDto;
 import com.aha.tech.core.model.entity.CacheRequestEntity;
 import com.aha.tech.core.service.OverwriteParamService;
 import com.aha.tech.core.support.ExchangeSupport;
+import com.aha.tech.util.LogUtils;
 import com.aha.tech.util.TracerUtils;
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Maps;
@@ -13,7 +14,6 @@ import io.opentracing.Tracer;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
@@ -29,7 +29,6 @@ import javax.annotation.Resource;
 import java.net.URI;
 import java.util.Map;
 
-import static com.aha.tech.core.constant.AttributeConstant.TRACE_LOG_ID;
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.MODIFY_PARAMS_FILTER_ORDER;
 
 /**
@@ -59,6 +58,8 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         Span span = TracerUtils.startAndRef(exchange, this.getClass().getName());
+        LogUtils.combineLog(exchange);
+
         ExchangeSupport.setSpan(exchange, span);
         try (Scope scope = tracer.scopeManager().activate(span)) {
             TracerUtils.setClue(span, exchange);
@@ -87,9 +88,6 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
         CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheRequest(exchange);
         String cacheBody = cacheRequestEntity.getRequestBody();
         RequestAddParamsDto requestAddParamsDto = ExchangeSupport.getRequestAddParamsDto(exchange);
-
-        String traceId = exchange.getAttributeOrDefault(TRACE_LOG_ID, "MISS_TRACE_ID");
-        MDC.put("traceId", traceId);
 
         URI newUri = httpOverwriteParamService.modifyQueryParams(requestAddParamsDto, serverHttpRequest);
         Boolean needAddBodyParams = httpMethod.equals(HttpMethod.POST) || httpMethod.equals(HttpMethod.PUT);

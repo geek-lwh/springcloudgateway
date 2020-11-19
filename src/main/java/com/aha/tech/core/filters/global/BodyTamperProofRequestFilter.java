@@ -7,6 +7,7 @@ import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.RequestHandlerService;
 import com.aha.tech.core.support.ExchangeSupport;
 import com.aha.tech.core.support.ResponseSupport;
+import com.aha.tech.util.LogUtils;
 import com.aha.tech.util.TracerUtils;
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -14,7 +15,6 @@ import io.opentracing.Tracer;
 import io.opentracing.tag.Tags;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
@@ -32,7 +32,6 @@ import javax.annotation.Resource;
 import java.net.URI;
 
 import static com.aha.tech.core.constant.AttributeConstant.HTTP_STATUS;
-import static com.aha.tech.core.constant.AttributeConstant.TRACE_LOG_ID;
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.BODY_TAMPER_PROOF_FILTER;
 
 /**
@@ -67,7 +66,7 @@ public class BodyTamperProofRequestFilter implements GlobalFilter, Ordered {
         ExchangeSupport.setSpan(exchange, span);
         try (Scope scope = tracer.scopeManager().activate(span)) {
             TracerUtils.setClue(span, exchange);
-            Boolean isVialdBody = verifyBody(exchange, chain);
+            Boolean isVialdBody = verifyBody(exchange);
             if (!isVialdBody) {
                 ExchangeSupport.setHttpStatus(exchange, HttpStatus.FORBIDDEN);
                 span.setTag(HTTP_STATUS, HttpStatus.FORBIDDEN.value());
@@ -93,9 +92,8 @@ public class BodyTamperProofRequestFilter implements GlobalFilter, Ordered {
      * @param chain
      * @return
      */
-    private Boolean verifyBody(ServerWebExchange exchange, GatewayFilterChain chain) {
-        String traceId = exchange.getAttributeOrDefault(TRACE_LOG_ID, "MISS_TRACE_ID");
-        MDC.put("traceId", traceId);
+    private Boolean verifyBody(ServerWebExchange exchange) {
+        LogUtils.combineLog(exchange);
         CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheRequest(exchange);
         ServerHttpRequest request = exchange.getRequest();
         HttpMethod httpMethod = request.getMethod();

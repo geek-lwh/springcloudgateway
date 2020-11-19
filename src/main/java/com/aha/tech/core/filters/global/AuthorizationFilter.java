@@ -7,6 +7,7 @@ import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.RequestHandlerService;
 import com.aha.tech.core.support.ExchangeSupport;
 import com.aha.tech.core.support.ResponseSupport;
+import com.aha.tech.util.LogUtils;
 import com.aha.tech.util.TracerUtils;
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -14,7 +15,6 @@ import io.opentracing.Tracer;
 import io.opentracing.tag.Tags;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
@@ -26,7 +26,6 @@ import reactor.core.publisher.Mono;
 import javax.annotation.Resource;
 
 import static com.aha.tech.core.constant.AttributeConstant.HTTP_STATUS;
-import static com.aha.tech.core.constant.AttributeConstant.TRACE_LOG_ID;
 
 /**
  * @Author: luweihong
@@ -80,8 +79,7 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
      * @return
      */
     private ResponseVo verifyAccessToken(ServerWebExchange exchange) {
-        String traceId = exchange.getAttributeOrDefault(TRACE_LOG_ID, "MISS_TRACE_ID");
-        MDC.put("traceId", traceId);
+        LogUtils.combineLog(exchange);
 
         AuthenticationResultEntity authenticationResultEntity = httpRequestHandlerService.authorize(exchange);
         Boolean isWhiteList = authenticationResultEntity.getWhiteList();

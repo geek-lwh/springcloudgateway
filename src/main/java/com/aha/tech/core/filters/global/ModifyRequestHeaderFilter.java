@@ -3,13 +3,13 @@ package com.aha.tech.core.filters.global;
 import com.aha.tech.core.model.entity.CacheRequestEntity;
 import com.aha.tech.core.service.RequestHandlerService;
 import com.aha.tech.core.support.ExchangeSupport;
+import com.aha.tech.util.LogUtils;
 import com.aha.tech.util.TracerUtils;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
@@ -22,7 +22,6 @@ import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
 
-import static com.aha.tech.core.constant.AttributeConstant.TRACE_LOG_ID;
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.MODIFY_REQUEST_HEADER_GATEWAY_FILTER_ORDER;
 
 /**
@@ -50,10 +49,11 @@ public class ModifyRequestHeaderFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         Span span = TracerUtils.startAndRef(exchange, this.getClass().getName());
+        LogUtils.combineLog(exchange);
         ExchangeSupport.setSpan(exchange, span);
         try (Scope scope = tracer.scopeManager().activate(span)) {
             TracerUtils.setClue(span, exchange);
-            ServerHttpRequest newRequest = replaceHeader(exchange, chain);
+            ServerHttpRequest newRequest = replaceHeader(exchange);
 
             return chain.filter(exchange.mutate().request(newRequest).build());
         } catch (Exception e) {
@@ -67,12 +67,9 @@ public class ModifyRequestHeaderFilter implements GlobalFilter, Ordered {
     /**
      * 重构header
      * @param exchange
-     * @param chain
      * @return
      */
-    private ServerHttpRequest replaceHeader(ServerWebExchange exchange, GatewayFilterChain chain) {
-        String traceId = exchange.getAttributeOrDefault(TRACE_LOG_ID, "MISS_TRACE_ID");
-        MDC.put("traceId", traceId);
+    private ServerHttpRequest replaceHeader(ServerWebExchange exchange) {
         ServerHttpRequest serverHttpRequest = exchange.getRequest();
         HttpHeaders originalHeaders = serverHttpRequest.getHeaders();
         CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheRequest(exchange);

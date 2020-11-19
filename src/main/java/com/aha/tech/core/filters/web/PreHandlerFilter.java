@@ -6,6 +6,7 @@ import com.aha.tech.core.service.AccessLogService;
 import com.aha.tech.core.service.RequestHandlerService;
 import com.aha.tech.core.support.ExchangeSupport;
 import com.aha.tech.core.support.VersionSupport;
+import com.aha.tech.util.LogUtils;
 import com.aha.tech.util.TracerUtils;
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -14,7 +15,6 @@ import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
@@ -124,8 +124,7 @@ public class PreHandlerFilter implements GlobalFilter, Ordered {
      * @param startTime
      */
     private void logging(ServerWebExchange serverWebExchange, Long startTime) {
-        String traceId = serverWebExchange.getAttributeOrDefault(TRACE_LOG_ID, "MISS_TRACE_ID");
-        MDC.put("traceId", traceId);
+        LogUtils.combineLog(serverWebExchange);
         Long cost = System.currentTimeMillis() - startTime;
         logger.info("response Info : {}", httpAccessLogService.requestLog(serverWebExchange, cost, ExchangeSupport.getResponseBody(serverWebExchange)));
     }

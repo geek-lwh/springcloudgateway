@@ -9,6 +9,7 @@ import com.aha.tech.core.service.LimiterService;
 import com.aha.tech.core.service.RequestHandlerService;
 import com.aha.tech.core.support.ExchangeSupport;
 import com.aha.tech.core.support.ResponseSupport;
+import com.aha.tech.util.LogUtils;
 import com.aha.tech.util.TracerUtils;
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -17,7 +18,6 @@ import io.opentracing.log.Fields;
 import io.opentracing.tag.Tags;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
@@ -31,7 +31,6 @@ import javax.annotation.Resource;
 import java.util.Map;
 
 import static com.aha.tech.core.constant.AttributeConstant.HTTP_STATUS;
-import static com.aha.tech.core.constant.AttributeConstant.TRACE_LOG_ID;
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.IP_RATE_LIMITER_FILTER_ORDER;
 
 /**
@@ -67,6 +66,8 @@ public class IpRateLimiterFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         Span span = TracerUtils.startAndRef(exchange, this.getClass().getName());
+        LogUtils.combineLog(exchange);
+
         try (Scope scope = tracer.scopeManager().activate(span)) {
             TracerUtils.setClue(span, exchange);
             Boolean isAllowed = isIpAllowed(exchange);
@@ -102,9 +103,6 @@ public class IpRateLimiterFilter implements GlobalFilter, Ordered {
         if (!isEnable) {
             return Boolean.TRUE;
         }
-
-        String traceId = exchange.getAttributeOrDefault(TRACE_LOG_ID, "MISS_TRACE_ID");
-        MDC.put("traceId", traceId);
 
         String rawPath = exchange.getRequest().getURI().getRawPath();
 //        String ip = exchange.getRequest().getHeaders().get(HeaderFieldConstant.HEADER_X_FORWARDED_FOR).get(0);

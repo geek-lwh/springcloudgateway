@@ -2,6 +2,7 @@ package com.aha.tech.core.filters.global;
 
 import com.aha.tech.core.model.entity.CacheRequestEntity;
 import com.aha.tech.core.support.ExchangeSupport;
+import com.aha.tech.util.LogUtils;
 import com.aha.tech.util.TracerUtils;
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -65,8 +66,10 @@ public class CopyBodyFilter implements GlobalFilter, Ordered {
      * @return
      */
     private Mono<Void> readFromStream(ServerWebExchange exchange, GatewayFilterChain chain) {
+        LogUtils.combineLog(exchange);
         ServerHttpRequest request = exchange.getRequest();
         HttpMethod httpMethod = request.getMethod();
+
         CacheRequestEntity cacheRequestEntity = new CacheRequestEntity();
         cacheRequestEntity.setRequestLine(exchange.getRequest().getURI());
         cacheRequestEntity.setOriginalRequestHttpHeaders(request.getHeaders());

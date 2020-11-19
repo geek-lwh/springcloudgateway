@@ -7,6 +7,7 @@ import com.aha.tech.core.service.RequestHandlerService;
 import com.aha.tech.core.support.ExchangeSupport;
 import com.aha.tech.core.support.ResponseSupport;
 import com.aha.tech.core.support.URISupport;
+import com.aha.tech.util.LogUtils;
 import com.aha.tech.util.TracerUtils;
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -14,7 +15,6 @@ import io.opentracing.Tracer;
 import io.opentracing.tag.Tags;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
@@ -31,7 +31,6 @@ import javax.annotation.Resource;
 import java.net.URI;
 
 import static com.aha.tech.core.constant.AttributeConstant.HTTP_STATUS;
-import static com.aha.tech.core.constant.AttributeConstant.TRACE_LOG_ID;
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.URL_TAMPER_PROOF_FILTER;
 
 /**
@@ -62,9 +61,11 @@ public class UrlTamperProofRequestFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         Span span = TracerUtils.startAndRef(exchange, this.getClass().getName());
+        LogUtils.combineLog(exchange);
+
         try (Scope scope = tracer.scopeManager().activate(span)) {
             TracerUtils.setClue(span, exchange);
-            Boolean isVialdQueryParams = verifyQueryParams(exchange, chain, span);
+            Boolean isVialdQueryParams = verifyQueryParams(exchange);
             if (!isVialdQueryParams) {
                 ExchangeSupport.setHttpStatus(exchange, HttpStatus.FORBIDDEN);
                 span.setTag(HTTP_STATUS, HttpStatus.FORBIDDEN.value());
@@ -88,17 +89,14 @@ public class UrlTamperProofRequestFilter implements GlobalFilter, Ordered {
     /**
      * 获取url防篡改结果
      * @param exchange
-     * @param chain
      * @return
      */
-    private Boolean verifyQueryParams(ServerWebExchange exchange, GatewayFilterChain chain, Span span) {
+    private Boolean verifyQueryParams(ServerWebExchange exchange) {
         ServerHttpRequest request = exchange.getRequest();
         URI uri = request.getURI();
         String rawPath = uri.getRawPath();
         HttpHeaders httpHeaders = request.getHeaders();
         TamperProofEntity tamperProofEntity = new TamperProofEntity(httpHeaders, uri);
-        String traceId = exchange.getAttributeOrDefault(TRACE_LOG_ID, "MISS_TRACE_ID");
-        MDC.put("traceId", traceId);
 
         if (ExchangeSupport.getIsSkipUrlTamperProof(exchange)) {
             logger.info("跳过url防篡改 : {}", rawPath);
