@@ -1,9 +1,8 @@
 package com.aha.tech.core.interceptor;
 
 import com.aha.tech.core.constant.HeaderFieldConstant;
-import com.aha.tech.core.model.wrapper.RequestBuilderCarrier;
+import com.aha.tech.core.model.wrapper.RequestCarrierWrapper;
 import com.aha.tech.util.IpUtil;
-import com.aha.tech.util.TracerUtils;
 import com.ctrip.framework.apollo.Config;
 import com.ctrip.framework.apollo.ConfigService;
 import feign.RequestInterceptor;
@@ -46,7 +45,8 @@ public class FeignRequestInterceptor implements RequestInterceptor {
         if (tracer != null) {
             Span span = tracer.activeSpan();
             SpanContext spanContext = span.context();
-            TracerUtils.setClue(span);
+            span.setTag(HeaderFieldConstant.TRACE_ID, span.context().toTraceId());
+            span.setTag(HeaderFieldConstant.SPAN_ID, span.context().toSpanId());
             requestTemplate.header(HeaderFieldConstant.TRACE_ID, spanContext.toTraceId());
             requestTemplate.header(HeaderFieldConstant.SPAN_ID, spanContext.toSpanId());
             requestTemplate.header(REQUEST_FROM, serverName);
@@ -56,7 +56,7 @@ public class FeignRequestInterceptor implements RequestInterceptor {
             } catch (Exception e) {
                 logger.error("构建traceInfo时 计算ip地址出错", e);
             }
-            tracer.inject(spanContext, Format.Builtin.HTTP_HEADERS, new RequestBuilderCarrier(requestTemplate));
+            tracer.inject(spanContext, Format.Builtin.HTTP_HEADERS, new RequestCarrierWrapper(requestTemplate));
         }
         if (feignLog) {
             feignRequestLogging(requestTemplate);

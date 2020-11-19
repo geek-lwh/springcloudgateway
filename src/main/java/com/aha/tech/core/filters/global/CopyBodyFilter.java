@@ -6,7 +6,6 @@ import com.aha.tech.util.TracerUtils;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
-import io.opentracing.util.GlobalTracer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -19,10 +18,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
+import javax.annotation.Resource;
 import java.nio.charset.StandardCharsets;
 
-import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_CACHED_ATTR;
-import static com.aha.tech.core.constant.ExchangeAttributeConstant.TRACE_LOG_ID;
+import static com.aha.tech.core.constant.AttributeConstant.GATEWAY_REQUEST_CACHED_ATTR;
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.COPY_BODY_FILTER;
 
 /**
@@ -36,6 +35,9 @@ public class CopyBodyFilter implements GlobalFilter, Ordered {
 
     private static final Logger logger = LoggerFactory.getLogger(CopyBodyFilter.class);
 
+    @Resource
+    private Tracer tracer;
+
     @Override
     public int getOrder() {
         return COPY_BODY_FILTER;
@@ -43,18 +45,13 @@ public class CopyBodyFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        Tracer tracer = GlobalTracer.get();
-        Tracer.SpanBuilder spanBuilder = tracer.buildSpan(this.getClass().getName());
-
-        Span parentSpan = ExchangeSupport.getSpan(exchange);
-        Span span = spanBuilder.asChildOf(parentSpan).start();
+        Span span = TracerUtils.startAndRef(exchange, this.getClass().getName());
         ExchangeSupport.setSpan(exchange, span);
         try (Scope scope = tracer.scopeManager().activate(span)) {
-            TracerUtils.setClue(span);
-            ExchangeSupport.put(exchange, TRACE_LOG_ID, span.context().toTraceId());
+            TracerUtils.setClue(span, exchange);
             return readFromStream(exchange, chain);
         } catch (Exception e) {
-            TracerUtils.reportErrorTrace(e);
+            TracerUtils.logError(e);
             throw e;
         } finally {
             span.finish();

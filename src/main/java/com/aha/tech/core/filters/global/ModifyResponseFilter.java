@@ -6,7 +6,6 @@ import com.aha.tech.util.TracerUtils;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
-import io.opentracing.util.GlobalTracer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -19,7 +18,6 @@ import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
 
-import static com.aha.tech.core.constant.ExchangeAttributeConstant.TRACE_LOG_ID;
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.MODIFY_RESPONSE_GATEWAY_FILTER_ORDER;
 
 /**
@@ -37,22 +35,22 @@ public class ModifyResponseFilter implements GlobalFilter, Ordered {
     }
 
     @Resource
+    private Tracer tracer;
+
+    @Resource
     private RequestHandlerService httpRequestHandlerService;
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        Tracer tracer = GlobalTracer.get();
-        Tracer.SpanBuilder spanBuilder = GlobalTracer.get().buildSpan(this.getClass().getName());
-
-        Span parentSpan = ExchangeSupport.getSpan(exchange);
-        Span span = spanBuilder.asChildOf(parentSpan).start();
+        Span span = TracerUtils.startAndRef(exchange, this.getClass().getName());
         ExchangeSupport.setSpan(exchange, span);
         try (Scope scope = tracer.scopeManager().activate(span)) {
-            TracerUtils.setClue(span);
-            ExchangeSupport.put(exchange, TRACE_LOG_ID, span.context().toTraceId());
-            return mutateResponse(exchange, chain);
+            TracerUtils.setClue(span, exchange);
+            ServerHttpResponseDecorator serverHttpResponseDecorator = mutateResponse(exchange, chain);
+
+            return chain.filter(exchange.mutate().response(serverHttpResponseDecorator).build());
         } catch (Exception e) {
-            TracerUtils.reportErrorTrace(e);
+            TracerUtils.logError(e);
             throw e;
         } finally {
             span.finish();
@@ -65,11 +63,11 @@ public class ModifyResponseFilter implements GlobalFilter, Ordered {
      * @param chain
      * @return
      */
-    private Mono<Void> mutateResponse(ServerWebExchange exchange, GatewayFilterChain chain) {
+    private ServerHttpResponseDecorator mutateResponse(ServerWebExchange exchange, GatewayFilterChain chain) {
         // todo 异步
         ServerHttpResponseDecorator serverHttpResponseDecorator = httpRequestHandlerService.modifyResponseBodyAndHeaders(exchange);
 
-        return chain.filter(exchange.mutate().response(serverHttpResponseDecorator).build());
+        return serverHttpResponseDecorator;
     }
 
 }

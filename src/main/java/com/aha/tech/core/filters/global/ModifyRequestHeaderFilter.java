@@ -7,7 +7,6 @@ import com.aha.tech.util.TracerUtils;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
-import io.opentracing.util.GlobalTracer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -23,7 +22,7 @@ import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
 
-import static com.aha.tech.core.constant.ExchangeAttributeConstant.TRACE_LOG_ID;
+import static com.aha.tech.core.constant.AttributeConstant.TRACE_LOG_ID;
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.MODIFY_REQUEST_HEADER_GATEWAY_FILTER_ORDER;
 
 /**
@@ -40,6 +39,9 @@ public class ModifyRequestHeaderFilter implements GlobalFilter, Ordered {
     @Resource
     private RequestHandlerService httpRequestHandlerService;
 
+    @Resource
+    private Tracer tracer;
+
     @Override
     public int getOrder() {
         return MODIFY_REQUEST_HEADER_GATEWAY_FILTER_ORDER;
@@ -47,18 +49,15 @@ public class ModifyRequestHeaderFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        Tracer tracer = GlobalTracer.get();
-        Tracer.SpanBuilder spanBuilder = GlobalTracer.get().buildSpan(this.getClass().getName());
-
-        Span parentSpan = ExchangeSupport.getSpan(exchange);
-        Span span = spanBuilder.asChildOf(parentSpan).start();
+        Span span = TracerUtils.startAndRef(exchange, this.getClass().getName());
         ExchangeSupport.setSpan(exchange, span);
         try (Scope scope = tracer.scopeManager().activate(span)) {
-            TracerUtils.setClue(span);
-            ExchangeSupport.put(exchange, TRACE_LOG_ID, span.context().toTraceId());
-            return replaceHeader(exchange, chain);
+            TracerUtils.setClue(span, exchange);
+            ServerHttpRequest newRequest = replaceHeader(exchange, chain);
+
+            return chain.filter(exchange.mutate().request(newRequest).build());
         } catch (Exception e) {
-            TracerUtils.reportErrorTrace(e);
+            TracerUtils.logError(e);
             throw e;
         } finally {
             span.finish();
@@ -71,7 +70,7 @@ public class ModifyRequestHeaderFilter implements GlobalFilter, Ordered {
      * @param chain
      * @return
      */
-    private Mono<Void> replaceHeader(ServerWebExchange exchange, GatewayFilterChain chain) {
+    private ServerHttpRequest replaceHeader(ServerWebExchange exchange, GatewayFilterChain chain) {
         String traceId = exchange.getAttributeOrDefault(TRACE_LOG_ID, "MISS_TRACE_ID");
         MDC.put("traceId", traceId);
         ServerHttpRequest serverHttpRequest = exchange.getRequest();
@@ -90,7 +89,7 @@ public class ModifyRequestHeaderFilter implements GlobalFilter, Ordered {
             }
         };
 
-        return chain.filter(exchange.mutate().request(newRequest).build());
+        return newRequest;
     }
 
 }

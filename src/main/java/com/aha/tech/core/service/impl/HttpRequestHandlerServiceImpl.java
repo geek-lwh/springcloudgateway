@@ -29,7 +29,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 
-import static com.aha.tech.core.constant.ExchangeAttributeConstant.*;
+import static com.aha.tech.core.constant.AttributeConstant.*;
 import static com.aha.tech.core.constant.HeaderFieldConstant.*;
 import static com.aha.tech.core.constant.SystemConstant.TEST;
 import static com.aha.tech.core.support.VersionSupport.isAppRequest;

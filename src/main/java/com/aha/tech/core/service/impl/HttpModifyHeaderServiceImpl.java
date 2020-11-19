@@ -22,7 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
-import static com.aha.tech.core.constant.ExchangeAttributeConstant.*;
+import static com.aha.tech.core.constant.AttributeConstant.*;
 import static com.aha.tech.core.constant.HeaderFieldConstant.*;
 import static com.aha.tech.core.support.ParseHeadersSupport.parseHeaderIp;
 import static com.aha.tech.core.support.ParseHeadersSupport.verifyPp;

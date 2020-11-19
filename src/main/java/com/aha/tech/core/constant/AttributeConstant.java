@@ -6,7 +6,7 @@ package com.aha.tech.core.constant;
  *
  * 网关属性变量
  */
-public class ExchangeAttributeConstant {
+public class AttributeConstant {
 
     // 原始路径
     public static final String GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR = "GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR";
@@ -44,5 +44,8 @@ public class ExchangeAttributeConstant {
     public static final String TRACE_LOG_ID = "TRACE_LOG_ID";
 
     public static final String ACTIVE_SPAN = "ACTIVE_SPAN";
+
+    public static final String HTTP_STATUS = "HTTP_STATUS";
+
 
 }

@@ -11,7 +11,7 @@ import com.aha.tech.util.TracerUtils;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
-import io.opentracing.util.GlobalTracer;
+import io.opentracing.tag.Tags;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -31,7 +31,8 @@ import reactor.core.publisher.Mono;
 import javax.annotation.Resource;
 import java.net.URI;
 
-import static com.aha.tech.core.constant.ExchangeAttributeConstant.TRACE_LOG_ID;
+import static com.aha.tech.core.constant.AttributeConstant.HTTP_STATUS;
+import static com.aha.tech.core.constant.AttributeConstant.TRACE_LOG_ID;
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.BODY_TAMPER_PROOF_FILTER;
 
 /**
@@ -51,25 +52,35 @@ public class BodyTamperProofRequestFilter implements GlobalFilter, Ordered {
     @Value("${gateway.tamper.proof.enable:false}")
     private boolean isEnable;
 
+    @Resource
+    private Tracer tracer;
+
     @Override
     public int getOrder() {
         return BODY_TAMPER_PROOF_FILTER;
     }
 
+
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        Tracer tracer = GlobalTracer.get();
-        Tracer.SpanBuilder spanBuilder = GlobalTracer.get().buildSpan(this.getClass().getName());
-
-        Span parentSpan = ExchangeSupport.getSpan(exchange);
-        Span span = spanBuilder.asChildOf(parentSpan).start();
+        Span span = TracerUtils.startAndRef(exchange, this.getClass().getName());
         ExchangeSupport.setSpan(exchange, span);
         try (Scope scope = tracer.scopeManager().activate(span)) {
-            TracerUtils.setClue(span);
-            ExchangeSupport.put(exchange, TRACE_LOG_ID, span.context().toTraceId());
-            return getResult(exchange, chain);
+            TracerUtils.setClue(span, exchange);
+            Boolean isVialdBody = verifyBody(exchange, chain);
+            if (!isVialdBody) {
+                ExchangeSupport.setHttpStatus(exchange, HttpStatus.FORBIDDEN);
+                span.setTag(HTTP_STATUS, HttpStatus.FORBIDDEN.value());
+                Tags.ERROR.set(span, true);
+                return Mono.defer(() -> {
+                    ResponseVo rpcResponse = new ResponseVo(HttpStatus.FORBIDDEN.value(), FallBackController.DEFAULT_SYSTEM_ERROR);
+                    return ResponseSupport.write(exchange, HttpStatus.FORBIDDEN, rpcResponse);
+                });
+            }
+
+            return chain.filter(exchange);
         } catch (Exception e) {
-            TracerUtils.reportErrorTrace(e);
+            TracerUtils.logError(e);
             throw e;
         } finally {
             span.finish();
@@ -82,41 +93,33 @@ public class BodyTamperProofRequestFilter implements GlobalFilter, Ordered {
      * @param chain
      * @return
      */
-    private Mono<Void> getResult(ServerWebExchange exchange, GatewayFilterChain chain) {
+    private Boolean verifyBody(ServerWebExchange exchange, GatewayFilterChain chain) {
+        String traceId = exchange.getAttributeOrDefault(TRACE_LOG_ID, "MISS_TRACE_ID");
+        MDC.put("traceId", traceId);
         CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheRequest(exchange);
         ServerHttpRequest request = exchange.getRequest();
         HttpMethod httpMethod = request.getMethod();
         if (!httpMethod.equals(HttpMethod.POST)) {
-            return chain.filter(exchange);
+            return Boolean.TRUE;
         }
         URI uri = request.getURI();
         Boolean isSkipUrlTamperProof = ExchangeSupport.getIsSkipUrlTamperProof(exchange);
-        String traceId = exchange.getAttributeOrDefault(TRACE_LOG_ID, "MISS_TRACE_ID");
-        MDC.put("traceId", traceId);
-
         if (isSkipUrlTamperProof) {
             logger.info("跳过body防篡改,raw_path : {}", uri.getRawPath());
-            return chain.filter(exchange);
+            return Boolean.TRUE;
         }
 
         HttpHeaders httpHeaders = request.getHeaders();
         MediaType mediaType = httpHeaders.getContentType();
         if (mediaType != null && mediaType.isCompatibleWith(MediaType.APPLICATION_FORM_URLENCODED)) {
             logger.info("media type不是json : {}", mediaType);
-            return chain.filter(exchange);
+            return Boolean.TRUE;
         }
 
         TamperProofEntity tamperProofEntity = new TamperProofEntity(httpHeaders, uri);
         String body = cacheRequestEntity.getRequestBody();
-        if (!bodyTamperProof(body, tamperProofEntity)) {
-            return Mono.defer(() -> {
-                logger.warn("uri: {}} ,params : {}} ,body : {}} ,防篡改校验失败,参数:{}}", uri.getRawPath(), uri.getRawQuery(), body, tamperProofEntity);
-                ResponseVo rpcResponse = new ResponseVo(HttpStatus.FORBIDDEN.value(), FallBackController.DEFAULT_SYSTEM_ERROR);
-                return ResponseSupport.write(exchange, HttpStatus.FORBIDDEN, rpcResponse);
-            });
-        }
 
-        return chain.filter(exchange);
+        return bodyTamperProof(body, tamperProofEntity);
     }
 
     /**

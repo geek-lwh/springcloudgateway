@@ -11,7 +11,7 @@ import com.aha.tech.util.TracerUtils;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
-import io.opentracing.util.GlobalTracer;
+import io.opentracing.tag.Tags;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -25,7 +25,8 @@ import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
 
-import static com.aha.tech.core.constant.ExchangeAttributeConstant.TRACE_LOG_ID;
+import static com.aha.tech.core.constant.AttributeConstant.HTTP_STATUS;
+import static com.aha.tech.core.constant.AttributeConstant.TRACE_LOG_ID;
 
 /**
  * @Author: luweihong
@@ -41,6 +42,9 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
     @Resource
     private RequestHandlerService httpRequestHandlerService;
 
+    @Resource
+    private Tracer tracer;
+
     @Override
     public int getOrder() {
         return FilterProcessOrderedConstant.AUTH_GATEWAY_FILTER_ORDER;
@@ -48,17 +52,22 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        Tracer tracer = GlobalTracer.get();
-        Tracer.SpanBuilder spanBuilder = GlobalTracer.get().buildSpan(this.getClass().getName());
-        Span parentSpan = ExchangeSupport.getSpan(exchange);
-        Span span = spanBuilder.asChildOf(parentSpan).start();
+        Span span = TracerUtils.startAndRef(exchange, this.getClass().getName());
         ExchangeSupport.setSpan(exchange, span);
         try (Scope scope = tracer.scopeManager().activate(span)) {
-            TracerUtils.setClue(span);
-            ExchangeSupport.put(exchange, TRACE_LOG_ID, span.context().toTraceId());
-            return isPassed(exchange, chain);
+            TracerUtils.setClue(span, exchange);
+            ResponseVo responseVo = verifyAccessToken(exchange);
+            Integer code = responseVo.getCode();
+            if (!code.equals(ResponseConstants.SUCCESS)) {
+                ExchangeSupport.setHttpStatus(exchange, HttpStatus.UNAUTHORIZED);
+                span.setTag(HTTP_STATUS, HttpStatus.UNAUTHORIZED.value());
+                Tags.ERROR.set(span, true);
+                return Mono.defer(() -> ResponseSupport.write(exchange, HttpStatus.UNAUTHORIZED, responseVo));
+            }
+
+            return chain.filter(exchange);
         } catch (Exception e) {
-            TracerUtils.reportErrorTrace(e);
+            TracerUtils.logError(e);
             throw e;
         } finally {
             span.finish();
@@ -68,30 +77,23 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
     /**
      * 是否通过授权
      * @param exchange
-     * @param chain
      * @return
      */
-    private Mono<Void> isPassed(ServerWebExchange exchange, GatewayFilterChain chain) {
+    private ResponseVo verifyAccessToken(ServerWebExchange exchange) {
         String traceId = exchange.getAttributeOrDefault(TRACE_LOG_ID, "MISS_TRACE_ID");
         MDC.put("traceId", traceId);
 
         AuthenticationResultEntity authenticationResultEntity = httpRequestHandlerService.authorize(exchange);
         Boolean isWhiteList = authenticationResultEntity.getWhiteList();
-        if (isWhiteList) {
-            return chain.filter(exchange);
-        }
-
         Integer code = authenticationResultEntity.getCode();
-        if (code.equals(ResponseConstants.SUCCESS)) {
-            return chain.filter(exchange);
+        if (isWhiteList || code.equals(ResponseConstants.SUCCESS)) {
+            return new ResponseVo(ResponseConstants.SUCCESS);
         }
 
         String message = authenticationResultEntity.getMessage();
         logger.warn("授权异常 : {}", message);
-        return Mono.defer(() -> {
-            ResponseVo rpcResponse = new ResponseVo(code, message);
-            return ResponseSupport.write(exchange, HttpStatus.UNAUTHORIZED, rpcResponse);
-        });
+
+        return new ResponseVo(code, message);
     }
 
 }

@@ -1,7 +1,8 @@
-package com.aha.tech.core.filters.normal;
+package com.aha.tech.core.filters.web;
 
 import com.aha.tech.core.constant.HeaderFieldConstant;
 import com.aha.tech.core.constant.SystemConstant;
+import com.aha.tech.core.service.AccessLogService;
 import com.aha.tech.core.service.RequestHandlerService;
 import com.aha.tech.core.support.ExchangeSupport;
 import com.aha.tech.core.support.VersionSupport;
@@ -9,9 +10,11 @@ import com.aha.tech.util.TracerUtils;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
+import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
@@ -25,7 +28,7 @@ import javax.annotation.Resource;
 import java.util.Collections;
 import java.util.List;
 
-import static com.aha.tech.core.constant.ExchangeAttributeConstant.*;
+import static com.aha.tech.core.constant.AttributeConstant.*;
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.PRE_HANDLER_FILTER_ORDER;
 
 /**
@@ -40,31 +43,33 @@ public class PreHandlerFilter implements GlobalFilter, Ordered {
     private static final Logger logger = LoggerFactory.getLogger(PreHandlerFilter.class);
 
     @Resource
-    private RequestHandlerService httpRequestHandlerService;
+    private AccessLogService httpAccessLogService;
 
-    @Override
-    public int getOrder() {
-        return PRE_HANDLER_FILTER_ORDER;
-    }
+    @Resource
+    private RequestHandlerService httpRequestHandlerService;
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         Tracer tracer = GlobalTracer.get();
-        Tracer.SpanBuilder spanBuilder = tracer.buildSpan(this.getClass().getName());
-        Span parentSpan = ExchangeSupport.getSpan(exchange);
-        Span span = spanBuilder.asChildOf(parentSpan).start();
-        ExchangeSupport.setSpan(exchange, span);
+        Tracer.SpanBuilder spanBuilder = tracer.buildSpan(exchange.getRequest().getURI().toString());
+        Span span = spanBuilder.start();
         try (Scope scope = tracer.scopeManager().activate(span)) {
-            TracerUtils.setClue(span);
-            ExchangeSupport.put(exchange, TRACE_LOG_ID, span.context().toTraceId());
-            return initParams(exchange, chain, span);
+            TracerUtils.setClue(span, exchange);
+            Long startTime = System.currentTimeMillis();
+            return initParams(exchange, chain, span)
+                    .doFinally((s) -> {
+                        logging(exchange, startTime);
+                        int status = ExchangeSupport.getHttpStatus(exchange);
+                        if (status > 200) {
+                            Tags.ERROR.set(span, true);
+                            span.setTag(HTTP_STATUS, status);
+                        }
+                        span.finish();
+                    });
         } catch (Exception e) {
-            TracerUtils.reportErrorTrace(e);
+            TracerUtils.logError(e, span);
             throw e;
-        } finally {
-            span.finish();
         }
-
     }
 
     /**
@@ -113,4 +118,21 @@ public class PreHandlerFilter implements GlobalFilter, Ordered {
         return chain.filter(exchange);
     }
 
+    /**
+     * 打印日志
+     * @param serverWebExchange
+     * @param startTime
+     */
+    private void logging(ServerWebExchange serverWebExchange, Long startTime) {
+        String traceId = serverWebExchange.getAttributeOrDefault(TRACE_LOG_ID, "MISS_TRACE_ID");
+        MDC.put("traceId", traceId);
+        Long cost = System.currentTimeMillis() - startTime;
+        logger.info("response Info : {}", httpAccessLogService.requestLog(serverWebExchange, cost, ExchangeSupport.getResponseBody(serverWebExchange)));
+    }
+
+
+    @Override
+    public int getOrder() {
+        return PRE_HANDLER_FILTER_ORDER;
+    }
 }

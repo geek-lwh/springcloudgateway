@@ -9,13 +9,14 @@ import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.ratelimit.RateLimiter;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ServerWebExchange;
 
 import java.net.URI;
 import java.util.Collections;
 import java.util.Map;
 
-import static com.aha.tech.core.constant.ExchangeAttributeConstant.*;
+import static com.aha.tech.core.constant.AttributeConstant.*;
 import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.GATEWAY_REQUEST_URL_ATTR;
 
 /**
@@ -185,4 +186,11 @@ public class ExchangeSupport {
         return (Span) exchange.getAttributes().getOrDefault(ACTIVE_SPAN, null);
     }
 
+    public static void setHttpStatus(ServerWebExchange exchange, HttpStatus httpStatus) {
+        exchange.getAttributes().put(HTTP_STATUS, httpStatus.value());
+    }
+
+    public static int getHttpStatus(ServerWebExchange exchange) {
+        return exchange.getAttributeOrDefault(HTTP_STATUS, HttpStatus.OK.value());
+    }
 }

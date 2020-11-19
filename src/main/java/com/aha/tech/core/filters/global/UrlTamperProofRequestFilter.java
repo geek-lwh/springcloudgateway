@@ -1,7 +1,6 @@
 package com.aha.tech.core.filters.global;
 
 import com.aha.tech.core.controller.FallBackController;
-import com.aha.tech.core.exception.UrlTamperProofException;
 import com.aha.tech.core.model.entity.TamperProofEntity;
 import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.RequestHandlerService;
@@ -12,6 +11,7 @@ import com.aha.tech.util.TracerUtils;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
+import io.opentracing.tag.Tags;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -30,7 +30,8 @@ import reactor.core.publisher.Mono;
 import javax.annotation.Resource;
 import java.net.URI;
 
-import static com.aha.tech.core.constant.ExchangeAttributeConstant.TRACE_LOG_ID;
+import static com.aha.tech.core.constant.AttributeConstant.HTTP_STATUS;
+import static com.aha.tech.core.constant.AttributeConstant.TRACE_LOG_ID;
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.URL_TAMPER_PROOF_FILTER;
 
 /**
@@ -60,17 +61,23 @@ public class UrlTamperProofRequestFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        Tracer.SpanBuilder spanBuilder = tracer.buildSpan(this.getClass().getName());
-
-        Span parentSpan = ExchangeSupport.getSpan(exchange);
-        Span span = spanBuilder.asChildOf(parentSpan).start();
-        ExchangeSupport.setSpan(exchange, span);
+        Span span = TracerUtils.startAndRef(exchange, this.getClass().getName());
         try (Scope scope = tracer.scopeManager().activate(span)) {
-            TracerUtils.setClue(span);
-            ExchangeSupport.put(exchange, TRACE_LOG_ID, span.context().toTraceId());
-            return decode(exchange, chain, span);
+            TracerUtils.setClue(span, exchange);
+            Boolean isVialdQueryParams = verifyQueryParams(exchange, chain, span);
+            if (!isVialdQueryParams) {
+                ExchangeSupport.setHttpStatus(exchange, HttpStatus.FORBIDDEN);
+                span.setTag(HTTP_STATUS, HttpStatus.FORBIDDEN.value());
+                Tags.ERROR.set(span, true);
+                return Mono.defer(() -> {
+                    ResponseVo rpcResponse = new ResponseVo(HttpStatus.FORBIDDEN.value(), FallBackController.DEFAULT_SYSTEM_ERROR);
+                    return ResponseSupport.write(exchange, HttpStatus.FORBIDDEN, rpcResponse);
+                });
+            }
+
+            return chain.filter(exchange);
         } catch (Exception e) {
-            TracerUtils.reportErrorTrace(e);
+            TracerUtils.logError(e, span);
             throw e;
         } finally {
             span.finish();
@@ -84,7 +91,7 @@ public class UrlTamperProofRequestFilter implements GlobalFilter, Ordered {
      * @param chain
      * @return
      */
-    private Mono<Void> decode(ServerWebExchange exchange, GatewayFilterChain chain, Span span) {
+    private Boolean verifyQueryParams(ServerWebExchange exchange, GatewayFilterChain chain, Span span) {
         ServerHttpRequest request = exchange.getRequest();
         URI uri = request.getURI();
         String rawPath = uri.getRawPath();
@@ -95,20 +102,12 @@ public class UrlTamperProofRequestFilter implements GlobalFilter, Ordered {
 
         if (ExchangeSupport.getIsSkipUrlTamperProof(exchange)) {
             logger.info("跳过url防篡改 : {}", rawPath);
-            return chain.filter(exchange);
+            return Boolean.TRUE;
         }
 
         boolean isURIValid = urlTamperProof(tamperProofEntity, uri.getRawQuery(), rawPath);
-        if (!isURIValid) {
-            return Mono.defer(() -> {
-                // todo 403 的日志要出来
-                TracerUtils.reportErrorTrace(new UrlTamperProofException(String.format("url防篡改校验失败,参数:%s", tamperProofEntity)));
-                ResponseVo rpcResponse = new ResponseVo(HttpStatus.FORBIDDEN.value(), FallBackController.DEFAULT_SYSTEM_ERROR);
-                return ResponseSupport.write(exchange, HttpStatus.FORBIDDEN, rpcResponse);
-            });
-        }
 
-        return chain.filter(exchange);
+        return isURIValid;
     }
 
     /**
