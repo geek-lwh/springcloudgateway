@@ -55,7 +55,6 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         Span span = TracerUtils.startAndRef(exchange, this.getClass().getName());
         LogUtils.combineTraceId(exchange);
-
         ExchangeSupport.setActiveSpan(exchange, span);
         try (Scope scope = tracer.scopeManager().activate(span)) {
             TracerUtils.setClue(span, exchange);

@@ -138,6 +138,7 @@ public class HttpAccessLogServiceImpl implements AccessLogService {
     @Override
     public void printWhenError(ServerWebExchange serverWebExchange, Exception e) {
         CompletableFuture.runAsync(() -> {
+            LogUtils.combineTraceId(serverWebExchange);
             ServerHttpRequest serverHttpRequest = serverWebExchange.getRequest();
             HttpHeaders httpHeaders = serverHttpRequest.getHeaders();
             StringBuilder sb = new StringBuilder();

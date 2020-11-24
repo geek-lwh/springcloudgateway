@@ -4,10 +4,10 @@ import com.aha.tech.commons.utils.DateUtil;
 import com.aha.tech.core.model.vo.HystrixDataVo;
 import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.AccessLogService;
+import com.aha.tech.util.LogUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 import org.springframework.cloud.gateway.support.ServerWebExchangeUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,7 +18,8 @@ import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
 
-import static com.aha.tech.core.constant.AttributeConstant.*;
+import static com.aha.tech.core.constant.AttributeConstant.GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR;
+import static com.aha.tech.core.constant.AttributeConstant.GATEWAY_REQUEST_REWRITE_PATH_ATTR;
 
 /**
  * @Author: luweihong
@@ -43,8 +44,7 @@ public class FallBackController {
      */
     @RequestMapping(value = "/fallback", method = RequestMethod.GET)
     public Mono<ResponseVo> fallBack(ServerWebExchange serverWebExchange) {
-        String traceId = serverWebExchange.getAttributeOrDefault(TRACE_LOG_ID, "MISS_TRACE_ID");
-        MDC.put("traceId", traceId);
+        LogUtils.combineTraceId(serverWebExchange);
 
         Object c = serverWebExchange.getAttributes().get(ServerWebExchangeUtils.HYSTRIX_EXECUTION_EXCEPTION_ATTR);
         if (c == null) {
