@@ -47,5 +47,7 @@ public class AttributeConstant {
 
     public static final String HTTP_STATUS = "HTTP_STATUS";
 
+    public static final String USER_ID = "USER_ID";
+
 
 }

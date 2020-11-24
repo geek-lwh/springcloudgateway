@@ -1,6 +1,7 @@
 package com.aha.tech.core.filters.global;
 
 import com.aha.tech.core.model.entity.CacheRequestEntity;
+import com.aha.tech.core.model.wrapper.ServletRequestCarrierWrapper;
 import com.aha.tech.core.service.RequestHandlerService;
 import com.aha.tech.core.support.ExchangeSupport;
 import com.aha.tech.util.LogUtils;
@@ -8,6 +9,7 @@ import com.aha.tech.util.TracerUtils;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
+import io.opentracing.propagation.Format;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -48,12 +50,12 @@ public class ModifyRequestHeaderFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        Span span = TracerUtils.startAndRef(exchange, this.getClass().getName());
+        Span span = TracerUtils.startAndRef(exchange, this.getClass().getSimpleName());
         LogUtils.combineLog(exchange);
         ExchangeSupport.setSpan(exchange, span);
         try (Scope scope = tracer.scopeManager().activate(span)) {
             TracerUtils.setClue(span, exchange);
-            ServerHttpRequest newRequest = replaceHeader(exchange);
+            ServerHttpRequest newRequest = replaceHeader(exchange, span);
 
             return chain.filter(exchange.mutate().request(newRequest).build());
         } catch (Exception e) {
@@ -69,13 +71,15 @@ public class ModifyRequestHeaderFilter implements GlobalFilter, Ordered {
      * @param exchange
      * @return
      */
-    private ServerHttpRequest replaceHeader(ServerWebExchange exchange) {
+    private ServerHttpRequest replaceHeader(ServerWebExchange exchange, Span span) {
         ServerHttpRequest serverHttpRequest = exchange.getRequest();
         HttpHeaders originalHeaders = serverHttpRequest.getHeaders();
         CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheRequest(exchange);
         String remoteIp = serverHttpRequest.getRemoteAddress().getAddress().getHostAddress();
         HttpHeaders newHttpHeaders = httpRequestHandlerService.modifyRequestHeaders(exchange, originalHeaders, remoteIp);
-//        logger.debug("after modify request header : {} ", ResponseSupport.formatHttpHeaders(newHttpHeaders));
+
+        tracer.inject(span.context(), Format.Builtin.HTTP_HEADERS, new ServletRequestCarrierWrapper(newHttpHeaders));
+
         cacheRequestEntity.setOriginalRequestHttpHeaders(originalHeaders);
         cacheRequestEntity.setAfterModifyRequestHttpHeaders(newHttpHeaders);
 

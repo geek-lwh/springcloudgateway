@@ -245,12 +245,14 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
         // 解析authorization
         PairEntity<String> authorization = parseAuthorizationHeader(requestHeaders);
         if (authorization == null) {
+            logger.error("确实auth头对象");
             AuthenticationResultEntity failure = new AuthenticationResultEntity();
             failure.setWhiteList(Boolean.FALSE);
             failure.setCode(HttpStatus.UNAUTHORIZED.value());
             failure.setMessage(FallBackController.DEFAULT_SYSTEM_ERROR);
             return failure;
         }
+
         String userName = authorization.getFirstEntity();
         String accessToken = authorization.getSecondEntity();
 

@@ -1,7 +1,7 @@
 package com.aha.tech.core.interceptor;
 
 import com.aha.tech.core.constant.HeaderFieldConstant;
-import com.aha.tech.core.model.wrapper.RequestCarrierWrapper;
+import com.aha.tech.core.model.wrapper.FeignCarrierWrapper;
 import com.aha.tech.util.IpUtil;
 import com.ctrip.framework.apollo.Config;
 import com.ctrip.framework.apollo.ConfigService;
@@ -56,7 +56,7 @@ public class FeignRequestInterceptor implements RequestInterceptor {
             } catch (Exception e) {
                 logger.error("构建traceInfo时 计算ip地址出错", e);
             }
-            tracer.inject(spanContext, Format.Builtin.HTTP_HEADERS, new RequestCarrierWrapper(requestTemplate));
+            tracer.inject(spanContext, Format.Builtin.HTTP_HEADERS, new FeignCarrierWrapper(requestTemplate));
         }
         if (feignLog) {
             feignRequestLogging(requestTemplate);

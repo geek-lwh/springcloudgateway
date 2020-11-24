@@ -62,7 +62,7 @@ public class BodyTamperProofRequestFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        Span span = TracerUtils.startAndRef(exchange, this.getClass().getName());
+        Span span = TracerUtils.startAndRef(exchange, this.getClass().getSimpleName());
         ExchangeSupport.setSpan(exchange, span);
         try (Scope scope = tracer.scopeManager().activate(span)) {
             TracerUtils.setClue(span, exchange);

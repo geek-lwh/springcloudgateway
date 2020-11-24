@@ -45,7 +45,7 @@ public class RewritePathFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        Span span = TracerUtils.startAndRef(exchange, this.getClass().getName());
+        Span span = TracerUtils.startAndRef(exchange, this.getClass().getSimpleName());
         LogUtils.combineLog(exchange);
 
         ExchangeSupport.setSpan(exchange, span);

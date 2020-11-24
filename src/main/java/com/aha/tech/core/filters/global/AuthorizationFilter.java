@@ -2,6 +2,7 @@ package com.aha.tech.core.filters.global;
 
 import com.aha.tech.commons.constants.ResponseConstants;
 import com.aha.tech.core.constant.FilterProcessOrderedConstant;
+import com.aha.tech.core.model.dto.RequestAddParamsDto;
 import com.aha.tech.core.model.entity.AuthenticationResultEntity;
 import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.RequestHandlerService;
@@ -26,6 +27,7 @@ import reactor.core.publisher.Mono;
 import javax.annotation.Resource;
 
 import static com.aha.tech.core.constant.AttributeConstant.HTTP_STATUS;
+import static com.aha.tech.core.constant.AttributeConstant.USER_ID;
 
 /**
  * @Author: luweihong
@@ -57,9 +59,12 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
             TracerUtils.setClue(span, exchange);
             ResponseVo responseVo = verifyAccessToken(exchange);
             Integer code = responseVo.getCode();
+            RequestAddParamsDto requestAddParamsDto = ExchangeSupport.getRequestAddParamsDto(exchange);
+            span.setTag(USER_ID, requestAddParamsDto.getUserId());
             if (!code.equals(ResponseConstants.SUCCESS)) {
                 ExchangeSupport.setHttpStatus(exchange, HttpStatus.UNAUTHORIZED);
                 span.setTag(HTTP_STATUS, HttpStatus.UNAUTHORIZED.value());
+                span.log(responseVo.getMessage());
                 Tags.ERROR.set(span, true);
                 return Mono.defer(() -> ResponseSupport.write(exchange, HttpStatus.UNAUTHORIZED, responseVo));
             }

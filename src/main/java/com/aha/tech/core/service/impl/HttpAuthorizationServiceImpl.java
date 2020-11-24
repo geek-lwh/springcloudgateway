@@ -54,12 +54,12 @@ public class HttpAuthorizationServiceImpl implements AuthorizationService {
 
     /**
      * 校验用户信息合法性
-     * @param swe
+     * @param exchange
      * @param accessToken
      * @return
      */
     @Override
-    public AuthenticationResultEntity verifyUser(ServerWebExchange swe, String accessToken) {
+    public AuthenticationResultEntity verifyUser(ServerWebExchange exchange, String accessToken) {
         AuthenticationResultEntity authenticationResultEntity = new AuthenticationResultEntity();
         RpcResponse<UserVo> rpcResponse = passportResource.verify(accessToken);
         Integer code = rpcResponse.getCode();
@@ -70,7 +70,7 @@ public class HttpAuthorizationServiceImpl implements AuthorizationService {
         if (code.equals(ResponseConstants.SUCCESS)) {
             RequestAddParamsDto requestAddParamsDto = new RequestAddParamsDto();
             requestAddParamsDto.setUserId(rpcResponse.getData().getUserId());
-            swe.getAttributes().put(GATEWAY_REQUEST_ADD_PARAMS_ATTR, requestAddParamsDto);
+            exchange.getAttributes().put(GATEWAY_REQUEST_ADD_PARAMS_ATTR, requestAddParamsDto);
         }
 
         return authenticationResultEntity;

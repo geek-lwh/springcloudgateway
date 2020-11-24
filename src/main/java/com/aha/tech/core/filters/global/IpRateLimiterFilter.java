@@ -65,7 +65,7 @@ public class IpRateLimiterFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        Span span = TracerUtils.startAndRef(exchange, this.getClass().getName());
+        Span span = TracerUtils.startAndRef(exchange, this.getClass().getSimpleName());
         LogUtils.combineLog(exchange);
 
         try (Scope scope = tracer.scopeManager().activate(span)) {

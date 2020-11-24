@@ -106,6 +106,7 @@ public class FallbackGatewayFilterFactory extends AbstractGatewayFilterFactory<F
 
                         case COMMAND_EXCEPTION: {
                             return Mono.defer(() -> {
+                                // todo traceId jicheng jiankong
                                 logger.error("HYSTRIX COMMAND_EXCEPTION : {}", message, e);
                                 ResponseVo responseVo = new ResponseVo(HttpStatus.BAD_REQUEST.value(), errorMsg);
                                 return ResponseSupport.write(exchange, responseVo, HttpStatus.BAD_REQUEST, new GatewayException(throwable));

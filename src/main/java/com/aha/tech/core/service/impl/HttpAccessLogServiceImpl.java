@@ -7,6 +7,7 @@ import com.aha.tech.core.model.entity.RequestLog;
 import com.aha.tech.core.service.AccessLogService;
 import com.aha.tech.core.support.ExchangeSupport;
 import com.aha.tech.core.support.ResponseSupport;
+import com.aha.tech.util.LogUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
@@ -19,7 +20,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.server.ServerWebExchange;
 
@@ -27,7 +27,6 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
@@ -62,14 +61,11 @@ public class HttpAccessLogServiceImpl implements AccessLogService {
             uri = exchange.getRequest().getURI();
         }
 
-        List<String> clientRequestId =cacheRequestEntity.getAfterModifyRequestHttpHeaders().get(X_TRACE_ID);
-        String traceId = CollectionUtils.isEmpty(clientRequestId) ? "" : clientRequestId.get(0);
-//        cacheRequestEntity.getOriginalRequestHttpHeaders()
         HttpHeaders httpHeaders = cacheRequestEntity.getAfterModifyRequestHttpHeaders();
         if (httpHeaders == null) {
             httpHeaders = exchange.getRequest().getHeaders();
         }
-
+        String traceId = LogUtils.combineLog(exchange);
         Map<String, String> ipLimiterHeader = ExchangeSupport.getCurrentIpLimiter(exchange);
         requestLog.setRequestId(traceId);
         requestLog.setUri(uri);
