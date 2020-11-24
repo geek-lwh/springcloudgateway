@@ -56,8 +56,6 @@ public class PreHandlerFilter implements GlobalFilter, Ordered {
         Span span = TracerUtils.startAndRef(exchange, this.getClass().getName());
         try (Scope scope = tracer.scopeManager().activate(span)) {
             TracerUtils.setClue(span, exchange);
-            LogUtils.combineTraceId(exchange);
-            ExchangeSupport.setParentSpan(exchange, span);
             Long startTime = System.currentTimeMillis();
             return initParams(exchange, chain, span)
                     .doFinally((s) -> {

@@ -1,6 +1,7 @@
 package com.aha.tech.core.filters.web;
 
 import com.aha.tech.core.constant.AttributeConstant;
+import com.aha.tech.core.support.ExchangeSupport;
 import com.aha.tech.util.TracerUtils;
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -52,6 +53,7 @@ public class CrossDomainFilter implements WebFilter {
         Span span = spanBuilder.start();
         try (Scope scope = tracer.scopeManager().activate(span)) {
             TracerUtils.setClue(span, exchange);
+            ExchangeSupport.setParentSpan(exchange, span);
             httpHeaders.set(AttributeConstant.TRACE_LOG_ID, span.context().toTraceId());
             return webFilterChain.filter(exchange);
         } finally {
