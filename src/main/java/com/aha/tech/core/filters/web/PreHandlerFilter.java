@@ -12,7 +12,6 @@ import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.tag.Tags;
-import io.opentracing.util.GlobalTracer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -49,11 +48,12 @@ public class PreHandlerFilter implements GlobalFilter, Ordered {
     @Resource
     private RequestHandlerService httpRequestHandlerService;
 
+    @Resource
+    private Tracer tracer;
+
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        Tracer tracer = GlobalTracer.get();
-        Tracer.SpanBuilder spanBuilder = tracer.buildSpan(exchange.getRequest().getURI().toString());
-        Span span = spanBuilder.start();
+        Span span = TracerUtils.startAndRef(exchange, this.getClass().getName());
         try (Scope scope = tracer.scopeManager().activate(span)) {
             TracerUtils.setClue(span, exchange);
             LogUtils.combineTraceId(exchange);
