@@ -49,5 +49,6 @@ public class AttributeConstant {
 
     public static final String USER_ID = "USER_ID";
 
+    public static final String PARENT_SPAN = "PARENT_SPAN";
 
 }

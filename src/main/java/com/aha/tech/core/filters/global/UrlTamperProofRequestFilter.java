@@ -8,11 +8,6 @@ import com.aha.tech.core.support.ExchangeSupport;
 import com.aha.tech.core.support.ResponseSupport;
 import com.aha.tech.core.support.URISupport;
 import com.aha.tech.util.LogUtils;
-import com.aha.tech.util.TracerUtils;
-import io.opentracing.Scope;
-import io.opentracing.Span;
-import io.opentracing.Tracer;
-import io.opentracing.tag.Tags;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,7 +25,6 @@ import reactor.core.publisher.Mono;
 import javax.annotation.Resource;
 import java.net.URI;
 
-import static com.aha.tech.core.constant.AttributeConstant.HTTP_STATUS;
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.URL_TAMPER_PROOF_FILTER;
 
 /**
@@ -50,9 +44,6 @@ public class UrlTamperProofRequestFilter implements GlobalFilter, Ordered {
     @Value("${gateway.tamper.proof.enable:false}")
     private boolean isEnable;
 
-    @Resource
-    private Tracer tracer;
-
     @Override
     public int getOrder() {
         return URL_TAMPER_PROOF_FILTER;
@@ -60,29 +51,16 @@ public class UrlTamperProofRequestFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        Span span = TracerUtils.startAndRef(exchange, this.getClass().getSimpleName());
-        LogUtils.combineLog(exchange);
-
-        try (Scope scope = tracer.scopeManager().activate(span)) {
-            TracerUtils.setClue(span, exchange);
-            Boolean isVialdQueryParams = verifyQueryParams(exchange);
-            if (!isVialdQueryParams) {
-                ExchangeSupport.setHttpStatus(exchange, HttpStatus.FORBIDDEN);
-                span.setTag(HTTP_STATUS, HttpStatus.FORBIDDEN.value());
-                Tags.ERROR.set(span, true);
-                return Mono.defer(() -> {
-                    ResponseVo rpcResponse = new ResponseVo(HttpStatus.FORBIDDEN.value(), FallBackController.DEFAULT_SYSTEM_ERROR);
-                    return ResponseSupport.write(exchange, HttpStatus.FORBIDDEN, rpcResponse);
-                });
-            }
-
-            return chain.filter(exchange);
-        } catch (Exception e) {
-            TracerUtils.logError(e, span);
-            throw e;
-        } finally {
-            span.finish();
+        LogUtils.combineTraceId(exchange);
+        if (!verifyQueryParams(exchange)) {
+            ExchangeSupport.setHttpStatus(exchange, HttpStatus.FORBIDDEN);
+            return Mono.defer(() -> {
+                ResponseVo rpcResponse = new ResponseVo(HttpStatus.FORBIDDEN.value(), FallBackController.DEFAULT_SYSTEM_ERROR);
+                return ResponseSupport.write(exchange, HttpStatus.FORBIDDEN, rpcResponse);
+            });
         }
+
+        return chain.filter(exchange);
 
     }
 

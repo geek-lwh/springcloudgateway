@@ -4,13 +4,8 @@ import com.aha.tech.core.model.dto.RequestAddParamsDto;
 import com.aha.tech.core.model.entity.CacheRequestEntity;
 import com.aha.tech.core.service.OverwriteParamService;
 import com.aha.tech.core.support.ExchangeSupport;
-import com.aha.tech.util.LogUtils;
-import com.aha.tech.util.TracerUtils;
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Maps;
-import io.opentracing.Scope;
-import io.opentracing.Span;
-import io.opentracing.Tracer;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,9 +40,6 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
     @Resource
     private OverwriteParamService httpOverwriteParamService;
 
-    @Resource
-    private Tracer tracer;
-
     private static final String USER_ID_FIELD = "user_id";
 
     @Override
@@ -57,20 +49,7 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        Span span = TracerUtils.startAndRef(exchange, this.getClass().getSimpleName());
-        LogUtils.combineLog(exchange);
-
-        ExchangeSupport.setSpan(exchange, span);
-        try (Scope scope = tracer.scopeManager().activate(span)) {
-            TracerUtils.setClue(span, exchange);
-
-            return replaceRequest(exchange, chain);
-        } catch (Exception e) {
-            TracerUtils.logError(e);
-            throw e;
-        } finally {
-            span.finish();
-        }
+        return replaceRequest(exchange, chain);
     }
 
     /**

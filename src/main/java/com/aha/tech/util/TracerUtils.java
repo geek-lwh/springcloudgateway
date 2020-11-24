@@ -76,7 +76,7 @@ public class TracerUtils {
         span.setTag(HeaderFieldConstant.TRACE_ID, span.context().toTraceId());
         span.setTag(HeaderFieldConstant.SPAN_ID, span.context().toSpanId());
         ExchangeSupport.put(exchange, TRACE_LOG_ID, span.context().toTraceId());
-        ExchangeSupport.setSpan(exchange, span);
+        ExchangeSupport.setActiveSpan(exchange, span);
     }
 
     /**
@@ -89,7 +89,7 @@ public class TracerUtils {
     public static Span startAndRef(ServerWebExchange exchange, String operationName) {
         Tracer tracer = GlobalTracer.get();
         Tracer.SpanBuilder spanBuilder = tracer.buildSpan(operationName);
-        Span parentSpan = ExchangeSupport.getSpan(exchange);
+        Span parentSpan = ExchangeSupport.getActiveSpan(exchange);
         return spanBuilder.asChildOf(parentSpan).start();
     }
 }

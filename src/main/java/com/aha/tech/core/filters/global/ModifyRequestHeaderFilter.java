@@ -5,8 +5,6 @@ import com.aha.tech.core.model.wrapper.ServletRequestCarrierWrapper;
 import com.aha.tech.core.service.RequestHandlerService;
 import com.aha.tech.core.support.ExchangeSupport;
 import com.aha.tech.util.LogUtils;
-import com.aha.tech.util.TracerUtils;
-import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.propagation.Format;
@@ -50,20 +48,10 @@ public class ModifyRequestHeaderFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        Span span = TracerUtils.startAndRef(exchange, this.getClass().getSimpleName());
-        LogUtils.combineLog(exchange);
-        ExchangeSupport.setSpan(exchange, span);
-        try (Scope scope = tracer.scopeManager().activate(span)) {
-            TracerUtils.setClue(span, exchange);
-            ServerHttpRequest newRequest = replaceHeader(exchange, span);
+        LogUtils.combineTraceId(exchange);
+        ServerHttpRequest newRequest = replaceHeader(exchange);
 
-            return chain.filter(exchange.mutate().request(newRequest).build());
-        } catch (Exception e) {
-            TracerUtils.logError(e);
-            throw e;
-        } finally {
-            span.finish();
-        }
+        return chain.filter(exchange.mutate().request(newRequest).build());
     }
 
     /**
@@ -71,13 +59,15 @@ public class ModifyRequestHeaderFilter implements GlobalFilter, Ordered {
      * @param exchange
      * @return
      */
-    private ServerHttpRequest replaceHeader(ServerWebExchange exchange, Span span) {
+    private ServerHttpRequest replaceHeader(ServerWebExchange exchange) {
         ServerHttpRequest serverHttpRequest = exchange.getRequest();
         HttpHeaders originalHeaders = serverHttpRequest.getHeaders();
         CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheRequest(exchange);
         String remoteIp = serverHttpRequest.getRemoteAddress().getAddress().getHostAddress();
         HttpHeaders newHttpHeaders = httpRequestHandlerService.modifyRequestHeaders(exchange, originalHeaders, remoteIp);
 
+        // inject span context from trace to header
+        Span span = ExchangeSupport.getActiveSpan(exchange);
         tracer.inject(span.context(), Format.Builtin.HTTP_HEADERS, new ServletRequestCarrierWrapper(newHttpHeaders));
 
         cacheRequestEntity.setOriginalRequestHttpHeaders(originalHeaders);

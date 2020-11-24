@@ -19,6 +19,7 @@ import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.server.ServerWebExchange;
@@ -35,7 +36,7 @@ import static com.aha.tech.core.constant.FilterProcessOrderedConstant.PRE_HANDLE
  * @Author: luweihong
  * @Date: 2019/4/10
  *
- * 访问日志打印过滤器
+ * 过滤器入口
  */
 @Component
 public class PreHandlerFilter implements GlobalFilter, Ordered {
@@ -55,12 +56,14 @@ public class PreHandlerFilter implements GlobalFilter, Ordered {
         Span span = spanBuilder.start();
         try (Scope scope = tracer.scopeManager().activate(span)) {
             TracerUtils.setClue(span, exchange);
+            LogUtils.combineTraceId(exchange);
+            ExchangeSupport.setParentSpan(exchange, span);
             Long startTime = System.currentTimeMillis();
             return initParams(exchange, chain, span)
                     .doFinally((s) -> {
                         logging(exchange, startTime);
                         int status = ExchangeSupport.getHttpStatus(exchange);
-                        if (status > 200) {
+                        if (status > HttpStatus.OK.value()) {
                             Tags.ERROR.set(span, true);
                             span.setTag(HTTP_STATUS, status);
                         }
@@ -124,7 +127,7 @@ public class PreHandlerFilter implements GlobalFilter, Ordered {
      * @param startTime
      */
     private void logging(ServerWebExchange serverWebExchange, Long startTime) {
-        LogUtils.combineLog(serverWebExchange);
+        LogUtils.combineTraceId(serverWebExchange);
         Long cost = System.currentTimeMillis() - startTime;
         logger.info("response Info : {}", httpAccessLogService.requestLog(serverWebExchange, cost, ExchangeSupport.getResponseBody(serverWebExchange)));
     }

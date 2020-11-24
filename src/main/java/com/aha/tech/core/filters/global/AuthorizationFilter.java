@@ -54,7 +54,9 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         Span span = TracerUtils.startAndRef(exchange, this.getClass().getName());
-        ExchangeSupport.setSpan(exchange, span);
+        LogUtils.combineTraceId(exchange);
+
+        ExchangeSupport.setActiveSpan(exchange, span);
         try (Scope scope = tracer.scopeManager().activate(span)) {
             TracerUtils.setClue(span, exchange);
             ResponseVo responseVo = verifyAccessToken(exchange);
@@ -84,8 +86,6 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
      * @return
      */
     private ResponseVo verifyAccessToken(ServerWebExchange exchange) {
-        LogUtils.combineLog(exchange);
-
         AuthenticationResultEntity authenticationResultEntity = httpRequestHandlerService.authorize(exchange);
         Boolean isWhiteList = authenticationResultEntity.getWhiteList();
         Integer code = authenticationResultEntity.getCode();

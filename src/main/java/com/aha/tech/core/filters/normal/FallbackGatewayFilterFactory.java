@@ -3,12 +3,14 @@ package com.aha.tech.core.filters.normal;
 import com.aha.tech.core.constant.SystemConstant;
 import com.aha.tech.core.exception.GatewayException;
 import com.aha.tech.core.model.vo.ResponseVo;
+import com.aha.tech.core.support.ExchangeSupport;
 import com.aha.tech.core.support.ResponseSupport;
 import com.netflix.hystrix.HystrixCommandGroupKey;
 import com.netflix.hystrix.HystrixCommandKey;
 import com.netflix.hystrix.HystrixObservableCommand;
 import com.netflix.hystrix.HystrixObservableCommand.Setter;
 import com.netflix.hystrix.exception.HystrixRuntimeException;
+import io.opentracing.Span;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
@@ -34,6 +36,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import static com.aha.tech.core.constant.AttributeConstant.HTTP_STATUS;
 import static java.util.Collections.singletonList;
 import static java.util.Optional.ofNullable;
 import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.*;
@@ -85,7 +88,6 @@ public class FallbackGatewayFilterFactory extends AbstractGatewayFilterFactory<F
 
         return (exchange, chain) -> {
             FallbackGatewayFilterFactory.RouteHystrixCommand command = new FallbackGatewayFilterFactory.RouteHystrixCommand(config.setter, config.fallbackUri, exchange, chain);
-            final String errorMsg = SystemConstant.DEFAULT_ERROR_MESSAGE;
             return Mono.create(s -> {
                 Subscription sub = command.toObservable().subscribe(s::success, s::error, s::success);
                 s.onCancel(sub::unsubscribe);
@@ -93,36 +95,95 @@ public class FallbackGatewayFilterFactory extends AbstractGatewayFilterFactory<F
                 if (throwable instanceof HystrixRuntimeException) {
                     HystrixRuntimeException e = (HystrixRuntimeException) throwable;
                     HystrixRuntimeException.FailureType failureType = e.getFailureType();
-
+                    // 从exchange中获取真实错误内容
                     String message = exchange.getAttributes().getOrDefault(ServerWebExchangeUtils.HYSTRIX_EXECUTION_EXCEPTION_ATTR, e.getMessage()).toString();
+                    Span span = ExchangeSupport.getParentSpan(exchange);
+                    span.log(message);
 
                     switch (failureType) {
+                        case SHORTCIRCUIT:
+                            return shortCircuit(exchange, throwable, e, message);
                         case TIMEOUT:
-                            return Mono.defer(() -> {
-                                logger.error("HYSTRIX TIMEOUT : {}", message, e);
-                                ResponseVo responseVo = new ResponseVo(HttpStatus.REQUEST_TIMEOUT.value(), errorMsg);
-                                return ResponseSupport.write(exchange, responseVo, HttpStatus.REQUEST_TIMEOUT, new GatewayException(throwable));
-                            });
-
-                        case COMMAND_EXCEPTION: {
-                            return Mono.defer(() -> {
-                                // todo traceId jicheng jiankong
-                                logger.error("HYSTRIX COMMAND_EXCEPTION : {}", message, e);
-                                ResponseVo responseVo = new ResponseVo(HttpStatus.BAD_REQUEST.value(), errorMsg);
-                                return ResponseSupport.write(exchange, responseVo, HttpStatus.BAD_REQUEST, new GatewayException(throwable));
-                            });
-                        }
-
+                            return timeout(exchange, throwable, e, message, "TIMEOUT : {}", HttpStatus.REQUEST_TIMEOUT);
+                        case COMMAND_EXCEPTION:
+                            return commandException(exchange, throwable, e, message);
                         default:
-                            logger.error("HYSTRIX FALL BACK EXCEPTION : {}", message, e);
-                            ResponseVo responseVo = new ResponseVo(HttpStatus.BAD_REQUEST.value(), errorMsg);
-                            return ResponseSupport.write(exchange, responseVo, HttpStatus.BAD_REQUEST, new GatewayException(throwable));
+                            return unKnown(exchange, throwable, e, message);
                     }
                 }
 
                 return Mono.error(throwable);
             }).then();
         };
+    }
+
+    /**
+     * 未知错误
+     * @param exchange
+     * @param throwable
+     * @param e
+     * @param message
+     * @return
+     */
+    private Mono<Void> unKnown(ServerWebExchange exchange, Throwable throwable, HystrixRuntimeException e, String message) {
+        logger.error("HYSTRIX FALL BACK EXCEPTION : {}", message, e);
+        exchange.getAttributes().put(HTTP_STATUS, HttpStatus.BAD_REQUEST.value());
+        ResponseVo responseVo = new ResponseVo(HttpStatus.BAD_REQUEST.value(), SystemConstant.DEFAULT_ERROR_MESSAGE);
+        return ResponseSupport.write(exchange, responseVo, HttpStatus.BAD_REQUEST, new GatewayException(throwable));
+    }
+
+    /**
+     * 操作错误
+     * @param exchange
+     * @param throwable
+     * @param e
+     * @param message
+     * @return
+     */
+    private Mono<Void> commandException(ServerWebExchange exchange, Throwable throwable, HystrixRuntimeException e, String message) {
+        return Mono.defer(() -> {
+            logger.error("COMMAND_EXCEPTION : {}", message, e);
+            exchange.getAttributes().put(HTTP_STATUS, HttpStatus.BAD_REQUEST.value());
+            ResponseVo responseVo = new ResponseVo(HttpStatus.BAD_REQUEST.value(), SystemConstant.DEFAULT_ERROR_MESSAGE);
+            return ResponseSupport.write(exchange, responseVo, HttpStatus.BAD_REQUEST, new GatewayException(throwable));
+        });
+    }
+
+    /**
+     * 超时
+     * @param exchange
+     * @param throwable
+     * @param e
+     * @param message
+     * @param s
+     * @param requestTimeout
+     * @return
+     */
+    private Mono<Void> timeout(ServerWebExchange exchange, Throwable throwable, HystrixRuntimeException e, String message, String s, HttpStatus requestTimeout) {
+        return Mono.defer(() -> {
+            logger.error(s, message, e);
+            exchange.getAttributes().put(HTTP_STATUS, requestTimeout.value());
+            ResponseVo responseVo = new ResponseVo(requestTimeout.value(), SystemConstant.DEFAULT_ERROR_MESSAGE);
+            return ResponseSupport.write(exchange, responseVo, requestTimeout, new GatewayException(throwable));
+        });
+    }
+
+    /**
+     * 短路
+     * @param exchange
+     * @param throwable
+     * @param e
+     * @param message
+     * @return
+     */
+    private Mono<Void> shortCircuit(ServerWebExchange exchange, Throwable throwable, HystrixRuntimeException e, String message) {
+        return Mono.defer(() -> {
+            logger.error("SHORTCIRCUIT : {}", message, e);
+            ExchangeSupport.setHttpStatus(exchange, HttpStatus.REQUEST_TIMEOUT);
+            exchange.getAttributes().put(HTTP_STATUS, HttpStatus.REQUEST_TIMEOUT.value());
+            ResponseVo responseVo = new ResponseVo(HttpStatus.REQUEST_TIMEOUT.value(), SystemConstant.DEFAULT_ERROR_MESSAGE);
+            return ResponseSupport.write(exchange, responseVo, HttpStatus.REQUEST_TIMEOUT, new GatewayException(throwable));
+        });
     }
 
     private class RouteHystrixCommand extends HystrixObservableCommand<Void> {

@@ -209,8 +209,6 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
         // 重写path
         String rewritePath = httpRewritePathService.rewritePath(routeId, validPath);
 
-//        logger.info("uri : {},originalUrlPath : {},validPath : {},routeId : {},rewritePath : {}", uri, originalUrlPath, validPath, routeId, rewritePath);
-
         serverWebExchange.getAttributes().put(GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR, originalUrlPath);
         serverWebExchange.getAttributes().put(GATEWAY_REQUEST_ROUTE_HOST_ATTR, uri);
         serverWebExchange.getAttributes().put(GATEWAY_REQUEST_VALID_PATH_ATTR, validPath);

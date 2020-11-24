@@ -55,7 +55,7 @@ public class ExchangeSupport {
      * @param exchange
      * @param responseBody
      */
-    public static void putResponseBody(ServerWebExchange exchange,String responseBody){
+    public static void putResponseBody(ServerWebExchange exchange, String responseBody) {
         exchange.getAttributes().put(RESPONSE_BODY, responseBody);
     }
 
@@ -63,7 +63,7 @@ public class ExchangeSupport {
      * 设置responseBody
      * @param exchange
      */
-    public static String getResponseBody(ServerWebExchange exchange){
+    public static String getResponseBody(ServerWebExchange exchange) {
         return exchange.getAttributes().getOrDefault(RESPONSE_BODY, Strings.EMPTY).toString();
     }
 
@@ -94,14 +94,6 @@ public class ExchangeSupport {
         return routeHost;
     }
 
-    /**
-     * 获取有效路径,去除版本号
-     * @param exchange
-     * @return
-     */
-    public static String getRequestValidPath(ServerWebExchange exchange) {
-        return (String) exchange.getAttributes().getOrDefault(GATEWAY_REQUEST_VALID_PATH_ATTR, StringUtils.EMPTY);
-    }
 
     /**
      * 获取请求缓存
@@ -178,19 +170,66 @@ public class ExchangeSupport {
         return (Boolean) exchange.getAttributes().getOrDefault(IS_OLD_VERSION_ATTR, Boolean.FALSE);
     }
 
-    public static void setSpan(ServerWebExchange exchange, Span span) {
+    /**
+     * 设置当前span
+     * @param exchange
+     * @param span
+     */
+    public static void setActiveSpan(ServerWebExchange exchange, Span span) {
         exchange.getAttributes().put(ACTIVE_SPAN, span);
     }
 
-    public static Span getSpan(ServerWebExchange exchange) {
+    /**
+     * 获取当前span
+     * @param exchange
+     * @return
+     */
+    public static Span getActiveSpan(ServerWebExchange exchange) {
         return (Span) exchange.getAttributes().getOrDefault(ACTIVE_SPAN, null);
     }
 
+    /**
+     * 设置http status状态
+     * @param exchange
+     * @param httpStatus
+     */
     public static void setHttpStatus(ServerWebExchange exchange, HttpStatus httpStatus) {
         exchange.getAttributes().put(HTTP_STATUS, httpStatus.value());
     }
 
+    /**
+     * 获取http status 状态
+     * @param exchange
+     * @return
+     */
     public static int getHttpStatus(ServerWebExchange exchange) {
         return exchange.getAttributeOrDefault(HTTP_STATUS, HttpStatus.OK.value());
     }
+
+    /**
+     * 设置父类span
+     * @param exchange
+     * @param span
+     */
+    public static void setParentSpan(ServerWebExchange exchange, Span span) {
+        exchange.getAttributes().put(PARENT_SPAN, span);
+    }
+
+    /**
+     * 获取父类span
+     * @param exchange
+     * @return
+     */
+    public static Span getParentSpan(ServerWebExchange exchange) {
+        Object span = exchange.getAttributes().get(PARENT_SPAN);
+        if (span == null) {
+            span = getActiveSpan(exchange);
+            if (span == null) {
+                return null;
+            }
+        }
+
+        return (Span) span;
+    }
+
 }

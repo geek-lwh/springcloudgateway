@@ -65,7 +65,7 @@ public class HttpAccessLogServiceImpl implements AccessLogService {
         if (httpHeaders == null) {
             httpHeaders = exchange.getRequest().getHeaders();
         }
-        String traceId = LogUtils.combineLog(exchange);
+        String traceId = LogUtils.combineTraceId(exchange);
         Map<String, String> ipLimiterHeader = ExchangeSupport.getCurrentIpLimiter(exchange);
         requestLog.setRequestId(traceId);
         requestLog.setUri(uri);

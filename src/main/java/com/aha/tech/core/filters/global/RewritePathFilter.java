@@ -2,12 +2,6 @@ package com.aha.tech.core.filters.global;
 
 import com.aha.tech.core.constant.FilterProcessOrderedConstant;
 import com.aha.tech.core.service.RequestHandlerService;
-import com.aha.tech.core.support.ExchangeSupport;
-import com.aha.tech.util.LogUtils;
-import com.aha.tech.util.TracerUtils;
-import io.opentracing.Scope;
-import io.opentracing.Span;
-import io.opentracing.Tracer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -35,9 +29,6 @@ public class RewritePathFilter implements GlobalFilter, Ordered {
     @Resource
     private RequestHandlerService httpRequestHandlerService;
 
-    @Resource
-    private Tracer tracer;
-
     @Override
     public int getOrder() {
         return FilterProcessOrderedConstant.REWRITE_REQUEST_PATH_FILTER_ORDER;
@@ -45,20 +36,8 @@ public class RewritePathFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        Span span = TracerUtils.startAndRef(exchange, this.getClass().getSimpleName());
-        LogUtils.combineLog(exchange);
-
-        ExchangeSupport.setSpan(exchange, span);
-        try (Scope scope = tracer.scopeManager().activate(span)) {
-            TracerUtils.setClue(span, exchange);
-            ServerHttpRequest newRequest = replacePath(exchange);
-            return chain.filter(exchange.mutate().request(newRequest).build());
-        } catch (Exception e) {
-            TracerUtils.logError(e);
-            throw e;
-        } finally {
-            span.finish();
-        }
+        ServerHttpRequest newRequest = replacePath(exchange);
+        return chain.filter(exchange.mutate().request(newRequest).build());
     }
 
     /**
