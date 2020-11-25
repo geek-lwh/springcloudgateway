@@ -34,6 +34,8 @@ public class CrossDomainFilter implements WebFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(CrossDomainFilter.class);
 
+    private static final String IGNORE_TRACE_API = "/actuator/prometheus";
+
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain webFilterChain) {
         ServerHttpRequest request = exchange.getRequest();
@@ -48,8 +50,13 @@ public class CrossDomainFilter implements WebFilter {
             return Mono.empty();
         }
 
+        String uri = exchange.getRequest().getURI().getRawPath();
+        if (uri.startsWith(IGNORE_TRACE_API)) {
+            return webFilterChain.filter(exchange);
+        }
+
         Tracer tracer = GlobalTracer.get();
-        Tracer.SpanBuilder spanBuilder = tracer.buildSpan(exchange.getRequest().getURI().toString());
+        Tracer.SpanBuilder spanBuilder = tracer.buildSpan(uri);
         Span span = spanBuilder.start();
         try (Scope scope = tracer.scopeManager().activate(span)) {
             TracerUtils.setClue(span, exchange);
@@ -59,7 +66,6 @@ public class CrossDomainFilter implements WebFilter {
         } finally {
             span.finish();
         }
-
 
     }
 }
