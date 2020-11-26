@@ -14,7 +14,8 @@ public class SystemConstant {
 
     public final static String TEST = "test";
 
-    public final static String CURRENT_VERSION = "6.1.6";
+    // 从这个版本开始区分新老 分界线
+    public final static String DIVIDING_LINE_OF_VERSION = "6.1.6";
 
     public final static String WEB_CLIENT = "web";
 

@@ -4,7 +4,6 @@ import com.aha.tech.core.model.dto.RequestAddParamsDto;
 import com.aha.tech.core.model.entity.CacheRequestEntity;
 import com.google.common.collect.Maps;
 import io.opentracing.Span;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,12 +11,10 @@ import org.springframework.cloud.gateway.filter.ratelimit.RateLimiter;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ServerWebExchange;
 
-import java.net.URI;
 import java.util.Collections;
 import java.util.Map;
 
 import static com.aha.tech.core.constant.AttributeConstant.*;
-import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.GATEWAY_REQUEST_URL_ATTR;
 
 /**
  * @Author: luweihong
@@ -41,7 +38,7 @@ public class ExchangeSupport {
     }
 
     /**
-     * 设置 key value
+     * 在exchange中设置key value
      * @param exchange
      * @param key
      * @param value
@@ -51,10 +48,23 @@ public class ExchangeSupport {
     }
 
     /**
+     * 在exchange设置的同时,在span中也设置
+     * @param exchange
+     * @param span
+     * @param key
+     * @param value
+     */
+    public static void put(ServerWebExchange exchange, Span span, String key, Object value) {
+        exchange.getAttributes().put(key, value);
+        span.setTag(key, String.valueOf(value));
+    }
+
+    /**
      * 设置responseBody
      * @param exchange
      * @param responseBody
      */
+    @Deprecated
     public static void putResponseBody(ServerWebExchange exchange, String responseBody) {
         exchange.getAttributes().put(RESPONSE_BODY, responseBody);
     }
@@ -63,6 +73,7 @@ public class ExchangeSupport {
      * 设置responseBody
      * @param exchange
      */
+    @Deprecated
     public static String getResponseBody(ServerWebExchange exchange) {
         return exchange.getAttributes().getOrDefault(RESPONSE_BODY, Strings.EMPTY).toString();
     }
@@ -75,23 +86,6 @@ public class ExchangeSupport {
      */
     public static String getOriginalRequestPath(ServerWebExchange exchange, String defaultPath) {
         return (String) exchange.getAttributes().getOrDefault(GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR, defaultPath);
-    }
-
-    /**
-     * 获取路由的路径
-     * @param exchange
-     * @return
-     */
-    public static String getRouteRequestPath(ServerWebExchange exchange) {
-        URI realServer = (URI) exchange.getAttributes().getOrDefault(GATEWAY_REQUEST_URL_ATTR, null);
-        String routeHost;
-        if (realServer == null) {
-            routeHost = exchange.getAttributes().getOrDefault(GATEWAY_REQUEST_ROUTE_HOST_ATTR, StringUtils.EMPTY).toString();
-        } else {
-            routeHost = String.format("%s:%s", realServer.getHost(), realServer.getPort());
-        }
-
-        return routeHost;
     }
 
 
@@ -204,32 +198,6 @@ public class ExchangeSupport {
      */
     public static int getHttpStatus(ServerWebExchange exchange) {
         return exchange.getAttributeOrDefault(HTTP_STATUS, HttpStatus.OK.value());
-    }
-
-    /**
-     * 设置父类span
-     * @param exchange
-     * @param span
-     */
-    public static void setParentSpan(ServerWebExchange exchange, Span span) {
-        exchange.getAttributes().put(PARENT_SPAN, span);
-    }
-
-    /**
-     * 获取父类span
-     * @param exchange
-     * @return
-     */
-    public static Span getParentSpan(ServerWebExchange exchange) {
-        Object span = exchange.getAttributes().get(PARENT_SPAN);
-        if (span == null) {
-            span = getActiveSpan(exchange);
-            if (span == null) {
-                return null;
-            }
-        }
-
-        return (Span) span;
     }
 
 }

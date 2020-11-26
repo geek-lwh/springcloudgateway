@@ -20,20 +20,14 @@ import static com.aha.tech.core.constant.AttributeConstant.TRACE_LOG_ID;
  * @Author: luweihong
  * @Date: 2020/11/11
  */
-public class TracerUtils {
+public class TracerUtil {
 
-    private static final Logger logger = LoggerFactory.getLogger(TracerUtils.class);
-
-    public static final String CLASS = "class";
-
-    public static final String METHOD = "method";
-
-    public static final String SQL = "sql";
+    private static final Logger logger = LoggerFactory.getLogger(TracerUtil.class);
 
     // baggage 前缀
-    public static final String BAGGAGE_PREFIX = "uberctx-";
+//    public static final String BAGGAGE_PREFIX = "uberctx-";
 
-    public static final String BAGGAGE_HEADER_KEY = "jaeger-baggage";
+//    public static final String BAGGAGE_HEADER_KEY = "jaeger-baggage";
 
 
     /**

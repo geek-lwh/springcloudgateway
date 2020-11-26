@@ -2,13 +2,15 @@ package com.aha.tech.core.filters.web;
 
 import com.aha.tech.core.constant.AttributeConstant;
 import com.aha.tech.core.support.ExchangeSupport;
-import com.aha.tech.util.TracerUtils;
+import com.aha.tech.util.TracerUtil;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
+import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cloud.gateway.support.ServerWebExchangeUtils;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
@@ -22,17 +24,20 @@ import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
+import static com.aha.tech.core.constant.AttributeConstant.HTTP_STATUS;
 import static com.aha.tech.core.constant.HeaderFieldConstant.*;
 
 /**
  * @Author: luweihong
  * @Date: 2019/4/10
+ * 贯穿整个网关filter生命周期的filter
+ * 最先执行的filter
  */
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
-public class CrossDomainFilter implements WebFilter {
+public class AcrossFilter implements WebFilter {
 
-    private static final Logger logger = LoggerFactory.getLogger(CrossDomainFilter.class);
+    private static final Logger logger = LoggerFactory.getLogger(AcrossFilter.class);
 
     private static final String IGNORE_TRACE_API = "/actuator/prometheus";
 
@@ -59,12 +64,21 @@ public class CrossDomainFilter implements WebFilter {
         Tracer.SpanBuilder spanBuilder = tracer.buildSpan(uri);
         Span span = spanBuilder.start();
         try (Scope scope = tracer.scopeManager().activate(span)) {
-            TracerUtils.setClue(span, exchange);
-            ExchangeSupport.setParentSpan(exchange, span);
+            TracerUtil.setClue(span, exchange);
             httpHeaders.set(AttributeConstant.TRACE_LOG_ID, span.context().toTraceId());
-            return webFilterChain.filter(exchange);
+            return webFilterChain.filter(exchange).doFinally((s) -> {
+                String error = exchange.getAttributes().getOrDefault(ServerWebExchangeUtils.HYSTRIX_EXECUTION_EXCEPTION_ATTR, "").toString();
+                span.log(error);
+                int status = ExchangeSupport.getHttpStatus(exchange);
+                if (status > HttpStatus.OK.value()) {
+                    Tags.ERROR.set(span, true);
+                    span.setTag(HTTP_STATUS, status);
+                }
+
+                span.finish();
+            });
         } finally {
-            span.finish();
+//            span.finish();
         }
 
     }

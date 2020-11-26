@@ -4,7 +4,7 @@ import com.aha.tech.commons.utils.DateUtil;
 import com.aha.tech.core.model.vo.HystrixDataVo;
 import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.AccessLogService;
-import com.aha.tech.util.LogUtils;
+import com.aha.tech.util.LogUtil;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +44,7 @@ public class FallBackController {
      */
     @RequestMapping(value = "/fallback", method = RequestMethod.GET)
     public Mono<ResponseVo> fallBack(ServerWebExchange serverWebExchange) {
-        LogUtils.combineTraceId(serverWebExchange);
+        LogUtil.combineTraceId(serverWebExchange);
 
         Object c = serverWebExchange.getAttributes().get(ServerWebExchangeUtils.HYSTRIX_EXECUTION_EXCEPTION_ATTR);
         if (c == null) {

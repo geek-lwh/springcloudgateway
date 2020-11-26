@@ -8,8 +8,8 @@ import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.RequestHandlerService;
 import com.aha.tech.core.support.ExchangeSupport;
 import com.aha.tech.core.support.ResponseSupport;
-import com.aha.tech.util.LogUtils;
-import com.aha.tech.util.TracerUtils;
+import com.aha.tech.util.LogUtil;
+import com.aha.tech.util.TracerUtil;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
@@ -53,11 +53,11 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        Span span = TracerUtils.startAndRef(exchange, this.getClass().getName());
-        LogUtils.combineTraceId(exchange);
+        Span span = TracerUtil.startAndRef(exchange, this.getClass().getName());
+        LogUtil.combineTraceId(exchange);
         ExchangeSupport.setActiveSpan(exchange, span);
         try (Scope scope = tracer.scopeManager().activate(span)) {
-            TracerUtils.setClue(span, exchange);
+            TracerUtil.setClue(span, exchange);
             ResponseVo responseVo = verifyAccessToken(exchange);
             Integer code = responseVo.getCode();
             RequestAddParamsDto requestAddParamsDto = ExchangeSupport.getRequestAddParamsDto(exchange);
@@ -67,12 +67,12 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
                 span.setTag(HTTP_STATUS, HttpStatus.UNAUTHORIZED.value());
                 span.log(responseVo.getMessage());
                 Tags.ERROR.set(span, true);
-                return Mono.defer(() -> ResponseSupport.write(exchange, HttpStatus.UNAUTHORIZED, responseVo));
+                return Mono.defer(() -> ResponseSupport.interrupt(exchange, HttpStatus.UNAUTHORIZED, responseVo));
             }
 
             return chain.filter(exchange);
         } catch (Exception e) {
-            TracerUtils.logError(e);
+            TracerUtil.logError(e);
             throw e;
         } finally {
             span.finish();

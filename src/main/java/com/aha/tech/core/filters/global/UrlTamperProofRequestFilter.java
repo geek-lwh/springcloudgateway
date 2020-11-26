@@ -7,7 +7,7 @@ import com.aha.tech.core.service.RequestHandlerService;
 import com.aha.tech.core.support.ExchangeSupport;
 import com.aha.tech.core.support.ResponseSupport;
 import com.aha.tech.core.support.URISupport;
-import com.aha.tech.util.LogUtils;
+import com.aha.tech.util.LogUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -51,12 +51,12 @@ public class UrlTamperProofRequestFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        LogUtils.combineTraceId(exchange);
+        LogUtil.combineTraceId(exchange);
         if (!verifyQueryParams(exchange)) {
             ExchangeSupport.setHttpStatus(exchange, HttpStatus.FORBIDDEN);
             return Mono.defer(() -> {
                 ResponseVo rpcResponse = new ResponseVo(HttpStatus.FORBIDDEN.value(), FallBackController.DEFAULT_SYSTEM_ERROR);
-                return ResponseSupport.write(exchange, HttpStatus.FORBIDDEN, rpcResponse);
+                return ResponseSupport.interrupt(exchange, HttpStatus.FORBIDDEN, rpcResponse);
             });
         }
 

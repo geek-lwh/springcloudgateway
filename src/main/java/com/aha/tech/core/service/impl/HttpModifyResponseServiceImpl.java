@@ -49,6 +49,7 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
      * @param oldResponse
      * @return
      */
+    @Deprecated
     @Override
     public ServerHttpResponseDecorator renewResponse(ServerWebExchange serverWebExchange, ServerHttpResponse oldResponse) {
         ServerHttpResponseDecorator serverHttpResponseDecorator = new ServerHttpResponseDecorator(oldResponse) {
@@ -103,6 +104,7 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
      * @param responseHeader
      * @param requestHeader
      */
+    @Deprecated
     public void modifyResponseHeader(HttpHeaders responseHeader, HttpHeaders requestHeader) {
         responseHeader.setAccessControlAllowOrigin(HEADER_ALL_CONTROL_ALLOW_ORIGIN_ACCESS);
         responseHeader.setAccessControlAllowMethods(HEADER_CROSS_ACCESS_ALLOW_HTTP_METHODS);
@@ -117,6 +119,7 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
      * @param serverHttpRequest
      * @return
      */
+    @Deprecated
     private boolean isGZipped(ServerHttpRequest serverHttpRequest) {
         String requestEncoding = serverHttpRequest.getHeaders().getFirst(HttpHeaders.ACCEPT_ENCODING);
         if (requestEncoding.indexOf("gzip") == -1) {

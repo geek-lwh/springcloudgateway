@@ -2,7 +2,7 @@ package com.aha.tech.core.filters.global;
 
 import com.aha.tech.core.model.entity.CacheRequestEntity;
 import com.aha.tech.core.support.ExchangeSupport;
-import com.aha.tech.util.LogUtils;
+import com.aha.tech.util.LogUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -38,7 +38,7 @@ public class CopyBodyFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        LogUtils.combineTraceId(exchange);
+        LogUtil.combineTraceId(exchange);
         return readFromStream(exchange, chain);
     }
 

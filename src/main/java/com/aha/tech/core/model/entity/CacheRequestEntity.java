@@ -1,7 +1,7 @@
 package com.aha.tech.core.model.entity;
 
 import com.aha.tech.commons.symbol.Separator;
-import com.aha.tech.core.support.ResponseSupport;
+import com.aha.tech.util.HeaderUtil;
 import org.springframework.http.HttpHeaders;
 
 import java.net.URI;
@@ -29,6 +29,7 @@ public class CacheRequestEntity {
     public HttpHeaders getOriginalRequestHttpHeaders() {
         return originalRequestHttpHeaders;
     }
+
 
     public void setOriginalRequestHttpHeaders(HttpHeaders originalRequestHttpHeaders) {
         this.originalRequestHttpHeaders = originalRequestHttpHeaders;
@@ -67,9 +68,10 @@ public class CacheRequestEntity {
         StringBuffer sb = new StringBuffer();
         sb.append("请求行").append(Separator.COLON_MARK).append(this.requestLine).append(System.lineSeparator());
         sb.append("路由服务器").append(Separator.COLON_MARK).append(this.realServer).append(System.lineSeparator());
-        sb.append("原始请求头").append(Separator.COLON_MARK).append(ResponseSupport.formatHttpHeaders(this.originalRequestHttpHeaders)).append(System.lineSeparator());
-        sb.append("修改后请求头").append(Separator.COLON_MARK).append(ResponseSupport.formatHttpHeaders(this.afterModifyRequestHttpHeaders)).append(System.lineSeparator());
+        sb.append("原始请求头").append(Separator.COLON_MARK).append(HeaderUtil.formatHttpHeaders(this.originalRequestHttpHeaders)).append(System.lineSeparator());
+        sb.append("修改后请求头").append(Separator.COLON_MARK).append(HeaderUtil.formatHttpHeaders(this.afterModifyRequestHttpHeaders)).append(System.lineSeparator());
         sb.append("请求体").append(Separator.COLON_MARK).append(this.requestBody);
         return sb.toString();
     }
+
 }

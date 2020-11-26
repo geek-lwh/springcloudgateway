@@ -4,7 +4,7 @@ import com.aha.tech.core.model.entity.CacheRequestEntity;
 import com.aha.tech.core.model.wrapper.ServletRequestCarrierWrapper;
 import com.aha.tech.core.service.RequestHandlerService;
 import com.aha.tech.core.support.ExchangeSupport;
-import com.aha.tech.util.LogUtils;
+import com.aha.tech.util.LogUtil;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.propagation.Format;
@@ -48,7 +48,7 @@ public class ModifyRequestHeaderFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        LogUtils.combineTraceId(exchange);
+        LogUtil.combineTraceId(exchange);
         ServerHttpRequest newRequest = replaceHeader(exchange);
 
         return chain.filter(exchange.mutate().request(newRequest).build());
