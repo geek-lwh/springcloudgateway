@@ -44,26 +44,12 @@ public class LogUtil {
      * @return
      */
     public static void splicingError(ServerWebExchange serverWebExchange, Exception e) {
-        ServerHttpRequest serverHttpRequest = serverWebExchange.getRequest();
-        HttpHeaders httpHeaders = serverHttpRequest.getHeaders();
-        StringBuilder sb = new StringBuilder();
-        String url = ExchangeSupport.getOriginalRequestPath(serverWebExchange, serverHttpRequest.getURI().toString());
+        StringBuffer sb = baseInfo(serverWebExchange);
 
         sb.append("错误 : ");
         String error = serverWebExchange.getAttributes().getOrDefault(ServerWebExchangeUtils.HYSTRIX_EXECUTION_EXCEPTION_ATTR, e.getMessage()).toString();
-        sb.append(error).append(System.lineSeparator());
-
-        // 请求 行
-        sb.append("请求行 : ").append(serverHttpRequest.getMethod()).append(" ").append(url);
+        sb.append(error);
         sb.append(System.lineSeparator());
-
-        sb.append("请求头 : ").append(HeaderUtil.formatHttpHeaders(httpHeaders));
-
-        sb.append(System.lineSeparator());
-
-        sb.append("请求体 : ");
-        String body = serverWebExchange.getAttributes().getOrDefault(GATEWAY_REQUEST_CACHED_ATTR, Strings.EMPTY).toString();
-        sb.append(body);
 
         logger.error(sb.toString());
     }
@@ -72,8 +58,18 @@ public class LogUtil {
      * 打印链路上的日志关键信息
      */
     public static void chainInfo(ServerWebExchange serverWebExchange) {
+        StringBuffer sb = baseInfo(serverWebExchange);
+        logger.info(sb.toString());
+    }
+
+    /**
+     * 基础信息
+     * @param serverWebExchange
+     * @return
+     */
+    private static StringBuffer baseInfo(ServerWebExchange serverWebExchange) {
         ServerHttpRequest serverHttpRequest = serverWebExchange.getRequest();
-        StringBuilder sb = new StringBuilder();
+        StringBuffer sb = new StringBuffer();
         String url = ExchangeSupport.getOriginalRequestPath(serverWebExchange, serverHttpRequest.getURI().toString());
         // 请求 行
         sb.append("请求行 : ").append(serverHttpRequest.getMethod()).append(" ").append(url);
@@ -88,7 +84,8 @@ public class LogUtil {
         sb.append(System.lineSeparator());
         String body = serverWebExchange.getAttributes().getOrDefault(GATEWAY_REQUEST_CACHED_ATTR, Strings.EMPTY).toString();
         sb.append(body);
+        sb.append(System.lineSeparator());
 
-        logger.info(sb.toString());
+        return sb;
     }
 }

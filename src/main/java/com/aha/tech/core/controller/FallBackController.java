@@ -3,6 +3,7 @@ package com.aha.tech.core.controller;
 import com.aha.tech.commons.utils.DateUtil;
 import com.aha.tech.core.model.vo.HystrixDataVo;
 import com.aha.tech.core.model.vo.ResponseVo;
+import com.aha.tech.core.service.AccessLogService;
 import com.aha.tech.util.LogUtil;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
@@ -14,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
+
+import javax.annotation.Resource;
 
 import static com.aha.tech.core.constant.AttributeConstant.GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR;
 import static com.aha.tech.core.constant.AttributeConstant.GATEWAY_REQUEST_REWRITE_PATH_ATTR;
@@ -31,6 +34,9 @@ public class FallBackController {
 
     public static final String DEFAULT_SYSTEM_ERROR = "我好像开了个小差!";
 
+    @Resource
+    private AccessLogService httpAccessLogService;
+
     /**
      * 降级策略,一般自身服务超时会走到这里
      * @param serverWebExchange
@@ -42,7 +48,7 @@ public class FallBackController {
         logger.error("GATEWAY : FALLBACK START ---->");
         Object c = serverWebExchange.getAttributes().get(ServerWebExchangeUtils.HYSTRIX_EXECUTION_EXCEPTION_ATTR);
         if (c == null) {
-            LogUtil.splicingError(serverWebExchange, new Exception("未捕获到hystrix异常!"));
+            httpAccessLogService.asyncLogError(serverWebExchange, new Exception("未捕获到hystrix异常!"));
             ResponseVo responseVo = new ResponseVo(HttpStatus.BAD_GATEWAY.value(), DEFAULT_SYSTEM_ERROR);
             logger.error("接口熔断,未捕获到具体错误!");
             return Mono.just(responseVo);
@@ -51,7 +57,7 @@ public class FallBackController {
         Throwable executionException = (Throwable) c;
         Exception e = (Exception) executionException;
 
-        LogUtil.splicingError(serverWebExchange, e);
+        httpAccessLogService.asyncLogError(serverWebExchange, e);
         ResponseVo responseVo = buildHystrixResponse(executionException, serverWebExchange);
 
         return Mono.just(responseVo);

@@ -13,6 +13,6 @@ public interface AccessLogService {
      *
      * httpHeaders
      */
-    void printWhenError(ServerWebExchange serverWebExchange, Exception e);
+    void asyncLogError(ServerWebExchange serverWebExchange, Exception e);
 
 }

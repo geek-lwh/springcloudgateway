@@ -21,11 +21,14 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
+
+import javax.annotation.Resource;
 
 import static com.aha.tech.core.constant.AttributeConstant.HTTP_STATUS;
 import static com.aha.tech.core.constant.AttributeConstant.TRACE_LOG_ID;
@@ -42,6 +45,9 @@ import static com.aha.tech.core.constant.HeaderFieldConstant.*;
 public class AcrossFilter implements WebFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(AcrossFilter.class);
+
+    @Resource
+    private ThreadPoolTaskExecutor closeSpanThreadPool;
 
     private static final String IGNORE_TRACE_API = "/actuator/prometheus";
 
@@ -72,6 +78,7 @@ public class AcrossFilter implements WebFilter {
             ExchangeSupport.put(exchange, TRACE_LOG_ID, span.context().toTraceId());
             httpHeaders.set(AttributeConstant.TRACE_LOG_ID, span.context().toTraceId());
             return webFilterChain.filter(exchange).doFinally((s) -> {
+                LogUtil.chainInfo(exchange);
                 int status = ExchangeSupport.getHttpStatus(exchange);
                 span.setTag(HTTP_STATUS, status);
                 String error = exchange.getAttributes().getOrDefault(ServerWebExchangeUtils.HYSTRIX_EXECUTION_EXCEPTION_ATTR, Strings.EMPTY).toString();
@@ -80,8 +87,6 @@ public class AcrossFilter implements WebFilter {
                     span.log(error);
                     Tags.ERROR.set(span, true);
                 }
-
-                LogUtil.chainInfo(exchange);
 
                 span.finish();
             });

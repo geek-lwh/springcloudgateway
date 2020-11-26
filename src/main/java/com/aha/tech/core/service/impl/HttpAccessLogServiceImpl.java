@@ -88,11 +88,11 @@ public class HttpAccessLogServiceImpl implements AccessLogService {
 
 
     /**
-     * 打印http response相关信息
+     * 异步打印http response相关信息
      * @param serverWebExchange
      */
     @Override
-    public void printWhenError(ServerWebExchange serverWebExchange, Exception e) {
+    public void asyncLogError(ServerWebExchange serverWebExchange, Exception e) {
         CompletableFuture.runAsync(() -> {
             LogUtil.combineTraceId(serverWebExchange);
             LogUtil.splicingError(serverWebExchange, e);
