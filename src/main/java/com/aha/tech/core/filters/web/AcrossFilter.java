@@ -8,6 +8,8 @@ import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.support.ServerWebExchangeUtils;
@@ -67,18 +69,19 @@ public class AcrossFilter implements WebFilter {
             TracerUtil.setClue(span, exchange);
             httpHeaders.set(AttributeConstant.TRACE_LOG_ID, span.context().toTraceId());
             return webFilterChain.filter(exchange).doFinally((s) -> {
-                String error = exchange.getAttributes().getOrDefault(ServerWebExchangeUtils.HYSTRIX_EXECUTION_EXCEPTION_ATTR, "").toString();
-                span.log(error);
                 int status = ExchangeSupport.getHttpStatus(exchange);
-                if (status > HttpStatus.OK.value()) {
+                span.setTag(HTTP_STATUS, status);
+                String error = exchange.getAttributes().getOrDefault(ServerWebExchangeUtils.HYSTRIX_EXECUTION_EXCEPTION_ATTR, Strings.EMPTY).toString();
+
+                if (StringUtils.isNotBlank(error) || status > HttpStatus.OK.value()) {
+                    span.log(error);
                     Tags.ERROR.set(span, true);
-                    span.setTag(HTTP_STATUS, status);
                 }
+
+                // logging
 
                 span.finish();
             });
-        } finally {
-//            span.finish();
         }
 
     }

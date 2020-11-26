@@ -43,7 +43,7 @@ public class LogUtil {
      * @param e
      * @return
      */
-    public static String splicingError(ServerWebExchange serverWebExchange, Exception e) {
+    public static void splicingError(ServerWebExchange serverWebExchange, Exception e) {
         ServerHttpRequest serverHttpRequest = serverWebExchange.getRequest();
         HttpHeaders httpHeaders = serverHttpRequest.getHeaders();
         StringBuilder sb = new StringBuilder();
@@ -65,7 +65,7 @@ public class LogUtil {
         String body = serverWebExchange.getAttributes().getOrDefault(GATEWAY_REQUEST_CACHED_ATTR, Strings.EMPTY).toString();
         sb.append(body);
 
-        return sb.toString();
+        logger.error(sb.toString());
     }
 
 }

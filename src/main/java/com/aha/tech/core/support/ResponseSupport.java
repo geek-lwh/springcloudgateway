@@ -3,8 +3,7 @@ package com.aha.tech.core.support;
 import com.aha.tech.commons.constants.ResponseConstants;
 import com.aha.tech.core.model.entity.CacheRequestEntity;
 import com.aha.tech.core.model.vo.ResponseVo;
-import com.aha.tech.core.service.AccessLogService;
-import com.aha.tech.util.SpringContextUtil;
+import com.aha.tech.util.LogUtil;
 import com.alibaba.fastjson.JSON;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,21 +39,8 @@ public class ResponseSupport {
      * @return
      */
     public static Mono<Void> interrupt(ServerWebExchange exchange, ResponseVo responseVo, HttpStatus httpStatus, Exception e) {
-//        final ServerHttpResponse resp = exchange.getResponse();
-//        byte[] bytes = JSON.toJSONString(responseVo).getBytes(StandardCharsets.UTF_8);
-//        DataBuffer buffer = resp.bufferFactory().wrap(bytes);
-//        resp.getHeaders().setContentLength(buffer.readableByteCount());
-//        resp.getHeaders().setContentType(MediaType.APPLICATION_JSON_UTF8);
-//        Boolean isOldVersion = ExchangeSupport.isOldVersion(exchange);
-//        if (isOldVersion) {
-//            setResponseStatus(exchange, HttpStatus.OK);
-//        } else {
-//            setResponseStatus(exchange, httpStatus);
-//        }
-//        interrupt(exchange,httpStatus,responseVo);
         DataBuffer buffer = constructResponse(exchange, responseVo, httpStatus);
-        AccessLogService httpAccessLogService = (AccessLogService) SpringContextUtil.getBean("httpAccessLogService");
-        httpAccessLogService.printWhenError(exchange, e);
+        LogUtil.splicingError(exchange, e);
         return exchange.getResponse().writeWith(Flux.just(buffer));
     }
 

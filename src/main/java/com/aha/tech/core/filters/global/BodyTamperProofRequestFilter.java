@@ -8,6 +8,11 @@ import com.aha.tech.core.service.RequestHandlerService;
 import com.aha.tech.core.support.ExchangeSupport;
 import com.aha.tech.core.support.ResponseSupport;
 import com.aha.tech.util.LogUtil;
+import com.aha.tech.util.TracerUtil;
+import io.opentracing.Scope;
+import io.opentracing.Span;
+import io.opentracing.Tracer;
+import io.opentracing.tag.Tags;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -50,19 +55,33 @@ public class BodyTamperProofRequestFilter implements GlobalFilter, Ordered {
         return BODY_TAMPER_PROOF_FILTER;
     }
 
+    @Resource
+    private Tracer tracer;
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+        Span span = TracerUtil.startAndRef(exchange, this.getClass().getSimpleName());
         LogUtil.combineTraceId(exchange);
-        if (!verifyBody(exchange)) {
-            ExchangeSupport.setHttpStatus(exchange, HttpStatus.FORBIDDEN);
-            return Mono.defer(() -> {
-                ResponseVo rpcResponse = new ResponseVo(HttpStatus.FORBIDDEN.value(), FallBackController.DEFAULT_SYSTEM_ERROR);
-                return ResponseSupport.interrupt(exchange, HttpStatus.FORBIDDEN, rpcResponse);
-            });
-        }
+        ExchangeSupport.setActiveSpan(exchange, span);
 
-        return chain.filter(exchange);
+        try (Scope scope = tracer.scopeManager().activate(span)) {
+            if (!verifyBody(exchange)) {
+                ExchangeSupport.setHttpStatus(exchange, HttpStatus.FORBIDDEN);
+                ExchangeSupport.fillErrorMsg(exchange, "body防篡改错误");
+                Tags.ERROR.set(span, true);
+                return Mono.defer(() -> {
+                    ResponseVo rpcResponse = new ResponseVo(HttpStatus.FORBIDDEN.value(), FallBackController.DEFAULT_SYSTEM_ERROR);
+                    return ResponseSupport.interrupt(exchange, HttpStatus.FORBIDDEN, rpcResponse);
+                });
+            }
+
+            return chain.filter(exchange);
+        } catch (Exception e) {
+            TracerUtil.logError(e);
+            throw e;
+        } finally {
+            span.finish();
+        }
     }
 
     /**

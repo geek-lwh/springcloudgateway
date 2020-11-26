@@ -8,6 +8,7 @@ import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.ratelimit.RateLimiter;
+import org.springframework.cloud.gateway.support.ServerWebExchangeUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ServerWebExchange;
 
@@ -57,6 +58,16 @@ public class ExchangeSupport {
     public static void put(ServerWebExchange exchange, Span span, String key, Object value) {
         exchange.getAttributes().put(key, value);
         span.setTag(key, String.valueOf(value));
+    }
+
+    /**
+     * 在exchange中设置错误信息
+     * @param exchange
+     * @param errorMsg
+     */
+    public static void fillErrorMsg(ServerWebExchange exchange, String errorMsg) {
+        exchange.getAttributes().put(ServerWebExchangeUtils.HYSTRIX_EXECUTION_EXCEPTION_ATTR, errorMsg);
+
     }
 
     /**

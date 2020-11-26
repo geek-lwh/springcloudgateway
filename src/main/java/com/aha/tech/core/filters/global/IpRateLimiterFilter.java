@@ -59,7 +59,11 @@ public class IpRateLimiterFilter implements GlobalFilter, Ordered {
         Boolean isAllowed = isIpAllowed(exchange);
 
         if (!isAllowed) {
+            List<String> ipList = exchange.getRequest().getHeaders().getOrDefault(HeaderFieldConstant.HEADER_X_FORWARDED_FOR, Lists.newArrayList("no ip"));
+            logger.error("ip : {} 限流算法生效", ipList.get(0));
             ExchangeSupport.setHttpStatus(exchange, HttpStatus.TOO_MANY_REQUESTS);
+            ExchangeSupport.fillErrorMsg(exchange, "IP限流算法生效");
+
             final ResponseVo responseVo = new ResponseVo(HttpStatus.TOO_MANY_REQUESTS.value(), FallBackController.DEFAULT_SYSTEM_ERROR);
             return Mono.defer(() -> ResponseSupport.interrupt(exchange, responseVo, HttpStatus.TOO_MANY_REQUESTS, new LimiterException(IP_RATE_LIMITER_ERROR_MSG)));
         }
@@ -84,8 +88,6 @@ public class IpRateLimiterFilter implements GlobalFilter, Ordered {
         }
 
         Boolean isAllowed = ipLimiterService.isAllowed(exchange);
-        List<String> ipList = exchange.getRequest().getHeaders().getOrDefault(HeaderFieldConstant.HEADER_X_FORWARDED_FOR, Lists.newArrayList(""));
-        logger.error("ip : {} 限流算法生效", ipList.get(0));
 
         return isAllowed;
     }

@@ -26,7 +26,6 @@ import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
 
-import static com.aha.tech.core.constant.AttributeConstant.HTTP_STATUS;
 import static com.aha.tech.core.constant.AttributeConstant.USER_ID;
 
 /**
@@ -53,7 +52,7 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        Span span = TracerUtil.startAndRef(exchange, this.getClass().getName());
+        Span span = TracerUtil.startAndRef(exchange, this.getClass().getSimpleName());
         LogUtil.combineTraceId(exchange);
         ExchangeSupport.setActiveSpan(exchange, span);
         try (Scope scope = tracer.scopeManager().activate(span)) {
@@ -64,9 +63,8 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
             span.setTag(USER_ID, requestAddParamsDto.getUserId());
             if (!code.equals(ResponseConstants.SUCCESS)) {
                 ExchangeSupport.setHttpStatus(exchange, HttpStatus.UNAUTHORIZED);
-                span.setTag(HTTP_STATUS, HttpStatus.UNAUTHORIZED.value());
-                span.log(responseVo.getMessage());
                 Tags.ERROR.set(span, true);
+                ExchangeSupport.fillErrorMsg(exchange, "Token 校验失败");
                 return Mono.defer(() -> ResponseSupport.interrupt(exchange, HttpStatus.UNAUTHORIZED, responseVo));
             }
 
@@ -77,6 +75,7 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
         } finally {
             span.finish();
         }
+
     }
 
     /**
