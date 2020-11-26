@@ -68,4 +68,27 @@ public class LogUtil {
         logger.error(sb.toString());
     }
 
+    /**
+     * 打印链路上的日志关键信息
+     */
+    public static void chainInfo(ServerWebExchange serverWebExchange) {
+        ServerHttpRequest serverHttpRequest = serverWebExchange.getRequest();
+        StringBuilder sb = new StringBuilder();
+        String url = ExchangeSupport.getOriginalRequestPath(serverWebExchange, serverHttpRequest.getURI().toString());
+        // 请求 行
+        sb.append("请求行 : ").append(serverHttpRequest.getMethod()).append(" ").append(url);
+        sb.append(System.lineSeparator());
+
+        HttpHeaders httpHeaders = serverHttpRequest.getHeaders();
+        sb.append("请求头 : ");
+        sb.append(System.lineSeparator());
+        sb.append(HeaderUtil.formatHttpHeaders(httpHeaders));
+
+        sb.append("请求体 : ");
+        sb.append(System.lineSeparator());
+        String body = serverWebExchange.getAttributes().getOrDefault(GATEWAY_REQUEST_CACHED_ATTR, Strings.EMPTY).toString();
+        sb.append(body);
+
+        logger.info(sb.toString());
+    }
 }

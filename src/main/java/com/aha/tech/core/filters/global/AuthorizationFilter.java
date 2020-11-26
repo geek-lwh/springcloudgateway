@@ -54,7 +54,6 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         Span span = TracerUtil.startAndRef(exchange, this.getClass().getSimpleName());
         LogUtil.combineTraceId(exchange);
-        ExchangeSupport.setActiveSpan(exchange, span);
         try (Scope scope = tracer.scopeManager().activate(span)) {
             TracerUtil.setClue(span, exchange);
             ResponseVo responseVo = verifyAccessToken(exchange);
@@ -63,8 +62,9 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
             span.setTag(USER_ID, requestAddParamsDto.getUserId());
             if (!code.equals(ResponseConstants.SUCCESS)) {
                 ExchangeSupport.setHttpStatus(exchange, HttpStatus.UNAUTHORIZED);
+                span.log(responseVo.getMessage());
                 Tags.ERROR.set(span, true);
-                ExchangeSupport.fillErrorMsg(exchange, "Token 校验失败");
+                ExchangeSupport.fillErrorMsg(exchange, responseVo.getMessage());
                 return Mono.defer(() -> ResponseSupport.interrupt(exchange, HttpStatus.UNAUTHORIZED, responseVo));
             }
 

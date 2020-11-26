@@ -95,8 +95,7 @@ public class HttpAccessLogServiceImpl implements AccessLogService {
     public void printWhenError(ServerWebExchange serverWebExchange, Exception e) {
         CompletableFuture.runAsync(() -> {
             LogUtil.combineTraceId(serverWebExchange);
-            String errorMsg = LogUtil.splicingError(serverWebExchange, e);
-            logger.error("{}", errorMsg, e);
+            LogUtil.splicingError(serverWebExchange, e);
         }, writeLoggingThreadPool);
     }
 

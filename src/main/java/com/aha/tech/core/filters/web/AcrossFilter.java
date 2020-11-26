@@ -2,6 +2,7 @@ package com.aha.tech.core.filters.web;
 
 import com.aha.tech.core.constant.AttributeConstant;
 import com.aha.tech.core.support.ExchangeSupport;
+import com.aha.tech.util.LogUtil;
 import com.aha.tech.util.TracerUtil;
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -27,6 +28,7 @@ import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
 import static com.aha.tech.core.constant.AttributeConstant.HTTP_STATUS;
+import static com.aha.tech.core.constant.AttributeConstant.TRACE_LOG_ID;
 import static com.aha.tech.core.constant.HeaderFieldConstant.*;
 
 /**
@@ -67,6 +69,7 @@ public class AcrossFilter implements WebFilter {
         Span span = spanBuilder.start();
         try (Scope scope = tracer.scopeManager().activate(span)) {
             TracerUtil.setClue(span, exchange);
+            ExchangeSupport.put(exchange, TRACE_LOG_ID, span.context().toTraceId());
             httpHeaders.set(AttributeConstant.TRACE_LOG_ID, span.context().toTraceId());
             return webFilterChain.filter(exchange).doFinally((s) -> {
                 int status = ExchangeSupport.getHttpStatus(exchange);
@@ -78,7 +81,7 @@ public class AcrossFilter implements WebFilter {
                     Tags.ERROR.set(span, true);
                 }
 
-                // logging
+                LogUtil.chainInfo(exchange);
 
                 span.finish();
             });

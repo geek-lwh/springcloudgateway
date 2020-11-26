@@ -14,8 +14,6 @@ import org.springframework.web.server.ServerWebExchange;
 
 import java.util.Map;
 
-import static com.aha.tech.core.constant.AttributeConstant.TRACE_LOG_ID;
-
 /**
  * @Author: luweihong
  * @Date: 2020/11/11
@@ -69,7 +67,6 @@ public class TracerUtil {
     public static void setClue(Span span, ServerWebExchange exchange) {
         span.setTag(HeaderFieldConstant.TRACE_ID, span.context().toTraceId());
         span.setTag(HeaderFieldConstant.SPAN_ID, span.context().toSpanId());
-        ExchangeSupport.put(exchange, TRACE_LOG_ID, span.context().toTraceId());
         ExchangeSupport.setActiveSpan(exchange, span);
     }
 
