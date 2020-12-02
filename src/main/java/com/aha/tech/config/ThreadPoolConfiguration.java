@@ -23,15 +23,4 @@ public class ThreadPoolConfiguration {
         executor.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardPolicy());
         return executor;
     }
-
-    @Bean("closeSpanThreadPool")
-    public ThreadPoolTaskExecutor closeSpanThreadPool() {
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(10);
-        executor.setMaxPoolSize(20);
-        executor.setQueueCapacity(50);
-        executor.setThreadNamePrefix("close-span-");
-        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardPolicy());
-        return executor;
-    }
 }

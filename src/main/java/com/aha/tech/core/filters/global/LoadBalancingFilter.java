@@ -2,6 +2,7 @@
 //
 //import com.aha.tech.core.model.entity.CacheRequestEntity;
 //import com.aha.tech.core.support.ExchangeSupport;
+//import com.aha.tech.util.LogUtil;
 //import org.slf4j.Logger;
 //import org.slf4j.LoggerFactory;
 //import org.slf4j.MDC;
@@ -13,14 +14,11 @@
 //import org.springframework.web.server.ServerWebExchange;
 //import reactor.core.publisher.Mono;
 //
-//import java.util.Collections;
 //import java.util.List;
 //
-//import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_CACHED_ATTR;
 //import static com.aha.tech.core.constant.FilterProcessOrderedConstant.LOAD_BALANCING_FILTER;
 //import static com.aha.tech.core.constant.HeaderFieldConstant.REQUEST_ID;
-//import static com.aha.tech.core.constant.HeaderFieldConstant.X_TRACE_ID;
-//import static com.aha.tech.core.interceptor.FeignRequestInterceptor.TRACE_ID;
+//import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.GATEWAY_REQUEST_URL_ATTR;
 //
 ///**
 // * @Author: luweihong
@@ -39,17 +37,14 @@
 //    @Override
 //    public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
 //        // 从namingService 获取所有instance,获取instance的weight
+//        LogUtil.combineTraceId(exchange);
 //
-//        List<String> clientRequestId = exchange.getRequest().getHeaders().get(REQUEST_ID);
-//        if (!CollectionUtils.isEmpty(clientRequestId)) {
-//            MDC.put(TRACE_ID, clientRequestId.get(0));
-//        }
-//
-//        CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheRequest(exchange);
-//        String routeHost = ExchangeSupport.getRouteRequestPath(exchange);
-//        cacheRequestEntity.setRealServer(routeHost);
-//        ExchangeSupport.put(exchange, GATEWAY_REQUEST_CACHED_ATTR, cacheRequestEntity);
-//        logger.info("route info : {} ", cacheRequestEntity);
+////        exchange.getAttributes().put(GATEWAY_REQUEST_URL_ATTR, requestUrl);
+////        CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheRequest(exchange);
+////        String routeHost = ExchangeSupport.getRouteRequestPath(exchange);
+////        cacheRequestEntity.setRealServer(routeHost);
+////        ExchangeSupport.put(exchange, GATEWAY_REQUEST_CACHED_ATTR, cacheRequestEntity);
+////        logger.info("route info : {} ", cacheRequestEntity);
 //        return chain.filter(exchange);
 //    }
 //

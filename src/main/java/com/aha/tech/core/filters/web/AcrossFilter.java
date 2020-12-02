@@ -21,14 +21,11 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
-
-import javax.annotation.Resource;
 
 import static com.aha.tech.core.constant.AttributeConstant.HTTP_STATUS;
 import static com.aha.tech.core.constant.AttributeConstant.TRACE_LOG_ID;
@@ -45,9 +42,6 @@ import static com.aha.tech.core.constant.HeaderFieldConstant.*;
 public class AcrossFilter implements WebFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(AcrossFilter.class);
-
-    @Resource
-    private ThreadPoolTaskExecutor closeSpanThreadPool;
 
     private static final String IGNORE_TRACE_API = "/actuator/prometheus";
 

@@ -44,7 +44,7 @@ public class LogUtil {
      * @return
      */
     public static void splicingError(ServerWebExchange serverWebExchange, Exception e) {
-        StringBuffer sb = baseInfo(serverWebExchange);
+        StringBuffer sb = baseLogStrings(serverWebExchange);
 
         sb.append("错误 : ");
         String error = serverWebExchange.getAttributes().getOrDefault(ServerWebExchangeUtils.HYSTRIX_EXECUTION_EXCEPTION_ATTR, e.getMessage()).toString();
@@ -58,19 +58,19 @@ public class LogUtil {
      * 打印链路上的日志关键信息
      */
     public static void chainInfo(ServerWebExchange serverWebExchange) {
-        StringBuffer sb = baseInfo(serverWebExchange);
+        StringBuffer sb = baseLogStrings(serverWebExchange);
         logger.info(sb.toString());
     }
 
     /**
      * 基础信息
-     * @param serverWebExchange
+     * @param exchange
      * @return
      */
-    private static StringBuffer baseInfo(ServerWebExchange serverWebExchange) {
-        ServerHttpRequest serverHttpRequest = serverWebExchange.getRequest();
+    private static StringBuffer baseLogStrings(ServerWebExchange exchange) {
+        ServerHttpRequest serverHttpRequest = exchange.getRequest();
         StringBuffer sb = new StringBuffer();
-        String url = ExchangeSupport.getOriginalRequestPath(serverWebExchange, serverHttpRequest.getURI().toString());
+        String url = ExchangeSupport.getOriginalRequestPath(exchange, serverHttpRequest.getURI().toString());
         // 请求 行
         sb.append("请求行 : ").append(serverHttpRequest.getMethod()).append(" ").append(url);
         sb.append(System.lineSeparator());
@@ -82,7 +82,7 @@ public class LogUtil {
 
         sb.append("请求体 : ");
         sb.append(System.lineSeparator());
-        String body = serverWebExchange.getAttributes().getOrDefault(GATEWAY_REQUEST_CACHED_ATTR, Strings.EMPTY).toString();
+        String body = exchange.getAttributes().getOrDefault(GATEWAY_REQUEST_CACHED_ATTR, Strings.EMPTY).toString();
         sb.append(body);
         sb.append(System.lineSeparator());
 
