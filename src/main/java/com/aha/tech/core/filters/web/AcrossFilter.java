@@ -45,6 +45,8 @@ public class AcrossFilter implements WebFilter {
 
     private static final String IGNORE_TRACE_API = "/actuator/prometheus";
 
+    //todo /v3/log
+
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain webFilterChain) {
         ServerHttpRequest request = exchange.getRequest();
@@ -65,7 +67,6 @@ public class AcrossFilter implements WebFilter {
             return webFilterChain.filter(exchange);
         }
 
-        logger.info("start deal uri : {}", uri);
         Tracer tracer = GlobalTracer.get();
         Tracer.SpanBuilder spanBuilder = tracer.buildSpan(uri);
         Span span = spanBuilder.start();

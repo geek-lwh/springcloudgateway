@@ -35,7 +35,6 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static com.aha.tech.core.constant.AttributeConstant.HTTP_STATUS;
 import static java.util.Collections.singletonList;
 import static java.util.Optional.ofNullable;
 import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.*;
@@ -124,7 +123,7 @@ public class FallbackGatewayFilterFactory extends AbstractGatewayFilterFactory<F
      */
     private Mono<Void> otherError(ServerWebExchange exchange, Throwable throwable, HystrixRuntimeException e, String message) {
         logger.error("HYSTRIX FALL BACK EXCEPTION : {}", message, e);
-        exchange.getAttributes().put(HTTP_STATUS, HttpStatus.BAD_REQUEST.value());
+        ExchangeSupport.setHttpStatus(exchange, HttpStatus.BAD_GATEWAY);
         ResponseVo responseVo = new ResponseVo(HttpStatus.BAD_REQUEST.value(), SystemConstant.DEFAULT_ERROR_MESSAGE);
         return ResponseSupport.interrupt(exchange, responseVo, HttpStatus.BAD_REQUEST, new GatewayException(throwable));
     }
@@ -140,8 +139,8 @@ public class FallbackGatewayFilterFactory extends AbstractGatewayFilterFactory<F
     private Mono<Void> commandException(ServerWebExchange exchange, Throwable throwable, HystrixRuntimeException e, String message) {
         return Mono.defer(() -> {
             logger.error("COMMAND_EXCEPTION : {}", message, e);
-            exchange.getAttributes().put(HTTP_STATUS, HttpStatus.BAD_REQUEST.value());
-            ResponseVo responseVo = new ResponseVo(HttpStatus.BAD_REQUEST.value(), SystemConstant.DEFAULT_ERROR_MESSAGE);
+            ExchangeSupport.setHttpStatus(exchange, HttpStatus.BAD_GATEWAY);
+            ResponseVo responseVo = new ResponseVo(HttpStatus.BAD_GATEWAY.value(), SystemConstant.DEFAULT_ERROR_MESSAGE);
             return ResponseSupport.interrupt(exchange, responseVo, HttpStatus.BAD_REQUEST, new GatewayException(throwable));
         });
     }
@@ -157,7 +156,7 @@ public class FallbackGatewayFilterFactory extends AbstractGatewayFilterFactory<F
     private Mono<Void> timeout(ServerWebExchange exchange, Throwable throwable, HystrixRuntimeException e, String message) {
         return Mono.defer(() -> {
             logger.error("TIMEOUT : {}", message, e);
-            exchange.getAttributes().put(HTTP_STATUS, HttpStatus.REQUEST_TIMEOUT.value());
+            ExchangeSupport.setHttpStatus(exchange, HttpStatus.REQUEST_TIMEOUT);
             ResponseVo responseVo = new ResponseVo(HttpStatus.REQUEST_TIMEOUT.value(), SystemConstant.DEFAULT_ERROR_MESSAGE);
             return ResponseSupport.interrupt(exchange, responseVo, HttpStatus.REQUEST_TIMEOUT, new GatewayException(throwable));
         });
@@ -174,9 +173,8 @@ public class FallbackGatewayFilterFactory extends AbstractGatewayFilterFactory<F
     private Mono<Void> shortCircuit(ServerWebExchange exchange, Throwable throwable, HystrixRuntimeException e, String message) {
         return Mono.defer(() -> {
             logger.error("SHORTCIRCUIT : {}", message, e);
-            ExchangeSupport.setHttpStatus(exchange, HttpStatus.REQUEST_TIMEOUT);
-            exchange.getAttributes().put(HTTP_STATUS, HttpStatus.REQUEST_TIMEOUT.value());
-            ResponseVo responseVo = new ResponseVo(HttpStatus.REQUEST_TIMEOUT.value(), SystemConstant.DEFAULT_ERROR_MESSAGE);
+            ExchangeSupport.setHttpStatus(exchange, HttpStatus.BAD_REQUEST);
+            ResponseVo responseVo = new ResponseVo(HttpStatus.BAD_REQUEST.value(), SystemConstant.DEFAULT_ERROR_MESSAGE);
             return ResponseSupport.interrupt(exchange, responseVo, HttpStatus.REQUEST_TIMEOUT, new GatewayException(throwable));
         });
     }
