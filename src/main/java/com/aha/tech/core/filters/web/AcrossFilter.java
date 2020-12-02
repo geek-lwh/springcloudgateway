@@ -61,9 +61,11 @@ public class AcrossFilter implements WebFilter {
 
         String uri = exchange.getRequest().getURI().getRawPath();
         if (uri.startsWith(IGNORE_TRACE_API)) {
+            logger.info("ignore trace api : {}", uri);
             return webFilterChain.filter(exchange);
         }
 
+        logger.info("start deal uri : {}", uri);
         Tracer tracer = GlobalTracer.get();
         Tracer.SpanBuilder spanBuilder = tracer.buildSpan(uri);
         Span span = spanBuilder.start();

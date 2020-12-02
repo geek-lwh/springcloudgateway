@@ -51,7 +51,7 @@ public class LogUtil {
         sb.append(error);
         sb.append(System.lineSeparator());
 
-        logger.error(sb.toString());
+        logger.error(sb.toString(), e);
     }
 
     /**

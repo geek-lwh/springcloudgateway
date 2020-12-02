@@ -157,7 +157,7 @@ public class FallbackGatewayFilterFactory extends AbstractGatewayFilterFactory<F
     private Mono<Void> timeout(ServerWebExchange exchange, Throwable throwable, HystrixRuntimeException e, String message) {
         return Mono.defer(() -> {
             logger.error("TIMEOUT : {}", message, e);
-            exchange.getAttributes().put(HTTP_STATUS, HttpStatus.REQUEST_TIMEOUT);
+            exchange.getAttributes().put(HTTP_STATUS, HttpStatus.REQUEST_TIMEOUT.value());
             ResponseVo responseVo = new ResponseVo(HttpStatus.REQUEST_TIMEOUT.value(), SystemConstant.DEFAULT_ERROR_MESSAGE);
             return ResponseSupport.interrupt(exchange, responseVo, HttpStatus.REQUEST_TIMEOUT, new GatewayException(throwable));
         });
