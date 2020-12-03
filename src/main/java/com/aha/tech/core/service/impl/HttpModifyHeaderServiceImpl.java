@@ -155,6 +155,9 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
             case X_ENV_FIELD_USER_ID:
                 httpHeaders.set(X_ENV_USER_ID, value);
                 break;
+            case X_ENV_FIELD_REGISTER_SOURCE:
+                httpHeaders.set(X_ENV_REGISTER_SOURCE, value);
+                break;
             default:
                 parseDefault(key, value, httpHeaders);
                 break;
@@ -262,4 +265,5 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
 
         return k;
     }
+
 }
