@@ -1,6 +1,7 @@
 package com.aha.tech.util;
 
 import com.aha.tech.core.support.ExchangeSupport;
+import com.google.common.collect.Sets;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,6 +12,7 @@ import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.server.ServerWebExchange;
 
 import java.util.Random;
+import java.util.Set;
 
 import static com.aha.tech.core.constant.AttributeConstant.GATEWAY_REQUEST_CACHED_ATTR;
 import static com.aha.tech.core.constant.AttributeConstant.TRACE_LOG_ID;
@@ -22,6 +24,8 @@ import static com.aha.tech.core.constant.AttributeConstant.TRACE_LOG_ID;
 public class LogUtil {
 
     private static final Logger logger = LoggerFactory.getLogger(LogUtil.class);
+
+    private static final Set<String> IGNORE_TRACE_API = Sets.newHashSet("/actuator/prometheus", "/v3/logs/create");
 
     public static String MDC_TRACE_ID = "traceId";
 
@@ -45,7 +49,6 @@ public class LogUtil {
      */
     public static void splicingError(ServerWebExchange serverWebExchange, Exception e) {
         StringBuffer sb = baseLogStrings(serverWebExchange);
-
         sb.append("错误 : ");
         String error = serverWebExchange.getAttributes().getOrDefault(ServerWebExchangeUtils.HYSTRIX_EXECUTION_EXCEPTION_ATTR, e.getMessage()).toString();
         sb.append(error);
@@ -57,7 +60,10 @@ public class LogUtil {
     /**
      * 打印链路上的日志关键信息
      */
-    public static void chainInfo(ServerWebExchange serverWebExchange) {
+    public static void chainInfo(ServerWebExchange serverWebExchange, String uri) {
+        if (IGNORE_TRACE_API.contains(uri)) {
+            return;
+        }
         StringBuffer sb = baseLogStrings(serverWebExchange);
         logger.info(sb.toString());
     }

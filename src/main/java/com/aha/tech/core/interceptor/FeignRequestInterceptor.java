@@ -41,26 +41,34 @@ public class FeignRequestInterceptor implements RequestInterceptor {
 
     @Override
     public void apply(RequestTemplate requestTemplate) {
+        tracing(requestTemplate);
+        feignRequestLogging(requestTemplate);
+    }
+
+    /**
+     * 构建tracing
+     * @param requestTemplate
+     * @return
+     */
+    private void tracing(RequestTemplate requestTemplate) {
         Tracer tracer = GlobalTracer.get();
-        if (tracer != null) {
-            Span span = tracer.activeSpan();
-            SpanContext spanContext = span.context();
-            span.setTag(HeaderFieldConstant.TRACE_ID, span.context().toTraceId());
-            span.setTag(HeaderFieldConstant.SPAN_ID, span.context().toSpanId());
-            requestTemplate.header(HeaderFieldConstant.TRACE_ID, spanContext.toTraceId());
-            requestTemplate.header(HeaderFieldConstant.SPAN_ID, spanContext.toSpanId());
-            requestTemplate.header(REQUEST_FROM, serverName);
-            requestTemplate.header(REQUEST_API, requestTemplate.url());
-            try {
-                requestTemplate.header(REQUEST_ADDRESS, IpUtil.getLocalHostAddress() + ":" + port);
-            } catch (Exception e) {
-                logger.error("构建traceInfo时 计算ip地址出错", e);
-            }
-            tracer.inject(spanContext, Format.Builtin.HTTP_HEADERS, new FeignCarrierWrapper(requestTemplate));
+        if (tracer == null) return;
+        Span span = tracer.activeSpan();
+        if (span == null) return;
+
+        SpanContext spanContext = span.context();
+        span.setTag(HeaderFieldConstant.TRACE_ID, span.context().toTraceId());
+        span.setTag(HeaderFieldConstant.SPAN_ID, span.context().toSpanId());
+        requestTemplate.header(HeaderFieldConstant.TRACE_ID, spanContext.toTraceId());
+        requestTemplate.header(HeaderFieldConstant.SPAN_ID, spanContext.toSpanId());
+        requestTemplate.header(REQUEST_FROM, serverName);
+        requestTemplate.header(REQUEST_API, requestTemplate.url());
+        try {
+            requestTemplate.header(REQUEST_ADDRESS, IpUtil.getLocalHostAddress() + ":" + port);
+        } catch (Exception e) {
+            logger.error("构建traceInfo时 计算ip地址出错", e);
         }
-        if (feignLog) {
-            feignRequestLogging(requestTemplate);
-        }
+        tracer.inject(spanContext, Format.Builtin.HTTP_HEADERS, new FeignCarrierWrapper(requestTemplate));
     }
 
     /**
@@ -68,6 +76,7 @@ public class FeignRequestInterceptor implements RequestInterceptor {
      * @param requestTemplate
      */
     private void feignRequestLogging(RequestTemplate requestTemplate) {
+        if (!feignLog) return;
         StringBuilder sb = new StringBuilder(System.lineSeparator());
         sb.append("Feign request URI : ").append(requestTemplate.url()).append(requestTemplate.queryLine()).append(System.lineSeparator());
         sb.append("Feign request HEADER : ").append(requestTemplate.headers().toString()).append(System.lineSeparator());
