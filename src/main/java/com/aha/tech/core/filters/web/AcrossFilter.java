@@ -4,6 +4,7 @@ import com.aha.tech.core.constant.AttributeConstant;
 import com.aha.tech.core.support.ExchangeSupport;
 import com.aha.tech.util.LogUtil;
 import com.aha.tech.util.TracerUtil;
+import com.google.common.collect.Sets;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
@@ -27,6 +28,8 @@ import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
+import java.util.Set;
+
 import static com.aha.tech.core.constant.AttributeConstant.HTTP_STATUS;
 import static com.aha.tech.core.constant.AttributeConstant.TRACE_LOG_ID;
 import static com.aha.tech.core.constant.HeaderFieldConstant.*;
@@ -43,7 +46,7 @@ public class AcrossFilter implements WebFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(AcrossFilter.class);
 
-    private static final String IGNORE_TRACE_API = "/actuator/prometheus";
+    private static final Set<String> IGNORE_TRACE_API = Sets.newHashSet("/actuator/prometheus", "/v3/logs/create");
 
     //todo /v3/log
 
@@ -62,8 +65,7 @@ public class AcrossFilter implements WebFilter {
         }
 
         String uri = exchange.getRequest().getURI().getRawPath();
-        if (uri.startsWith(IGNORE_TRACE_API)) {
-            logger.info("ignore trace api : {}", uri);
+        if (IGNORE_TRACE_API.contains(uri)) {
             return webFilterChain.filter(exchange);
         }
 
