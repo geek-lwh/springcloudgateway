@@ -48,11 +48,11 @@ public class AcrossFilter implements WebFilter {
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain webFilterChain) {
         ServerHttpRequest request = exchange.getRequest();
         ServerHttpResponse response = exchange.getResponse();
-        HttpHeaders httpHeaders = response.getHeaders();
-        httpHeaders.setAccessControlAllowOrigin(HEADER_ALL_CONTROL_ALLOW_ORIGIN_ACCESS);
-        httpHeaders.setAccessControlAllowMethods(HEADER_CROSS_ACCESS_ALLOW_HTTP_METHODS);
-        httpHeaders.setAccessControlMaxAge(HEADER_CROSS_ACCESS_ALLOW_MAX_AGE);
-        httpHeaders.setAccessControlAllowHeaders(HEADER_CROSS_ACCESS_ALLOW_ALLOW_HEADERS);
+        HttpHeaders respHeaders = response.getHeaders();
+        respHeaders.setAccessControlAllowOrigin(HEADER_ALL_CONTROL_ALLOW_ORIGIN_ACCESS);
+        respHeaders.setAccessControlAllowMethods(HEADER_CROSS_ACCESS_ALLOW_HTTP_METHODS);
+        respHeaders.setAccessControlMaxAge(HEADER_CROSS_ACCESS_ALLOW_MAX_AGE);
+        respHeaders.setAccessControlAllowHeaders(HEADER_CROSS_ACCESS_ALLOW_ALLOW_HEADERS);
         if (request.getMethod() == HttpMethod.OPTIONS) {
             response.setStatusCode(HttpStatus.OK);
             return Mono.empty();
@@ -63,16 +63,16 @@ public class AcrossFilter implements WebFilter {
         Tracer tracer = GlobalTracer.get();
         Tracer.SpanBuilder spanBuilder = tracer.buildSpan(uri);
         Span span = spanBuilder.start();
+        String traceId = span.context().toTraceId();
         try (Scope scope = tracer.scopeManager().activate(span)) {
             TracerUtil.setClue(span, exchange);
-            ExchangeSupport.put(exchange, TRACE_LOG_ID, span.context().toTraceId());
-            httpHeaders.set(AttributeConstant.TRACE_LOG_ID, span.context().toTraceId());
+            ExchangeSupport.put(exchange, TRACE_LOG_ID, traceId);
+            respHeaders.set(AttributeConstant.TRACE_LOG_ID, traceId);
             return webFilterChain.filter(exchange).doFinally((s) -> {
                 LogUtil.chainInfo(exchange, uri);
                 int status = ExchangeSupport.getHttpStatus(exchange);
                 span.setTag(HTTP_STATUS, status);
                 String error = exchange.getAttributes().getOrDefault(ServerWebExchangeUtils.HYSTRIX_EXECUTION_EXCEPTION_ATTR, Strings.EMPTY).toString();
-
                 if (StringUtils.isNotBlank(error) || status > HttpStatus.OK.value()) {
                     span.log(error);
                     Tags.ERROR.set(span, true);
