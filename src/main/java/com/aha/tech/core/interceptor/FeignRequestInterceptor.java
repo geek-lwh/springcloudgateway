@@ -2,7 +2,6 @@ package com.aha.tech.core.interceptor;
 
 import com.aha.tech.core.constant.HeaderFieldConstant;
 import com.aha.tech.core.model.wrapper.FeignCarrierWrapper;
-import com.aha.tech.util.IpUtil;
 import com.aha.tech.util.TagsUtil;
 import com.ctrip.framework.apollo.Config;
 import com.ctrip.framework.apollo.ConfigService;
@@ -21,7 +20,8 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.charset.Charset;
 
-import static com.aha.tech.core.constant.HeaderFieldConstant.*;
+import static com.aha.tech.core.constant.HeaderFieldConstant.REQUEST_API;
+import static com.aha.tech.core.constant.HeaderFieldConstant.REQUEST_FROM;
 
 /**
  * @Author: luweihong
@@ -65,9 +65,10 @@ public class FeignRequestInterceptor implements RequestInterceptor {
             TagsUtil.setRpcTags(span, Tags.SPAN_KIND_CLIENT);
             tracer.inject(spanContext, Format.Builtin.HTTP_HEADERS, new FeignCarrierWrapper(requestTemplate));
         } catch (Exception e) {
-
+            TagsUtil.setCapturedErrorsTags(e, span);
+            logger.error(e.getMessage(), e);
         } finally {
-
+            span.finish();
         }
 
     }
@@ -78,12 +79,11 @@ public class FeignRequestInterceptor implements RequestInterceptor {
      * @param spanContext
      * @throws Exception
      */
-    private void addRequestChainInfo(RequestTemplate requestTemplate, SpanContext spanContext) throws Exception {
+    private void addRequestChainInfo(RequestTemplate requestTemplate, SpanContext spanContext) {
         requestTemplate.header(HeaderFieldConstant.TRACE_ID, spanContext.toTraceId());
         requestTemplate.header(HeaderFieldConstant.SPAN_ID, spanContext.toSpanId());
         requestTemplate.header(REQUEST_FROM, serverName);
         requestTemplate.header(REQUEST_API, requestTemplate.url());
-        requestTemplate.header(REQUEST_ADDRESS, IpUtil.getLocalHostAddress() + ":" + port);
     }
 
     /**
