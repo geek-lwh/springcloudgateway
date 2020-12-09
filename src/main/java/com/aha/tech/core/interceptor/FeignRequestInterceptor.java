@@ -3,14 +3,17 @@ package com.aha.tech.core.interceptor;
 import com.aha.tech.core.constant.HeaderFieldConstant;
 import com.aha.tech.core.model.wrapper.FeignCarrierWrapper;
 import com.aha.tech.util.IpUtil;
+import com.aha.tech.util.TagsUtil;
 import com.ctrip.framework.apollo.Config;
 import com.ctrip.framework.apollo.ConfigService;
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
+import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.propagation.Format;
+import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
@@ -56,19 +59,31 @@ public class FeignRequestInterceptor implements RequestInterceptor {
         Span span = tracer.activeSpan();
         if (span == null) return;
 
-        SpanContext spanContext = span.context();
-        span.setTag(HeaderFieldConstant.TRACE_ID, span.context().toTraceId());
-        span.setTag(HeaderFieldConstant.SPAN_ID, span.context().toSpanId());
+        try (Scope scope = tracer.scopeManager().activate(span)) {
+            SpanContext spanContext = span.context();
+            addRequestChainInfo(requestTemplate, spanContext);
+            TagsUtil.setRpcTags(span, Tags.SPAN_KIND_CLIENT);
+            tracer.inject(spanContext, Format.Builtin.HTTP_HEADERS, new FeignCarrierWrapper(requestTemplate));
+        } catch (Exception e) {
+
+        } finally {
+
+        }
+
+    }
+
+    /**
+     * 添加头信息
+     * @param requestTemplate
+     * @param spanContext
+     * @throws Exception
+     */
+    private void addRequestChainInfo(RequestTemplate requestTemplate, SpanContext spanContext) throws Exception {
         requestTemplate.header(HeaderFieldConstant.TRACE_ID, spanContext.toTraceId());
         requestTemplate.header(HeaderFieldConstant.SPAN_ID, spanContext.toSpanId());
         requestTemplate.header(REQUEST_FROM, serverName);
         requestTemplate.header(REQUEST_API, requestTemplate.url());
-        try {
-            requestTemplate.header(REQUEST_ADDRESS, IpUtil.getLocalHostAddress() + ":" + port);
-        } catch (Exception e) {
-            logger.error("构建traceInfo时 计算ip地址出错", e);
-        }
-        tracer.inject(spanContext, Format.Builtin.HTTP_HEADERS, new FeignCarrierWrapper(requestTemplate));
+        requestTemplate.header(REQUEST_ADDRESS, IpUtil.getLocalHostAddress() + ":" + port);
     }
 
     /**

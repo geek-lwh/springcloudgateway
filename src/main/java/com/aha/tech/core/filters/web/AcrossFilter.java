@@ -3,7 +3,7 @@ package com.aha.tech.core.filters.web;
 import com.aha.tech.core.constant.AttributeConstant;
 import com.aha.tech.core.support.ExchangeSupport;
 import com.aha.tech.util.LogUtil;
-import com.aha.tech.util.TracerUtil;
+import com.aha.tech.util.TraceUtil;
 import com.google.common.collect.Sets;
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -68,11 +68,12 @@ public class AcrossFilter implements WebFilter {
         Tracer.SpanBuilder spanBuilder = tracer.buildSpan(uri);
         Span span = spanBuilder.start();
         String traceId = span.context().toTraceId();
+        if (IGNORE_TRACE_API_SET.contains(uri)) {
+            Tags.SAMPLING_PRIORITY.set(span, 0);
+        }
+
         try (Scope scope = tracer.scopeManager().activate(span)) {
-            if (IGNORE_TRACE_API_SET.contains(uri)) {
-                Tags.SAMPLING_PRIORITY.set(span, 0);
-            }
-            TracerUtil.setClue(span, exchange);
+            TraceUtil.setActiveSpan(span, exchange);
             ExchangeSupport.put(exchange, TRACE_LOG_ID, traceId);
             respHeaders.set(AttributeConstant.TRACE_LOG_ID, traceId);
             return webFilterChain.filter(exchange).doFinally((s) -> {

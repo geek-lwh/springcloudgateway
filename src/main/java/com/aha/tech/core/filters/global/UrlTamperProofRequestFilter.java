@@ -8,7 +8,7 @@ import com.aha.tech.core.support.ExchangeSupport;
 import com.aha.tech.core.support.ResponseSupport;
 import com.aha.tech.core.support.URISupport;
 import com.aha.tech.util.LogUtil;
-import com.aha.tech.util.TracerUtil;
+import com.aha.tech.util.TraceUtil;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
@@ -59,11 +59,11 @@ public class UrlTamperProofRequestFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        Span span = TracerUtil.startAndRef(exchange, this.getClass().getSimpleName());
+        Span span = TraceUtil.start(exchange, this.getClass().getSimpleName());
         LogUtil.combineTraceId(exchange);
 
         try (Scope scope = tracer.scopeManager().activate(span)) {
-            TracerUtil.setClue(span, exchange);
+            TraceUtil.setActiveSpan(span, exchange);
             if (!verifyQueryParams(exchange)) {
                 ExchangeSupport.setHttpStatus(exchange, HttpStatus.FORBIDDEN);
                 ExchangeSupport.fillErrorMsg(exchange, "url防篡改错误");
@@ -76,7 +76,7 @@ public class UrlTamperProofRequestFilter implements GlobalFilter, Ordered {
 
             return chain.filter(exchange);
         } catch (Exception e) {
-            TracerUtil.logError(e);
+            TraceUtil.setCapturedErrorsTags(e);
             throw e;
         } finally {
             span.finish();
