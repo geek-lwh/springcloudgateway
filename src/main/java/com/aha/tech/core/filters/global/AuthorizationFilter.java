@@ -9,6 +9,7 @@ import com.aha.tech.core.service.RequestHandlerService;
 import com.aha.tech.core.support.ExchangeSupport;
 import com.aha.tech.core.support.ResponseSupport;
 import com.aha.tech.util.LogUtil;
+import com.aha.tech.util.TagsUtil;
 import com.aha.tech.util.TraceUtil;
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -70,7 +71,7 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
 
             return chain.filter(exchange);
         } catch (Exception e) {
-            TraceUtil.setCapturedErrorsTags(e);
+            TagsUtil.setCapturedErrorsTags(e);
             throw e;
         } finally {
             span.finish();

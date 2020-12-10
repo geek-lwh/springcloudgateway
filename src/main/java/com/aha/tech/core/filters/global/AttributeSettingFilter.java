@@ -6,6 +6,7 @@ import com.aha.tech.core.model.entity.PairEntity;
 import com.aha.tech.core.service.RequestHandlerService;
 import com.aha.tech.core.support.ExchangeSupport;
 import com.aha.tech.core.support.VersionSupport;
+import com.aha.tech.util.TagsUtil;
 import com.aha.tech.util.TraceUtil;
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -58,7 +59,7 @@ public class AttributeSettingFilter implements GlobalFilter, Ordered {
             setting(exchange, span);
             return chain.filter(exchange);
         } catch (Exception e) {
-            TraceUtil.setCapturedErrorsTags(e, span);
+            TagsUtil.setCapturedErrorsTags(e, span);
             throw e;
         } finally {
             span.finish();

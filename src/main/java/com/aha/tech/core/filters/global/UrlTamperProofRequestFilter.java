@@ -8,6 +8,7 @@ import com.aha.tech.core.support.ExchangeSupport;
 import com.aha.tech.core.support.ResponseSupport;
 import com.aha.tech.core.support.URISupport;
 import com.aha.tech.util.LogUtil;
+import com.aha.tech.util.TagsUtil;
 import com.aha.tech.util.TraceUtil;
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -76,7 +77,7 @@ public class UrlTamperProofRequestFilter implements GlobalFilter, Ordered {
 
             return chain.filter(exchange);
         } catch (Exception e) {
-            TraceUtil.setCapturedErrorsTags(e);
+            TagsUtil.setCapturedErrorsTags(e);
             throw e;
         } finally {
             span.finish();
