@@ -71,7 +71,7 @@ public class ResponseSupport {
         DataBuffer buffer = resp.bufferFactory().wrap(bytes);
         resp.getHeaders().setContentLength(buffer.readableByteCount());
         resp.getHeaders().setContentType(MediaType.APPLICATION_JSON_UTF8);
-        Boolean isOldVersion = ExchangeSupport.isOldVersion(exchange);
+        Boolean isOldVersion = AttributeSupport.isOldVersion(exchange);
         if (isOldVersion) {
             setResponseStatus(exchange, HttpStatus.OK);
         } else {
@@ -90,7 +90,7 @@ public class ResponseSupport {
      */
     @Deprecated
     public static String buildWarnLog(ServerWebExchange exchange, ResponseVo responseVo, HttpStatus httpStatus) {
-        CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheRequest(exchange);
+        CacheRequestEntity cacheRequestEntity = AttributeSupport.getCacheRequest(exchange);
 //        String requestId = ExchangeSupport.getTraceId(exchange);
 
         URI uri = cacheRequestEntity.getRequestLine();

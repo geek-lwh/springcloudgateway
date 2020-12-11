@@ -4,7 +4,7 @@ import com.aha.tech.core.constant.HeaderFieldConstant;
 import com.aha.tech.core.constant.SystemConstant;
 import com.aha.tech.core.model.entity.PairEntity;
 import com.aha.tech.core.service.RequestHandlerService;
-import com.aha.tech.core.support.ExchangeSupport;
+import com.aha.tech.core.support.AttributeSupport;
 import com.aha.tech.core.support.VersionSupport;
 import com.aha.tech.util.TagsUtil;
 import com.aha.tech.util.TraceUtil;
@@ -55,7 +55,6 @@ public class AttributeSettingFilter implements GlobalFilter, Ordered {
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         Span span = TraceUtil.start(exchange, this.getClass().getSimpleName());
         try (Scope scope = tracer.scopeManager().activate(span)) {
-            TraceUtil.setActiveSpan(span, exchange);
             setting(exchange, span);
             return chain.filter(exchange);
         } catch (Exception e) {
@@ -126,11 +125,11 @@ public class AttributeSettingFilter implements GlobalFilter, Ordered {
      * @param isOld
      */
     private void attributeSet(ServerWebExchange exchange, Span span, Boolean isSkipAuth, Boolean isSkipUrlTamperProof, String os, String version, Boolean isOld) {
-        ExchangeSupport.put(exchange, span, IS_SKIP_AUTH_ATTR, isSkipAuth);
-        ExchangeSupport.put(exchange, span, IS_SKIP_URL_TAMPER_PROOF_ATTR, isSkipUrlTamperProof);
-        ExchangeSupport.put(exchange, span, IS_OLD_VERSION_ATTR, isOld);
-        ExchangeSupport.put(exchange, span, APP_OS_ATTR, os);
-        ExchangeSupport.put(exchange, span, APP_VERSION_ATTR, version);
+        AttributeSupport.put(exchange, span, IS_SKIP_AUTH_ATTR, isSkipAuth);
+        AttributeSupport.put(exchange, span, IS_SKIP_URL_TAMPER_PROOF_ATTR, isSkipUrlTamperProof);
+        AttributeSupport.put(exchange, span, IS_OLD_VERSION_ATTR, isOld);
+        AttributeSupport.put(exchange, span, APP_OS_ATTR, os);
+        AttributeSupport.put(exchange, span, APP_VERSION_ATTR, version);
     }
 
 }

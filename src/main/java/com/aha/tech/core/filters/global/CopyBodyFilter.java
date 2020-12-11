@@ -1,7 +1,7 @@
 package com.aha.tech.core.filters.global;
 
 import com.aha.tech.core.model.entity.CacheRequestEntity;
-import com.aha.tech.core.support.ExchangeSupport;
+import com.aha.tech.core.support.AttributeSupport;
 import com.aha.tech.util.LogUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,7 +55,7 @@ public class CopyBodyFilter implements GlobalFilter, Ordered {
         CacheRequestEntity cacheRequestEntity = new CacheRequestEntity();
         cacheRequestEntity.setRequestLine(exchange.getRequest().getURI());
         cacheRequestEntity.setOriginalRequestHttpHeaders(request.getHeaders());
-        ExchangeSupport.put(exchange, GATEWAY_REQUEST_CACHED_ATTR, cacheRequestEntity);
+        AttributeSupport.put(exchange, GATEWAY_REQUEST_CACHED_ATTR, cacheRequestEntity);
 
         if (httpMethod.equals(HttpMethod.POST) || httpMethod.equals(HttpMethod.PUT)) {
             return DataBufferUtils.join(request.getBody())

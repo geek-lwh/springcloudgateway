@@ -6,7 +6,7 @@ import com.aha.tech.core.controller.FallBackController;
 import com.aha.tech.core.model.entity.AuthenticationResultEntity;
 import com.aha.tech.core.model.entity.PairEntity;
 import com.aha.tech.core.service.*;
-import com.aha.tech.core.support.ExchangeSupport;
+import com.aha.tech.core.support.AttributeSupport;
 import com.aha.tech.passportserver.facade.code.AuthorizationCode;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
@@ -232,7 +232,7 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
     @Override
     public AuthenticationResultEntity authorize(ServerWebExchange serverWebExchange) {
         ServerHttpRequest serverHttpRequest = serverWebExchange.getRequest();
-        Boolean isSkipAuth = ExchangeSupport.getIsSkipAuth(serverWebExchange);
+        Boolean isSkipAuth = AttributeSupport.getIsSkipAuth(serverWebExchange);
 
         if (isSkipAuth) {
             logger.info("跳过授权认证 : {}", serverHttpRequest.getURI());

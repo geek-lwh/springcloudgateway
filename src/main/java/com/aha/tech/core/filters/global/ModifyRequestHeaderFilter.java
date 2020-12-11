@@ -3,7 +3,7 @@ package com.aha.tech.core.filters.global;
 import com.aha.tech.core.model.entity.CacheRequestEntity;
 import com.aha.tech.core.model.wrapper.ServletRequestCarrierWrapper;
 import com.aha.tech.core.service.RequestHandlerService;
-import com.aha.tech.core.support.ExchangeSupport;
+import com.aha.tech.core.support.AttributeSupport;
 import com.aha.tech.util.LogUtil;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
@@ -62,12 +62,12 @@ public class ModifyRequestHeaderFilter implements GlobalFilter, Ordered {
     private ServerHttpRequest replaceHeader(ServerWebExchange exchange) {
         ServerHttpRequest serverHttpRequest = exchange.getRequest();
         HttpHeaders originalHeaders = serverHttpRequest.getHeaders();
-        CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheRequest(exchange);
+        CacheRequestEntity cacheRequestEntity = AttributeSupport.getCacheRequest(exchange);
         String remoteIp = serverHttpRequest.getRemoteAddress().getAddress().getHostAddress();
         HttpHeaders newHttpHeaders = httpRequestHandlerService.modifyRequestHeaders(exchange, originalHeaders, remoteIp);
 
         // inject span context from trace to header
-        Span span = ExchangeSupport.getActiveSpan(exchange);
+        Span span = AttributeSupport.getActiveSpan(exchange);
         tracer.inject(span.context(), Format.Builtin.HTTP_HEADERS, new ServletRequestCarrierWrapper(newHttpHeaders));
 
         cacheRequestEntity.setOriginalRequestHttpHeaders(originalHeaders);

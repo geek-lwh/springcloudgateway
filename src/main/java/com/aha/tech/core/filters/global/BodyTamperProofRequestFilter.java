@@ -5,7 +5,7 @@ import com.aha.tech.core.model.entity.CacheRequestEntity;
 import com.aha.tech.core.model.entity.TamperProofEntity;
 import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.RequestHandlerService;
-import com.aha.tech.core.support.ExchangeSupport;
+import com.aha.tech.core.support.AttributeSupport;
 import com.aha.tech.core.support.ResponseSupport;
 import com.aha.tech.util.LogUtil;
 import com.aha.tech.util.TagsUtil;
@@ -62,13 +62,10 @@ public class BodyTamperProofRequestFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         Span span = TraceUtil.start(exchange, this.getClass().getSimpleName());
-        LogUtil.combineTraceId(exchange);
-
         try (Scope scope = tracer.scopeManager().activate(span)) {
-            TraceUtil.setActiveSpan(span, exchange);
             if (!verifyBody(exchange)) {
-                ExchangeSupport.setHttpStatus(exchange, HttpStatus.FORBIDDEN);
-                ExchangeSupport.fillErrorMsg(exchange, "body防篡改错误");
+                AttributeSupport.setHttpStatus(exchange, HttpStatus.FORBIDDEN);
+                AttributeSupport.fillErrorMsg(exchange, "body防篡改错误");
                 Tags.ERROR.set(span, true);
                 return Mono.defer(() -> {
                     ResponseVo rpcResponse = new ResponseVo(HttpStatus.FORBIDDEN.value(), FallBackController.DEFAULT_SYSTEM_ERROR);
@@ -92,14 +89,14 @@ public class BodyTamperProofRequestFilter implements GlobalFilter, Ordered {
      */
     private Boolean verifyBody(ServerWebExchange exchange) {
         LogUtil.combineTraceId(exchange);
-        CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheRequest(exchange);
+        CacheRequestEntity cacheRequestEntity = AttributeSupport.getCacheRequest(exchange);
         ServerHttpRequest request = exchange.getRequest();
         HttpMethod httpMethod = request.getMethod();
         if (!httpMethod.equals(HttpMethod.POST)) {
             return Boolean.TRUE;
         }
         URI uri = request.getURI();
-        Boolean isSkipUrlTamperProof = ExchangeSupport.getIsSkipUrlTamperProof(exchange);
+        Boolean isSkipUrlTamperProof = AttributeSupport.getIsSkipUrlTamperProof(exchange);
         if (isSkipUrlTamperProof) {
             logger.info("跳过body防篡改,raw_path : {}", uri.getRawPath());
             return Boolean.TRUE;

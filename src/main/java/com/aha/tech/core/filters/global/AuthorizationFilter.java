@@ -6,9 +6,8 @@ import com.aha.tech.core.model.dto.RequestAddParamsDto;
 import com.aha.tech.core.model.entity.AuthenticationResultEntity;
 import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.RequestHandlerService;
-import com.aha.tech.core.support.ExchangeSupport;
+import com.aha.tech.core.support.AttributeSupport;
 import com.aha.tech.core.support.ResponseSupport;
-import com.aha.tech.util.LogUtil;
 import com.aha.tech.util.TagsUtil;
 import com.aha.tech.util.TraceUtil;
 import io.opentracing.Scope;
@@ -54,18 +53,16 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         Span span = TraceUtil.start(exchange, this.getClass().getSimpleName());
-        LogUtil.combineTraceId(exchange);
         try (Scope scope = tracer.scopeManager().activate(span)) {
-            TraceUtil.setActiveSpan(span, exchange);
             ResponseVo responseVo = verifyAccessToken(exchange);
             Integer code = responseVo.getCode();
-            RequestAddParamsDto requestAddParamsDto = ExchangeSupport.getRequestAddParamsDto(exchange);
+            RequestAddParamsDto requestAddParamsDto = AttributeSupport.getRequestAddParamsDto(exchange);
             span.setTag(USER_ID, requestAddParamsDto.getUserId());
             if (!code.equals(ResponseConstants.SUCCESS)) {
-                ExchangeSupport.setHttpStatus(exchange, HttpStatus.UNAUTHORIZED);
+                AttributeSupport.setHttpStatus(exchange, HttpStatus.UNAUTHORIZED);
                 span.log(responseVo.getMessage());
                 Tags.ERROR.set(span, true);
-                ExchangeSupport.fillErrorMsg(exchange, responseVo.getMessage());
+                AttributeSupport.fillErrorMsg(exchange, responseVo.getMessage());
                 return Mono.defer(() -> ResponseSupport.interrupt(exchange, HttpStatus.UNAUTHORIZED, responseVo));
             }
 

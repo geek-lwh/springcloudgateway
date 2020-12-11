@@ -1,7 +1,7 @@
 package com.aha.tech.util;
 
 import com.aha.tech.core.constant.HeaderFieldConstant;
-import com.aha.tech.core.support.ExchangeSupport;
+import com.aha.tech.core.support.AttributeSupport;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.util.GlobalTracer;
@@ -25,7 +25,7 @@ public class TraceUtil {
     public static void setActiveSpan(Span span, ServerWebExchange exchange) {
         span.setTag(HeaderFieldConstant.TRACE_ID, span.context().toTraceId());
         span.setTag(HeaderFieldConstant.SPAN_ID, span.context().toSpanId());
-        ExchangeSupport.setActiveSpan(exchange, span);
+        AttributeSupport.setActiveSpan(exchange, span);
     }
 
     /**
@@ -38,8 +38,12 @@ public class TraceUtil {
     public static Span start(ServerWebExchange exchange, String operationName) {
         Tracer tracer = GlobalTracer.get();
         Tracer.SpanBuilder spanBuilder = tracer.buildSpan(operationName);
-        Span parentSpan = ExchangeSupport.getActiveSpan(exchange);
-        return spanBuilder.asChildOf(parentSpan).start();
+        Span parentSpan = AttributeSupport.getActiveSpan(exchange);
+        Span span = spanBuilder.asChildOf(parentSpan).start();
+        TraceUtil.setActiveSpan(span, exchange);
+        LogUtil.combineTraceId(exchange);
+
+        return span;
     }
 
 

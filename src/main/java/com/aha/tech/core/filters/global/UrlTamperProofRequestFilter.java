@@ -4,10 +4,9 @@ import com.aha.tech.core.controller.FallBackController;
 import com.aha.tech.core.model.entity.TamperProofEntity;
 import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.RequestHandlerService;
-import com.aha.tech.core.support.ExchangeSupport;
+import com.aha.tech.core.support.AttributeSupport;
 import com.aha.tech.core.support.ResponseSupport;
 import com.aha.tech.core.support.URISupport;
-import com.aha.tech.util.LogUtil;
 import com.aha.tech.util.TagsUtil;
 import com.aha.tech.util.TraceUtil;
 import io.opentracing.Scope;
@@ -61,13 +60,10 @@ public class UrlTamperProofRequestFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         Span span = TraceUtil.start(exchange, this.getClass().getSimpleName());
-        LogUtil.combineTraceId(exchange);
-
         try (Scope scope = tracer.scopeManager().activate(span)) {
-            TraceUtil.setActiveSpan(span, exchange);
             if (!verifyQueryParams(exchange)) {
-                ExchangeSupport.setHttpStatus(exchange, HttpStatus.FORBIDDEN);
-                ExchangeSupport.fillErrorMsg(exchange, "url防篡改错误");
+                AttributeSupport.setHttpStatus(exchange, HttpStatus.FORBIDDEN);
+                AttributeSupport.fillErrorMsg(exchange, "url防篡改错误");
                 Tags.ERROR.set(span, true);
                 return Mono.defer(() -> {
                     ResponseVo rpcResponse = new ResponseVo(HttpStatus.FORBIDDEN.value(), FallBackController.DEFAULT_SYSTEM_ERROR);
@@ -96,7 +92,7 @@ public class UrlTamperProofRequestFilter implements GlobalFilter, Ordered {
         HttpHeaders httpHeaders = request.getHeaders();
         TamperProofEntity tamperProofEntity = new TamperProofEntity(httpHeaders, uri);
 
-        if (ExchangeSupport.getIsSkipUrlTamperProof(exchange)) {
+        if (AttributeSupport.getIsSkipUrlTamperProof(exchange)) {
             logger.info("跳过url防篡改 : {}", rawPath);
             return Boolean.TRUE;
         }

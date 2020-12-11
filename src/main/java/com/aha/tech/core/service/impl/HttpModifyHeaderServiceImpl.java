@@ -4,7 +4,7 @@ import com.aha.tech.commons.symbol.Separator;
 import com.aha.tech.core.constant.SystemConstant;
 import com.aha.tech.core.model.dto.RequestAddParamsDto;
 import com.aha.tech.core.service.ModifyHeaderService;
-import com.aha.tech.core.support.ExchangeSupport;
+import com.aha.tech.core.support.AttributeSupport;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
@@ -56,7 +56,7 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
             realIp = remoteIp;
         }
 
-        RequestAddParamsDto requestAddParamsDto = ExchangeSupport.getRequestAddParamsDto(exchange);
+        RequestAddParamsDto requestAddParamsDto = AttributeSupport.getRequestAddParamsDto(exchange);
         String userId = requestAddParamsDto.getUserId() == null ? null : requestAddParamsDto.getUserId().toString();
         httpHeaders.set(X_ENV_USER_ID, userId);
         httpHeaders.set(HEADER_USER_ID, userId);

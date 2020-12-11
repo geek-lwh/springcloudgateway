@@ -23,9 +23,9 @@ import static com.aha.tech.core.constant.AttributeConstant.*;
  *
  * 获取exchange attr 帮助类
  */
-public class ExchangeSupport {
+public class AttributeSupport {
 
-    private static final Logger logger = LoggerFactory.getLogger(ExchangeSupport.class);
+    private static final Logger logger = LoggerFactory.getLogger(AttributeSupport.class);
 
     /**
      * 获取key value default
@@ -67,7 +67,6 @@ public class ExchangeSupport {
      */
     public static void fillErrorMsg(ServerWebExchange exchange, String errorMsg) {
         exchange.getAttributes().put(ServerWebExchangeUtils.HYSTRIX_EXECUTION_EXCEPTION_ATTR, errorMsg);
-
     }
 
     /**

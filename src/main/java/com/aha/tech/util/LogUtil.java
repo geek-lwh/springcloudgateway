@@ -1,6 +1,6 @@
 package com.aha.tech.util;
 
-import com.aha.tech.core.support.ExchangeSupport;
+import com.aha.tech.core.support.AttributeSupport;
 import com.google.common.collect.Sets;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
@@ -76,7 +76,7 @@ public class LogUtil {
     private static StringBuffer baseLogStrings(ServerWebExchange exchange) {
         ServerHttpRequest serverHttpRequest = exchange.getRequest();
         StringBuffer sb = new StringBuffer();
-        String url = ExchangeSupport.getOriginalRequestPath(exchange, serverHttpRequest.getURI().toString());
+        String url = AttributeSupport.getOriginalRequestPath(exchange, serverHttpRequest.getURI().toString());
         // 请求 行
         sb.append("请求行 : ").append(serverHttpRequest.getMethod()).append(" ").append(url);
         sb.append(System.lineSeparator());

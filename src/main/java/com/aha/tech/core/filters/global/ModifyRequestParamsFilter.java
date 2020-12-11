@@ -3,7 +3,7 @@ package com.aha.tech.core.filters.global;
 import com.aha.tech.core.model.dto.RequestAddParamsDto;
 import com.aha.tech.core.model.entity.CacheRequestEntity;
 import com.aha.tech.core.service.OverwriteParamService;
-import com.aha.tech.core.support.ExchangeSupport;
+import com.aha.tech.core.support.AttributeSupport;
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;
@@ -64,9 +64,9 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
         MediaType mediaType = httpHeaders.getContentType();
 
         HttpMethod httpMethod = serverHttpRequest.getMethod();
-        CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheRequest(exchange);
+        CacheRequestEntity cacheRequestEntity = AttributeSupport.getCacheRequest(exchange);
         String cacheBody = cacheRequestEntity.getRequestBody();
-        RequestAddParamsDto requestAddParamsDto = ExchangeSupport.getRequestAddParamsDto(exchange);
+        RequestAddParamsDto requestAddParamsDto = AttributeSupport.getRequestAddParamsDto(exchange);
 
         URI newUri = httpOverwriteParamService.modifyQueryParams(requestAddParamsDto, serverHttpRequest);
         Boolean needAddBodyParams = httpMethod.equals(HttpMethod.POST) || httpMethod.equals(HttpMethod.PUT);

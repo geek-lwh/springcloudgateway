@@ -3,7 +3,7 @@ package com.aha.tech.core.service.impl;
 import com.aha.tech.core.constant.HeaderFieldConstant;
 import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.ModifyResponseService;
-import com.aha.tech.core.support.ExchangeSupport;
+import com.aha.tech.core.support.AttributeSupport;
 import com.aha.tech.core.support.ResponseSupport;
 import com.alibaba.fastjson.JSON;
 import org.apache.commons.lang3.StringUtils;
@@ -67,7 +67,7 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
                 Mono modifiedBody = clientResponse.bodyToMono(String.class).flatMap(originalBody -> {
                     ResponseVo responseVo = ResponseVo.defaultFailureResponseVo();
                     try {
-                        ExchangeSupport.putResponseBody(serverWebExchange, originalBody);
+                        AttributeSupport.putResponseBody(serverWebExchange, originalBody);
                         responseVo = JSON.parseObject(originalBody, ResponseVo.class);
                     } catch (Exception e) {
                         logger.error("traceId : {} 网关解析返回值异常 originalBody : {}", traceId, originalBody, e);

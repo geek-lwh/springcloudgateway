@@ -1,7 +1,7 @@
 package com.aha.tech.core.filters.web;
 
 import com.aha.tech.core.constant.AttributeConstant;
-import com.aha.tech.core.support.ExchangeSupport;
+import com.aha.tech.core.support.AttributeSupport;
 import com.aha.tech.util.LogUtil;
 import com.aha.tech.util.TraceUtil;
 import com.google.common.collect.Sets;
@@ -74,11 +74,11 @@ public class AcrossFilter implements WebFilter {
 
         try (Scope scope = tracer.scopeManager().activate(span)) {
             TraceUtil.setActiveSpan(span, exchange);
-            ExchangeSupport.put(exchange, TRACE_LOG_ID, traceId);
+            AttributeSupport.put(exchange, TRACE_LOG_ID, traceId);
             respHeaders.set(AttributeConstant.TRACE_LOG_ID, traceId);
             return webFilterChain.filter(exchange).doFinally((s) -> {
                 LogUtil.chainInfo(exchange, uri);
-                int status = ExchangeSupport.getHttpStatus(exchange);
+                int status = AttributeSupport.getHttpStatus(exchange);
                 span.setTag(HTTP_STATUS, status);
                 String error = exchange.getAttributes().getOrDefault(ServerWebExchangeUtils.HYSTRIX_EXECUTION_EXCEPTION_ATTR, Strings.EMPTY).toString();
                 if (StringUtils.isNotBlank(error) || status > HttpStatus.OK.value()) {
