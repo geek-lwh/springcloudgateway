@@ -31,7 +31,7 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import static com.aha.tech.core.constant.HeaderFieldConstant.*;
+import static com.aha.tech.core.constant.HeaderFieldConstant.KEEP_ALIVE_VALUE;
 import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.ORIGINAL_RESPONSE_CONTENT_TYPE_ATTR;
 
 /**
@@ -80,7 +80,7 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
                 });
                 logger.info("测试 traceId 3");
 
-                HttpHeaders requestHeader = serverWebExchange.getRequest().getHeaders();
+//                HttpHeaders requestHeader = serverWebExchange.getRequest().getHeaders();
                 BodyInserter bodyInserter = BodyInserters.fromPublisher(modifiedBody, String.class);
                 CachedBodyOutputMessage outputMessage = new CachedBodyOutputMessage(serverWebExchange, oldResponse.getHeaders());
                 return bodyInserter.insert(outputMessage, new BodyInserterContext())
@@ -107,10 +107,10 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
      */
     @Deprecated
     public void modifyResponseHeader(HttpHeaders responseHeader, HttpHeaders requestHeader) {
-        responseHeader.setAccessControlAllowOrigin(HEADER_ALL_CONTROL_ALLOW_ORIGIN_ACCESS);
-        responseHeader.setAccessControlAllowMethods(HEADER_CROSS_ACCESS_ALLOW_HTTP_METHODS);
-        responseHeader.setAccessControlMaxAge(HEADER_CROSS_ACCESS_ALLOW_MAX_AGE);
-        responseHeader.setAccessControlAllowHeaders(HEADER_CROSS_ACCESS_ALLOW_ALLOW_HEADERS);
+//        responseHeader.setAccessControlAllowOrigin(HEADER_ALL_CONTROL_ALLOW_ORIGIN_ACCESS);
+//        responseHeader.setAccessControlAllowMethods(HEADER_CROSS_ACCESS_ALLOW_HTTP_METHODS);
+//        responseHeader.setAccessControlMaxAge(HEADER_CROSS_ACCESS_ALLOW_MAX_AGE);
+//        responseHeader.setAccessControlAllowHeaders(HEADER_CROSS_ACCESS_ALLOW_ALLOW_HEADERS);
         String keepAlive = requestHeader.getFirst(HeaderFieldConstant.HEADER_CONNECTION);
         responseHeader.set(HeaderFieldConstant.HEADER_CONNECTION, StringUtils.isBlank(keepAlive) ? KEEP_ALIVE_VALUE : keepAlive);
     }

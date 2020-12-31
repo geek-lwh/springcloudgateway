@@ -1,6 +1,7 @@
 package com.aha.tech.core.filters.web;
 
 import com.aha.tech.core.constant.AttributeConstant;
+import com.aha.tech.core.constant.HeaderFieldConstant;
 import com.aha.tech.core.support.AttributeSupport;
 import com.aha.tech.util.LogUtil;
 import com.aha.tech.util.TraceUtil;
@@ -46,18 +47,22 @@ public class AcrossFilter implements WebFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(AcrossFilter.class);
 
-    private static final Set<String> IGNORE_TRACE_API_SET = Sets.newHashSet("/actuator/prometheus", "/v3/logs/create");
+    private static final Set<String> IGNORE_TRACE_API_SET = Sets.newHashSet("/actuator/prometheus", "/v3/logs/create", "/v3/support/signature/get");
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain webFilterChain) {
         ServerHttpRequest request = exchange.getRequest();
         ServerHttpResponse response = exchange.getResponse();
+        HttpHeaders reqHeaders = request.getHeaders();
+        String keepAlive = reqHeaders.getFirst(HeaderFieldConstant.HEADER_CONNECTION);
+        reqHeaders.set(HeaderFieldConstant.HEADER_CONNECTION, StringUtils.isBlank(keepAlive) ? KEEP_ALIVE_VALUE : keepAlive);
+
         HttpHeaders respHeaders = response.getHeaders();
-        HttpHeaders reqpHeaders = request.getHeaders();
         respHeaders.setAccessControlAllowOrigin(HEADER_ALL_CONTROL_ALLOW_ORIGIN_ACCESS);
         respHeaders.setAccessControlAllowMethods(HEADER_CROSS_ACCESS_ALLOW_HTTP_METHODS);
         respHeaders.setAccessControlMaxAge(HEADER_CROSS_ACCESS_ALLOW_MAX_AGE);
         respHeaders.setAccessControlAllowHeaders(HEADER_CROSS_ACCESS_ALLOW_ALLOW_HEADERS);
+
         if (request.getMethod() == HttpMethod.OPTIONS) {
             response.setStatusCode(HttpStatus.OK);
             return Mono.empty();
