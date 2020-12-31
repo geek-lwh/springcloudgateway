@@ -5,12 +5,12 @@ import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.ModifyResponseService;
 import com.aha.tech.core.support.AttributeSupport;
 import com.aha.tech.core.support.ResponseSupport;
+import com.aha.tech.util.LogUtil;
 import com.alibaba.fastjson.JSON;
 import org.apache.commons.lang3.StringUtils;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 import org.springframework.cloud.gateway.filter.factory.rewrite.ModifyResponseBodyGatewayFilterFactory;
 import org.springframework.cloud.gateway.filter.factory.rewrite.ModifyResponseBodyGatewayFilterFactory.ResponseAdapter;
 import org.springframework.cloud.gateway.support.BodyInserterContext;
@@ -31,7 +31,6 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import static com.aha.tech.core.constant.AttributeConstant.TRACE_LOG_ID;
 import static com.aha.tech.core.constant.HeaderFieldConstant.*;
 import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.ORIGINAL_RESPONSE_CONTENT_TYPE_ATTR;
 
@@ -61,23 +60,25 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
                 httpHeaders.add(HttpHeaders.CONTENT_TYPE, originalResponseContentType);
                 ResponseAdapter responseAdapter = m.new ResponseAdapter(body, httpHeaders);
                 DefaultClientResponse clientResponse = new DefaultClientResponse(responseAdapter, ExchangeStrategies.withDefaults());
-                String traceId = serverWebExchange.getAttributeOrDefault(TRACE_LOG_ID, "MISS_TRACE_ID");
-                MDC.put("traceId", traceId);
-
+                LogUtil.combineTraceId(serverWebExchange);
+                logger.info("测试 traceId 1");
                 Mono modifiedBody = clientResponse.bodyToMono(String.class).flatMap(originalBody -> {
                     ResponseVo responseVo = ResponseVo.defaultFailureResponseVo();
                     try {
+                        logger.info("测试 traceId 2");
+
                         AttributeSupport.putResponseBody(serverWebExchange, originalBody);
                         responseVo = JSON.parseObject(originalBody, ResponseVo.class);
                     } catch (Exception e) {
-                        logger.error("traceId : {} 网关解析返回值异常 originalBody : {}", traceId, originalBody, e);
+                        logger.error("网关解析返回值异常 originalBody : {}", originalBody, e);
                     }
                     String warnLog = ResponseSupport.buildWarnLog(serverWebExchange, responseVo, getDelegate().getStatusCode());
                     if (StringUtils.isNotBlank(warnLog)) {
-                        logger.warn("traceId : {} 状态码异常! {}", traceId,warnLog);
+                        logger.warn("状态码异常! {}", warnLog);
                     }
                     return Mono.just(originalBody);
                 });
+                logger.info("测试 traceId 3");
 
                 HttpHeaders requestHeader = serverWebExchange.getRequest().getHeaders();
                 BodyInserter bodyInserter = BodyInserters.fromPublisher(modifiedBody, String.class);
@@ -87,7 +88,7 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
                             Flux<DataBuffer> messageBody = outputMessage.getBody();
                             HttpHeaders responseHeader = getDelegate().getHeaders();
                             responseHeader.remove(HttpHeaders.TRANSFER_ENCODING);
-                            modifyResponseHeader(responseHeader, requestHeader);
+//                            modifyResponseHeader(responseHeader, requestHeader);
                             messageBody = messageBody.doOnNext(data -> responseHeader.setContentLength(data.readableByteCount()));
                             return getDelegate().writeWith(messageBody);
                         }));
