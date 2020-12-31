@@ -61,12 +61,9 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
                 ResponseAdapter responseAdapter = m.new ResponseAdapter(body, httpHeaders);
                 DefaultClientResponse clientResponse = new DefaultClientResponse(responseAdapter, ExchangeStrategies.withDefaults());
                 LogUtil.combineTraceId(serverWebExchange);
-                logger.info("测试 traceId 1");
                 Mono modifiedBody = clientResponse.bodyToMono(String.class).flatMap(originalBody -> {
                     ResponseVo responseVo = ResponseVo.defaultFailureResponseVo();
                     try {
-                        logger.info("测试 traceId 2");
-
                         AttributeSupport.putResponseBody(serverWebExchange, originalBody);
                         responseVo = JSON.parseObject(originalBody, ResponseVo.class);
                     } catch (Exception e) {
@@ -78,7 +75,6 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
                     }
                     return Mono.just(originalBody);
                 });
-                logger.info("测试 traceId 3");
 
 //                HttpHeaders requestHeader = serverWebExchange.getRequest().getHeaders();
                 BodyInserter bodyInserter = BodyInserters.fromPublisher(modifiedBody, String.class);

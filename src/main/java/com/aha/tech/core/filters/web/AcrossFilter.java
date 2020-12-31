@@ -55,13 +55,13 @@ public class AcrossFilter implements WebFilter {
         ServerHttpResponse response = exchange.getResponse();
         HttpHeaders reqHeaders = request.getHeaders();
         String keepAlive = reqHeaders.getFirst(HeaderFieldConstant.HEADER_CONNECTION);
-        reqHeaders.set(HeaderFieldConstant.HEADER_CONNECTION, StringUtils.isBlank(keepAlive) ? KEEP_ALIVE_VALUE : keepAlive);
 
         HttpHeaders respHeaders = response.getHeaders();
         respHeaders.setAccessControlAllowOrigin(HEADER_ALL_CONTROL_ALLOW_ORIGIN_ACCESS);
         respHeaders.setAccessControlAllowMethods(HEADER_CROSS_ACCESS_ALLOW_HTTP_METHODS);
         respHeaders.setAccessControlMaxAge(HEADER_CROSS_ACCESS_ALLOW_MAX_AGE);
         respHeaders.setAccessControlAllowHeaders(HEADER_CROSS_ACCESS_ALLOW_ALLOW_HEADERS);
+        respHeaders.set(HeaderFieldConstant.HEADER_CONNECTION, StringUtils.isBlank(keepAlive) ? KEEP_ALIVE_VALUE : keepAlive);
 
         if (request.getMethod() == HttpMethod.OPTIONS) {
             response.setStatusCode(HttpStatus.OK);
