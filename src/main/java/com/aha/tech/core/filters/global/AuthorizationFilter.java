@@ -2,7 +2,6 @@ package com.aha.tech.core.filters.global;
 
 import com.aha.tech.commons.constants.ResponseConstants;
 import com.aha.tech.core.constant.FilterProcessOrderedConstant;
-import com.aha.tech.core.model.dto.RequestAddParamsDto;
 import com.aha.tech.core.model.entity.AuthenticationResultEntity;
 import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.RequestHandlerService;
@@ -25,8 +24,6 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
-
-import static com.aha.tech.core.constant.AttributeConstant.USER_ID;
 
 /**
  * @Author: luweihong
@@ -56,8 +53,6 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
         try (Scope scope = tracer.scopeManager().activate(span)) {
             ResponseVo responseVo = verifyAccessToken(exchange);
             Integer code = responseVo.getCode();
-            RequestAddParamsDto requestAddParamsDto = AttributeSupport.getRequestAddParamsDto(exchange);
-            span.setTag(USER_ID, requestAddParamsDto.getUserId());
             if (!code.equals(ResponseConstants.SUCCESS)) {
                 AttributeSupport.setHttpStatus(exchange, HttpStatus.UNAUTHORIZED);
                 span.log(responseVo.getMessage());
