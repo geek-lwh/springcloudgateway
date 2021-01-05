@@ -1,5 +1,6 @@
 package com.aha.tech.core.service.impl;
 
+import com.aha.tech.commons.constants.ResponseConstants;
 import com.aha.tech.commons.symbol.Separator;
 import com.aha.tech.core.constant.SystemConstant;
 import com.aha.tech.core.controller.FallBackController;
@@ -236,7 +237,7 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
 
         if (isSkipAuth) {
             logger.info("跳过授权认证 : {}", serverHttpRequest.getURI());
-            return new AuthenticationResultEntity(isSkipAuth);
+            return new AuthenticationResultEntity(Boolean.TRUE, ResponseConstants.SUCCESS);
         }
 
         HttpHeaders requestHeaders = serverHttpRequest.getHeaders();
@@ -244,9 +245,7 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
         PairEntity<String> authorization = parseAuthorizationHeader(requestHeaders);
         if (authorization == null) {
             logger.error("确实auth头对象");
-            AuthenticationResultEntity failure = new AuthenticationResultEntity();
-            failure.setWhiteList(Boolean.FALSE);
-            failure.setCode(HttpStatus.UNAUTHORIZED.value());
+            AuthenticationResultEntity failure = new AuthenticationResultEntity(Boolean.FALSE, HttpStatus.UNAUTHORIZED.value());
             failure.setMessage(FallBackController.DEFAULT_SYSTEM_ERROR);
             return failure;
         }
@@ -303,8 +302,8 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
             Boolean isApp = isAppRequest(userAgent);
             if (isApp) {
                 if (userAgent.startsWith("ahaschool")) {
-                    userAgent = userAgent.replace("ahaschool","ahakid");
-                    newHeaders.set(HEADER_USER_AGENT,userAgent);
+                    userAgent = userAgent.replace("ahaschool", "ahakid");
+                    newHeaders.set(HEADER_USER_AGENT, userAgent);
                 }
             }
         }
