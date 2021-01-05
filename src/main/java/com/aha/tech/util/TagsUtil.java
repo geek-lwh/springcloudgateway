@@ -33,6 +33,7 @@ public class TagsUtil {
      * @return
      */
     public static void setCapturedErrorsTags(Exception e) {
+        logger.error(e.getMessage(), e);
         Span span = GlobalTracer.get().activeSpan();
         Map err = Maps.newHashMapWithExpectedSize(6);
         err.put(Fields.EVENT, Tags.ERROR.getKey());
@@ -40,7 +41,6 @@ public class TagsUtil {
         err.put(Fields.MESSAGE, e.getMessage());
         Tags.ERROR.set(span, true);
         span.log(err);
-        logger.error(e.getMessage(), e);
     }
 
     /**

@@ -2,6 +2,7 @@ package com.aha.tech.core.filters.global;
 
 import com.aha.tech.commons.constants.ResponseConstants;
 import com.aha.tech.core.constant.FilterProcessOrderedConstant;
+import com.aha.tech.core.exception.AuthorizationFailedException;
 import com.aha.tech.core.model.entity.AuthenticationResultEntity;
 import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.RequestHandlerService;
@@ -13,6 +14,7 @@ import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.tag.Tags;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -68,7 +70,6 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
         } finally {
             span.finish();
         }
-
     }
 
     /**
@@ -85,6 +86,10 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
         }
 
         String message = authenticationResultEntity.getMessage();
+
+        if (StringUtils.isBlank(message)) {
+            message = AuthorizationFailedException.AUTHORIZATION_FAILED_ERROR_MSG;
+        }
         logger.warn("授权异常 : {}", message);
 
         return new ResponseVo(code, message);
