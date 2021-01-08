@@ -97,7 +97,7 @@ public class HeaderFieldConstant {
 
     public static final String X_ENV_REGISTER_SOURCE = "X-Env-Register-Source";
 
-    public static final String HEADER_USER_ID = "user_id";
+    public static final String HEADER_USER_ID = "X-User-Id";
 
     public static final String X_ENV_USER_ID = "X-Env-User-Id";
 

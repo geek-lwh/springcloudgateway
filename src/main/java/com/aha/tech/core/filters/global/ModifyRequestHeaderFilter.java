@@ -1,12 +1,15 @@
 package com.aha.tech.core.filters.global;
 
 import com.aha.tech.core.model.entity.CacheRequestEntity;
+import com.aha.tech.core.model.wrapper.ServletRequestCarrierWrapper;
 import com.aha.tech.core.service.RequestHandlerService;
-import com.aha.tech.core.support.ExchangeSupport;
-import com.aha.tech.core.support.ResponseSupport;
+import com.aha.tech.core.support.AttributeSupport;
+import com.aha.tech.util.LogUtil;
+import io.opentracing.Span;
+import io.opentracing.Tracer;
+import io.opentracing.propagation.Format;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
@@ -14,16 +17,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
-import java.util.List;
 
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.MODIFY_REQUEST_HEADER_GATEWAY_FILTER_ORDER;
-import static com.aha.tech.core.constant.HeaderFieldConstant.REQUEST_ID;
-import static com.aha.tech.core.interceptor.FeignRequestInterceptor.TRACE_ID;
 
 /**
  * @Author: luweihong
@@ -39,6 +38,9 @@ public class ModifyRequestHeaderFilter implements GlobalFilter, Ordered {
     @Resource
     private RequestHandlerService httpRequestHandlerService;
 
+    @Resource
+    private Tracer tracer;
+
     @Override
     public int getOrder() {
         return MODIFY_REQUEST_HEADER_GATEWAY_FILTER_ORDER;
@@ -46,17 +48,28 @@ public class ModifyRequestHeaderFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        logger.debug("开始进行修改请求头网关过滤器");
-        List<String> clientRequestId = exchange.getRequest().getHeaders().get(REQUEST_ID);
-        if (!CollectionUtils.isEmpty(clientRequestId)) {
-            MDC.put(TRACE_ID, clientRequestId.get(0));
-        }
+        LogUtil.combineTraceId(exchange);
+        ServerHttpRequest newRequest = replaceHeader(exchange);
+
+        return chain.filter(exchange.mutate().request(newRequest).build());
+    }
+
+    /**
+     * 重构header
+     * @param exchange
+     * @return
+     */
+    private ServerHttpRequest replaceHeader(ServerWebExchange exchange) {
         ServerHttpRequest serverHttpRequest = exchange.getRequest();
         HttpHeaders originalHeaders = serverHttpRequest.getHeaders();
-        CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheRequest(exchange);
+        CacheRequestEntity cacheRequestEntity = AttributeSupport.getCacheRequest(exchange);
         String remoteIp = serverHttpRequest.getRemoteAddress().getAddress().getHostAddress();
         HttpHeaders newHttpHeaders = httpRequestHandlerService.modifyRequestHeaders(exchange, originalHeaders, remoteIp);
-        logger.debug("after modify request header : {} ", ResponseSupport.formatHttpHeaders(newHttpHeaders));
+
+        // inject span context from trace to header
+        Span span = AttributeSupport.getActiveSpan(exchange);
+        tracer.inject(span.context(), Format.Builtin.HTTP_HEADERS, new ServletRequestCarrierWrapper(newHttpHeaders));
+
         cacheRequestEntity.setOriginalRequestHttpHeaders(originalHeaders);
         cacheRequestEntity.setAfterModifyRequestHttpHeaders(newHttpHeaders);
 
@@ -67,7 +80,7 @@ public class ModifyRequestHeaderFilter implements GlobalFilter, Ordered {
             }
         };
 
-        return chain.filter(exchange.mutate().request(newRequest).build());
+        return newRequest;
     }
 
 }

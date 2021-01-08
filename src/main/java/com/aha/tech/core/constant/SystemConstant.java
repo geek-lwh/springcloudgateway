@@ -14,7 +14,8 @@ public class SystemConstant {
 
     public final static String TEST = "test";
 
-    public final static String CURRENT_VERSION = "6.1.6";
+    // 从这个版本开始区分新老 分界线
+    public final static String DIVIDING_LINE_OF_VERSION = "6.1.6";
 
     public final static String WEB_CLIENT = "web";
 
@@ -27,4 +28,6 @@ public class SystemConstant {
     public final static String DEFAULT_ERROR_MESSAGE = "我好像开了个小差!";
 
     public final static String APPLICATION_PORT = "9700";
+
+    public final static String APPLICATION_NAME = "GATEWAY_SERVER";
 }

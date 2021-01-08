@@ -4,8 +4,7 @@ import com.aha.tech.commons.symbol.Separator;
 import com.aha.tech.core.constant.SystemConstant;
 import com.aha.tech.core.model.dto.RequestAddParamsDto;
 import com.aha.tech.core.service.ModifyHeaderService;
-import com.aha.tech.core.support.ExchangeSupport;
-import com.dianping.cat.Cat;
+import com.aha.tech.core.support.AttributeSupport;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
@@ -23,7 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
-import static com.aha.tech.core.constant.ExchangeAttributeConstant.*;
+import static com.aha.tech.core.constant.AttributeConstant.*;
 import static com.aha.tech.core.constant.HeaderFieldConstant.*;
 import static com.aha.tech.core.support.ParseHeadersSupport.parseHeaderIp;
 import static com.aha.tech.core.support.ParseHeadersSupport.verifyPp;
@@ -57,12 +56,11 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
             realIp = remoteIp;
         }
 
-        RequestAddParamsDto requestAddParamsDto = ExchangeSupport.getRequestAddParamsDto(exchange);
+        RequestAddParamsDto requestAddParamsDto = AttributeSupport.getRequestAddParamsDto(exchange);
         String userId = requestAddParamsDto.getUserId() == null ? null : requestAddParamsDto.getUserId().toString();
         httpHeaders.set(X_ENV_USER_ID, userId);
         httpHeaders.set(HEADER_USER_ID, userId);
 
-        httpHeaders.set(X_TRACE_ID, Cat.createMessageId());
         httpHeaders.set(HEADER_X_FORWARDED_FOR, realIp);
         httpHeaders.set(HEADER_TOKEN, DEFAULT_X_TOKEN_VALUE);
         httpHeaders.set(HEADER_OS, SystemConstant.WEB_CLIENT);

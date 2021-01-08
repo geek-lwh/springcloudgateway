@@ -1,12 +1,13 @@
 package com.aha.tech.core.service.impl;
 
+import com.aha.tech.commons.constants.ResponseConstants;
 import com.aha.tech.commons.symbol.Separator;
 import com.aha.tech.core.constant.SystemConstant;
 import com.aha.tech.core.controller.FallBackController;
 import com.aha.tech.core.model.entity.AuthenticationResultEntity;
 import com.aha.tech.core.model.entity.PairEntity;
 import com.aha.tech.core.service.*;
-import com.aha.tech.core.support.ExchangeSupport;
+import com.aha.tech.core.support.AttributeSupport;
 import com.aha.tech.passportserver.facade.code.AuthorizationCode;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
@@ -29,7 +30,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 
-import static com.aha.tech.core.constant.ExchangeAttributeConstant.*;
+import static com.aha.tech.core.constant.AttributeConstant.*;
 import static com.aha.tech.core.constant.HeaderFieldConstant.*;
 import static com.aha.tech.core.constant.SystemConstant.TEST;
 import static com.aha.tech.core.support.VersionSupport.isAppRequest;
@@ -209,8 +210,6 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
         // 重写path
         String rewritePath = httpRewritePathService.rewritePath(routeId, validPath);
 
-//        logger.info("uri : {},originalUrlPath : {},validPath : {},routeId : {},rewritePath : {}", uri, originalUrlPath, validPath, routeId, rewritePath);
-
         serverWebExchange.getAttributes().put(GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR, originalUrlPath);
         serverWebExchange.getAttributes().put(GATEWAY_REQUEST_ROUTE_HOST_ATTR, uri);
         serverWebExchange.getAttributes().put(GATEWAY_REQUEST_VALID_PATH_ATTR, validPath);
@@ -234,23 +233,23 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
     @Override
     public AuthenticationResultEntity authorize(ServerWebExchange serverWebExchange) {
         ServerHttpRequest serverHttpRequest = serverWebExchange.getRequest();
-        Boolean isSkipAuth = ExchangeSupport.getIsSkipAuth(serverWebExchange);
+        Boolean isSkipAuth = AttributeSupport.getIsSkipAuth(serverWebExchange);
 
         if (isSkipAuth) {
             logger.info("跳过授权认证 : {}", serverHttpRequest.getURI());
-            return new AuthenticationResultEntity(isSkipAuth);
+            return new AuthenticationResultEntity(Boolean.TRUE, ResponseConstants.SUCCESS);
         }
 
         HttpHeaders requestHeaders = serverHttpRequest.getHeaders();
         // 解析authorization
         PairEntity<String> authorization = parseAuthorizationHeader(requestHeaders);
         if (authorization == null) {
-            AuthenticationResultEntity failure = new AuthenticationResultEntity();
-            failure.setWhiteList(Boolean.FALSE);
-            failure.setCode(HttpStatus.UNAUTHORIZED.value());
+            logger.error("确实auth头对象");
+            AuthenticationResultEntity failure = new AuthenticationResultEntity(Boolean.FALSE, HttpStatus.UNAUTHORIZED.value());
             failure.setMessage(FallBackController.DEFAULT_SYSTEM_ERROR);
             return failure;
         }
+
         String userName = authorization.getFirstEntity();
         String accessToken = authorization.getSecondEntity();
 
@@ -303,8 +302,8 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
             Boolean isApp = isAppRequest(userAgent);
             if (isApp) {
                 if (userAgent.startsWith("ahaschool")) {
-                    userAgent = userAgent.replace("ahaschool","ahakid");
-                    newHeaders.set(HEADER_USER_AGENT,userAgent);
+                    userAgent = userAgent.replace("ahaschool", "ahakid");
+                    newHeaders.set(HEADER_USER_AGENT, userAgent);
                 }
             }
         }

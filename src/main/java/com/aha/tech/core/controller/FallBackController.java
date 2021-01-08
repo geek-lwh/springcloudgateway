@@ -4,13 +4,12 @@ import com.aha.tech.commons.utils.DateUtil;
 import com.aha.tech.core.model.vo.HystrixDataVo;
 import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.AccessLogService;
+import com.aha.tech.util.LogUtil;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 import org.springframework.cloud.gateway.support.ServerWebExchangeUtils;
 import org.springframework.http.HttpStatus;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,12 +18,8 @@ import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
 
-import java.util.List;
-
-import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR;
-import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_REWRITE_PATH_ATTR;
-import static com.aha.tech.core.constant.HeaderFieldConstant.REQUEST_ID;
-import static com.aha.tech.core.interceptor.FeignRequestInterceptor.TRACE_ID;
+import static com.aha.tech.core.constant.AttributeConstant.GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR;
+import static com.aha.tech.core.constant.AttributeConstant.GATEWAY_REQUEST_REWRITE_PATH_ATTR;
 
 /**
  * @Author: luweihong
@@ -43,29 +38,26 @@ public class FallBackController {
     private AccessLogService httpAccessLogService;
 
     /**
-     * 降级策略
+     * 降级策略,一般自身服务超时会走到这里
      * @param serverWebExchange
      * @return
      */
     @RequestMapping(value = "/fallback", method = RequestMethod.GET)
     public Mono<ResponseVo> fallBack(ServerWebExchange serverWebExchange) {
-        List<String> clientRequestId =serverWebExchange.getRequest().getHeaders().get(REQUEST_ID);
-        if (!CollectionUtils.isEmpty(clientRequestId)) {
-            MDC.put(TRACE_ID, clientRequestId.get(0));
-        }
-
+        LogUtil.combineTraceId(serverWebExchange);
+        logger.error("GATEWAY : FALLBACK START ---->");
         Object c = serverWebExchange.getAttributes().get(ServerWebExchangeUtils.HYSTRIX_EXECUTION_EXCEPTION_ATTR);
         if (c == null) {
-            httpAccessLogService.printWhenError(serverWebExchange, new Exception("未捕获到hystrix异常!"));
-            ResponseVo responseVo = new ResponseVo(HttpStatus.BAD_GATEWAY.value(),DEFAULT_SYSTEM_ERROR);
+            httpAccessLogService.asyncLogError(serverWebExchange, new Exception("未捕获到hystrix异常!"));
+            ResponseVo responseVo = new ResponseVo(HttpStatus.BAD_GATEWAY.value(), DEFAULT_SYSTEM_ERROR);
             logger.error("接口熔断,未捕获到具体错误!");
             return Mono.just(responseVo);
         }
 
         Throwable executionException = (Throwable) c;
         Exception e = (Exception) executionException;
-        httpAccessLogService.printWhenError(serverWebExchange, e);
 
+        httpAccessLogService.asyncLogError(serverWebExchange, e);
         ResponseVo responseVo = buildHystrixResponse(executionException, serverWebExchange);
 
         return Mono.just(responseVo);

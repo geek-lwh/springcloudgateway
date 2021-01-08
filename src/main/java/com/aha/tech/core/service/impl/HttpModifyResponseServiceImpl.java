@@ -3,15 +3,14 @@ package com.aha.tech.core.service.impl;
 import com.aha.tech.core.constant.HeaderFieldConstant;
 import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.ModifyResponseService;
-import com.aha.tech.core.support.ExchangeSupport;
+import com.aha.tech.core.support.AttributeSupport;
 import com.aha.tech.core.support.ResponseSupport;
+import com.aha.tech.util.LogUtil;
 import com.alibaba.fastjson.JSON;
-import com.dianping.cat.Cat;
 import org.apache.commons.lang3.StringUtils;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 import org.springframework.cloud.gateway.filter.factory.rewrite.ModifyResponseBodyGatewayFilterFactory;
 import org.springframework.cloud.gateway.filter.factory.rewrite.ModifyResponseBodyGatewayFilterFactory.ResponseAdapter;
 import org.springframework.cloud.gateway.support.BodyInserterContext;
@@ -19,14 +18,12 @@ import org.springframework.cloud.gateway.support.CachedBodyOutputMessage;
 import org.springframework.cloud.gateway.support.DefaultClientResponse;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.ServerCodecConfigurer;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.http.server.reactive.ServerHttpResponseDecorator;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.reactive.function.BodyInserter;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.ExchangeStrategies;
@@ -34,11 +31,7 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.Collections;
-import java.util.List;
-
-import static com.aha.tech.core.constant.HeaderFieldConstant.*;
-import static com.aha.tech.core.interceptor.FeignRequestInterceptor.TRACE_ID;
+import static com.aha.tech.core.constant.HeaderFieldConstant.KEEP_ALIVE_VALUE;
 import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.ORIGINAL_RESPONSE_CONTENT_TYPE_ATTR;
 
 /**
@@ -55,6 +48,7 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
      * @param oldResponse
      * @return
      */
+    @Deprecated
     @Override
     public ServerHttpResponseDecorator renewResponse(ServerWebExchange serverWebExchange, ServerHttpResponse oldResponse) {
         ServerHttpResponseDecorator serverHttpResponseDecorator = new ServerHttpResponseDecorator(oldResponse) {
@@ -66,28 +60,23 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
                 httpHeaders.add(HttpHeaders.CONTENT_TYPE, originalResponseContentType);
                 ResponseAdapter responseAdapter = m.new ResponseAdapter(body, httpHeaders);
                 DefaultClientResponse clientResponse = new DefaultClientResponse(responseAdapter, ExchangeStrategies.withDefaults());
-                String traceId = Cat.getCurrentMessageId();
-                List<String> clientRequestId =getDelegate().getHeaders().get(REQUEST_ID);
-                if (!CollectionUtils.isEmpty(clientRequestId)) {
-                    MDC.put(TRACE_ID, clientRequestId.get(0));
-                }
-
+                LogUtil.combineTraceId(serverWebExchange);
                 Mono modifiedBody = clientResponse.bodyToMono(String.class).flatMap(originalBody -> {
                     ResponseVo responseVo = ResponseVo.defaultFailureResponseVo();
                     try {
-                        ExchangeSupport.putResponseBody(serverWebExchange,originalBody);
+                        AttributeSupport.putResponseBody(serverWebExchange, originalBody);
                         responseVo = JSON.parseObject(originalBody, ResponseVo.class);
                     } catch (Exception e) {
-                        logger.error("traceId : {} 网关解析返回值异常 originalBody : {}",traceId, originalBody, e);
+                        logger.error("网关解析返回值异常 originalBody : {}", originalBody, e);
                     }
                     String warnLog = ResponseSupport.buildWarnLog(serverWebExchange, responseVo, getDelegate().getStatusCode());
                     if (StringUtils.isNotBlank(warnLog)) {
-                        logger.warn("traceId : {} 状态码异常! {}", traceId,warnLog);
+                        logger.warn("状态码异常! {}", warnLog);
                     }
                     return Mono.just(originalBody);
                 });
 
-                HttpHeaders requestHeader = serverWebExchange.getRequest().getHeaders();
+//                HttpHeaders requestHeader = serverWebExchange.getRequest().getHeaders();
                 BodyInserter bodyInserter = BodyInserters.fromPublisher(modifiedBody, String.class);
                 CachedBodyOutputMessage outputMessage = new CachedBodyOutputMessage(serverWebExchange, oldResponse.getHeaders());
                 return bodyInserter.insert(outputMessage, new BodyInserterContext())
@@ -95,7 +84,7 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
                             Flux<DataBuffer> messageBody = outputMessage.getBody();
                             HttpHeaders responseHeader = getDelegate().getHeaders();
                             responseHeader.remove(HttpHeaders.TRANSFER_ENCODING);
-                            modifyResponseHeader(responseHeader, requestHeader);
+//                            modifyResponseHeader(responseHeader, requestHeader);
                             messageBody = messageBody.doOnNext(data -> responseHeader.setContentLength(data.readableByteCount()));
                             return getDelegate().writeWith(messageBody);
                         }));
@@ -112,11 +101,12 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
      * @param responseHeader
      * @param requestHeader
      */
+    @Deprecated
     public void modifyResponseHeader(HttpHeaders responseHeader, HttpHeaders requestHeader) {
-        responseHeader.setAccessControlAllowOrigin(HEADER_ALL_CONTROL_ALLOW_ORIGIN_ACCESS);
-        responseHeader.setAccessControlAllowMethods(HEADER_CROSS_ACCESS_ALLOW_HTTP_METHODS);
-        responseHeader.setAccessControlMaxAge(HEADER_CROSS_ACCESS_ALLOW_MAX_AGE);
-        responseHeader.setAccessControlAllowHeaders(HEADER_CROSS_ACCESS_ALLOW_ALLOW_HEADERS);
+//        responseHeader.setAccessControlAllowOrigin(HEADER_ALL_CONTROL_ALLOW_ORIGIN_ACCESS);
+//        responseHeader.setAccessControlAllowMethods(HEADER_CROSS_ACCESS_ALLOW_HTTP_METHODS);
+//        responseHeader.setAccessControlMaxAge(HEADER_CROSS_ACCESS_ALLOW_MAX_AGE);
+//        responseHeader.setAccessControlAllowHeaders(HEADER_CROSS_ACCESS_ALLOW_ALLOW_HEADERS);
         String keepAlive = requestHeader.getFirst(HeaderFieldConstant.HEADER_CONNECTION);
         responseHeader.set(HeaderFieldConstant.HEADER_CONNECTION, StringUtils.isBlank(keepAlive) ? KEEP_ALIVE_VALUE : keepAlive);
     }
@@ -126,6 +116,7 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
      * @param serverHttpRequest
      * @return
      */
+    @Deprecated
     private boolean isGZipped(ServerHttpRequest serverHttpRequest) {
         String requestEncoding = serverHttpRequest.getHeaders().getFirst(HttpHeaders.ACCEPT_ENCODING);
         if (requestEncoding.indexOf("gzip") == -1) {

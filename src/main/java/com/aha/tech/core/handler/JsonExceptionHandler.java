@@ -5,6 +5,8 @@ import com.aha.tech.core.constant.SystemConstant;
 import com.aha.tech.core.exception.GatewayException;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.web.ErrorProperties;
 import org.springframework.boot.autoconfigure.web.ResourceProperties;
 import org.springframework.boot.autoconfigure.web.reactive.error.DefaultErrorWebExceptionHandler;
@@ -24,13 +26,8 @@ import java.util.Map;
  */
 public class JsonExceptionHandler extends DefaultErrorWebExceptionHandler {
 
-    /**
-     * Create a new {@code DefaultErrorWebExceptionHandler} instance.
-     * @param errorAttributes the error attributes
-     * @param resourceProperties the resources configuration properties
-     * @param errorProperties the error configuration properties
-     * @param applicationContext the current application context
-     */
+    private static final Logger logger = LoggerFactory.getLogger(JsonExceptionHandler.class);
+
     public JsonExceptionHandler(ErrorAttributes errorAttributes, ResourceProperties resourceProperties, ErrorProperties errorProperties, ApplicationContext applicationContext) {
         super(errorAttributes, resourceProperties, errorProperties, applicationContext);
     }
@@ -55,12 +52,13 @@ public class JsonExceptionHandler extends DefaultErrorWebExceptionHandler {
         if (error instanceof GatewayException) {
             GatewayException e = (GatewayException) error;
             code = e.getCode();
-//            message = e.getMessage();
         }
 
         String method = request.methodName();
         URI uri = request.uri();
         String requestUrl = this.buildRequestUrl(method, uri);
+
+        logger.error(error.getMessage(), error);
 
         return buildResponseData(error, code, requestUrl, SystemConstant.DEFAULT_ERROR_MESSAGE);
     }

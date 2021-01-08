@@ -42,8 +42,9 @@ public class AuthenticationResultEntity {
         super();
     }
 
-    public AuthenticationResultEntity(Boolean isWhiteList) {
+    public AuthenticationResultEntity(Boolean isWhiteList, Integer code) {
         this.isWhiteList = isWhiteList;
+        this.code = code;
     }
 
 

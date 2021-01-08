@@ -2,27 +2,30 @@ package com.aha.tech.core.filters.global;
 
 import com.aha.tech.commons.constants.ResponseConstants;
 import com.aha.tech.core.constant.FilterProcessOrderedConstant;
+import com.aha.tech.core.exception.AuthorizationFailedException;
 import com.aha.tech.core.model.entity.AuthenticationResultEntity;
 import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.RequestHandlerService;
+import com.aha.tech.core.support.AttributeSupport;
 import com.aha.tech.core.support.ResponseSupport;
+import com.aha.tech.util.TagsUtil;
+import com.aha.tech.util.TraceUtil;
+import io.opentracing.Scope;
+import io.opentracing.Span;
+import io.opentracing.Tracer;
+import io.opentracing.tag.Tags;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
-import java.util.List;
-
-import static com.aha.tech.core.constant.HeaderFieldConstant.REQUEST_ID;
-import static com.aha.tech.core.interceptor.FeignRequestInterceptor.TRACE_ID;
 
 /**
  * @Author: luweihong
@@ -38,6 +41,9 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
     @Resource
     private RequestHandlerService httpRequestHandlerService;
 
+    @Resource
+    private Tracer tracer;
+
     @Override
     public int getOrder() {
         return FilterProcessOrderedConstant.AUTH_GATEWAY_FILTER_ORDER;
@@ -45,30 +51,48 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        logger.debug("开始执行权限校验网关过滤器");
+        Span span = TraceUtil.start(exchange, this.getClass().getSimpleName());
+        try (Scope scope = tracer.scopeManager().activate(span)) {
+            ResponseVo responseVo = verifyAccessToken(exchange);
+            Integer code = responseVo.getCode();
+            if (!code.equals(ResponseConstants.SUCCESS)) {
+                AttributeSupport.setHttpStatus(exchange, HttpStatus.UNAUTHORIZED);
+                span.log(responseVo.getMessage());
+                Tags.ERROR.set(span, true);
+                AttributeSupport.fillErrorMsg(exchange, responseVo.getMessage());
+                return Mono.defer(() -> ResponseSupport.interrupt(exchange, HttpStatus.UNAUTHORIZED, responseVo));
+            }
 
-        List<String> clientRequestId = exchange.getRequest().getHeaders().get(REQUEST_ID);
-        if (!CollectionUtils.isEmpty(clientRequestId)) {
-            MDC.put(TRACE_ID, clientRequestId.get(0));
+            return chain.filter(exchange);
+        } catch (Exception e) {
+            TagsUtil.setCapturedErrorsTags(e);
+            throw e;
+        } finally {
+            span.finish();
         }
+    }
 
+    /**
+     * 是否通过授权
+     * @param exchange
+     * @return
+     */
+    private ResponseVo verifyAccessToken(ServerWebExchange exchange) {
         AuthenticationResultEntity authenticationResultEntity = httpRequestHandlerService.authorize(exchange);
         Boolean isWhiteList = authenticationResultEntity.getWhiteList();
-        if (isWhiteList) {
-            return chain.filter(exchange);
-        }
-
         Integer code = authenticationResultEntity.getCode();
-        if (code.equals(ResponseConstants.SUCCESS)) {
-            return chain.filter(exchange);
+        if (isWhiteList || code.equals(ResponseConstants.SUCCESS)) {
+            return new ResponseVo(ResponseConstants.SUCCESS);
         }
 
         String message = authenticationResultEntity.getMessage();
+
+        if (StringUtils.isBlank(message)) {
+            message = AuthorizationFailedException.AUTHORIZATION_FAILED_ERROR_MSG;
+        }
         logger.warn("授权异常 : {}", message);
-        return Mono.defer(() -> {
-            ResponseVo rpcResponse = new ResponseVo(code, message);
-            return ResponseSupport.write(exchange, HttpStatus.UNAUTHORIZED, rpcResponse);
-        });
+
+        return new ResponseVo(code, message);
     }
 
 }

@@ -12,10 +12,10 @@ public class FilterProcessOrderedConstant {
 
     public static int STEP = 10;
 
-    public static int PRE_HANDLER_FILTER_ORDER = 0;
+    public static int ATTRIBUTE_SETTING_FILTER_ORDER = 0;
 
     // cpu使用率限流
-    public static int CPU_RATE_LIMITER_FILTER_ORDER = PRE_HANDLER_FILTER_ORDER + STEP;
+    public static int CPU_RATE_LIMITER_FILTER_ORDER = ATTRIBUTE_SETTING_FILTER_ORDER + STEP;
 
     // qps限流
     public static int QPS_RATE_LIMITER_FILTER_ORDER = CPU_RATE_LIMITER_FILTER_ORDER + STEP;
@@ -48,5 +48,6 @@ public class FilterProcessOrderedConstant {
 
     // 修改请求返回体过滤器
     public static int MODIFY_RESPONSE_GATEWAY_FILTER_ORDER = NettyWriteResponseFilter.WRITE_RESPONSE_FILTER_ORDER - STEP;
+//    public static int MODIFY_RESPONSE_GATEWAY_FILTER_ORDER = LOAD_BALANCING_FILTER + STEP;
 
 }

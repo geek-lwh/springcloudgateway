@@ -3,13 +3,12 @@ package com.aha.tech.core.filters.global;
 import com.aha.tech.core.model.dto.RequestAddParamsDto;
 import com.aha.tech.core.model.entity.CacheRequestEntity;
 import com.aha.tech.core.service.OverwriteParamService;
-import com.aha.tech.core.support.ExchangeSupport;
+import com.aha.tech.core.support.AttributeSupport;
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
@@ -18,20 +17,14 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
 import java.net.URI;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.MODIFY_PARAMS_FILTER_ORDER;
-import static com.aha.tech.core.constant.HeaderFieldConstant.REQUEST_ID;
-import static com.aha.tech.core.constant.HeaderFieldConstant.X_TRACE_ID;
-import static com.aha.tech.core.interceptor.FeignRequestInterceptor.TRACE_ID;
 
 /**
  * @Author: luweihong
@@ -56,21 +49,24 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        logger.debug("开始进入修改GET|POST请求参数过滤器");
+        return replaceRequest(exchange, chain);
+    }
 
+    /**
+     * 重构params
+     * @param exchange
+     * @param chain
+     * @return
+     */
+    private Mono<Void> replaceRequest(ServerWebExchange exchange, GatewayFilterChain chain) {
         ServerHttpRequest serverHttpRequest = exchange.getRequest();
         HttpHeaders httpHeaders = serverHttpRequest.getHeaders();
         MediaType mediaType = httpHeaders.getContentType();
 
         HttpMethod httpMethod = serverHttpRequest.getMethod();
-        CacheRequestEntity cacheRequestEntity = ExchangeSupport.getCacheRequest(exchange);
+        CacheRequestEntity cacheRequestEntity = AttributeSupport.getCacheRequest(exchange);
         String cacheBody = cacheRequestEntity.getRequestBody();
-        RequestAddParamsDto requestAddParamsDto = ExchangeSupport.getRequestAddParamsDto(exchange);
-
-        List<String> clientRequestId = httpHeaders.get(REQUEST_ID);
-        if (!CollectionUtils.isEmpty(clientRequestId)) {
-            MDC.put(TRACE_ID, clientRequestId.get(0));
-        }
+        RequestAddParamsDto requestAddParamsDto = AttributeSupport.getRequestAddParamsDto(exchange);
 
         URI newUri = httpOverwriteParamService.modifyQueryParams(requestAddParamsDto, serverHttpRequest);
         Boolean needAddBodyParams = httpMethod.equals(HttpMethod.POST) || httpMethod.equals(HttpMethod.PUT);
@@ -79,7 +75,6 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
             return chain.filter(exchange.mutate().request(request).build());
         }
 
-        // MediaType.APPLICATION_FORM_URLENCODED 不转json
         String newBodyStr = cacheBody;
 
         if (mediaType.isCompatibleWith(MediaType.APPLICATION_JSON_UTF8)) {

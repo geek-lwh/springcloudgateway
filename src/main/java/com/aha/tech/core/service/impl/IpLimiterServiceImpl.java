@@ -3,7 +3,6 @@ package com.aha.tech.core.service.impl;
 import com.aha.tech.core.limiter.IpRateLimiter;
 import com.aha.tech.core.service.LimiterService;
 import com.aha.tech.core.service.RequestHandlerService;
-import com.aha.tech.core.support.ExchangeSupport;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +19,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import static com.aha.tech.core.constant.ExchangeAttributeConstant.GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR;
+import static com.aha.tech.core.constant.AttributeConstant.GATEWAY_REQUEST_ORIGINAL_URL_PATH_ATTR;
 import static com.aha.tech.core.support.ParseHeadersSupport.parseHeaderIp;
 
 /**
@@ -60,7 +59,7 @@ public class IpLimiterServiceImpl implements LimiterService {
         Boolean isAllowed = Boolean.TRUE;
         try {
             RateLimiter.Response r = rateLimiterAllowed.toFuture().get(TIMEOUT, TimeUnit.MILLISECONDS);
-            ExchangeSupport.setIpLimiterCache(exchange, r, key);
+//            ExchangeSupport.setIpLimiterCache(exchange, r, key);
             isAllowed = r.isAllowed();
         } catch (InterruptedException e) {
             logger.error("执行ip限流时线程中断", e);
