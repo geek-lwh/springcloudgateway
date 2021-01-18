@@ -148,6 +148,19 @@ public class HeaderFieldConstant {
 
     // X-Ca-Version 中的值 代表版本号
     public static final String VERSION_FROYO = "Froyo";
+
+    public static final String TRACE_ID = "X-TRACE-ID";
+
+    public static final String REQUEST_FROM = "X-REQUEST_FROM";
+
+    public static final String SPAN_ID = "X-SPAN_ID";
+
+    public static final String REQUEST_ADDRESS = "X-REQUEST_ADDRESS";
+
+    public static final String REQUEST_API = "X-REQUEST_API";
+
+    public static final String UBER_TRACE_ID = "UBER-TRACE-ID";
+//
 //
 //    public static final String CAT_HTTP_HEADER_ROOT_MESSAGE_ID = "X-CAT-ROOT-MESSAGE-ID";
 //    public static final String CAT_HTTP_HEADER_PARENT_MESSAGE_ID = "X-CAT-ROOT-PARENT-ID";

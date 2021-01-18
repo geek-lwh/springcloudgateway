@@ -20,8 +20,6 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.charset.Charset;
 
-import static com.aha.tech.core.constant.HeaderFieldConstant.REQUEST_API;
-import static com.aha.tech.core.constant.HeaderFieldConstant.REQUEST_FROM;
 
 /**
  * @Author: luweihong
@@ -82,8 +80,6 @@ public class FeignRequestInterceptor implements RequestInterceptor {
     private void addRequestChainInfo(RequestTemplate requestTemplate, SpanContext spanContext) {
         requestTemplate.header(HeaderFieldConstant.TRACE_ID, spanContext.toTraceId());
         requestTemplate.header(HeaderFieldConstant.SPAN_ID, spanContext.toSpanId());
-        requestTemplate.header(REQUEST_FROM, serverName);
-        requestTemplate.header(REQUEST_API, requestTemplate.url());
     }
 
     /**

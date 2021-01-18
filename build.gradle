@@ -56,7 +56,7 @@ dependencies {
     compile('org.springframework.boot:spring-boot-starter-aop')
     compile('org.springframework.boot:spring-boot-starter-actuator')
     compile('org.springframework.cloud:spring-cloud-starter-gateway')
-    compile("com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-discovery:2.0.3.RELEASE")
+    compile('org.springframework.cloud:spring-cloud-starter-alibaba-nacos-discovery:0.9.0.RELEASE') 
 
     compile('org.springframework.cloud:spring-cloud-starter-config:2.1.0.RELEASE')
     compile ('org.springframework.cloud:spring-cloud-starter-openfeign')
