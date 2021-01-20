@@ -31,6 +31,10 @@ public class AttributeConstant {
 
     public static final String IS_SKIP_URL_TAMPER_PROOF_ATTR = "IS_SKIP_URL_TAMPER_PROOF_ATTR";
 
+    public static final String IS_SKIP_IP_LIMITER_ATTR = "IS_SKIP_IP_LIMITER_ATTR";
+
+    public static final String REQUEST_IP_ATTR = "REQUEST_IP_ATTR";
+
     public static final String IS_OLD_VERSION_ATTR = "IS_OLD_VERSION_ATTR";
 
     public static final String APP_OS_ATTR = "APP_OS_ATTR";

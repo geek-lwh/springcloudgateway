@@ -11,6 +11,7 @@ import com.aha.tech.util.TraceUtil;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -28,6 +29,7 @@ import java.util.List;
 
 import static com.aha.tech.core.constant.AttributeConstant.*;
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.ATTRIBUTE_SETTING_FILTER_ORDER;
+import static com.aha.tech.core.support.ParseHeadersSupport.parseHeaderIp;
 
 /**
  * @Author: luweihong
@@ -78,6 +80,15 @@ public class AttributeSettingFilter implements GlobalFilter, Ordered {
 
         // 是否跳过url防篡改
         Boolean isSkipUrlTamperProof = httpRequestHandlerService.isSkipUrlTamperProof(rawPath, httpHeaders);
+
+        // ip
+        String ip = parseHeaderIp(exchange.getRequest().getHeaders());
+        if (StringUtils.isBlank(ip)) {
+            ip = exchange.getRequest().getRemoteAddress().getAddress().getHostAddress();
+        }
+
+        Boolean isSkipIpLimiter = httpRequestHandlerService.isSkipIpLimiter(rawPath, ip);
+
         // 获取版本号和os
         PairEntity pair = parsingAgent(exchange);
         String os = pair.getFirstEntity().toString();
@@ -90,7 +101,13 @@ public class AttributeSettingFilter implements GlobalFilter, Ordered {
             isOld = Boolean.TRUE;
         }
 
-        attributeSet(exchange, span, isSkipAuth, isSkipUrlTamperProof, os, version, isOld);
+        AttributeSupport.put(exchange, span, IS_SKIP_AUTH_ATTR, isSkipAuth);
+        AttributeSupport.put(exchange, span, IS_SKIP_URL_TAMPER_PROOF_ATTR, isSkipUrlTamperProof);
+        AttributeSupport.put(exchange, span, IS_SKIP_IP_LIMITER_ATTR, isSkipIpLimiter);
+        AttributeSupport.put(exchange, span, REQUEST_IP_ATTR, ip);
+        AttributeSupport.put(exchange, span, IS_OLD_VERSION_ATTR, isOld);
+        AttributeSupport.put(exchange, span, APP_OS_ATTR, os);
+        AttributeSupport.put(exchange, span, APP_VERSION_ATTR, version);
     }
 
     /**
@@ -112,24 +129,6 @@ public class AttributeSettingFilter implements GlobalFilter, Ordered {
         }
 
         return new PairEntity(os, version);
-    }
-
-    /**
-     * 参数设置
-     * @param exchange
-     * @param span
-     * @param isSkipAuth
-     * @param isSkipUrlTamperProof
-     * @param os
-     * @param version
-     * @param isOld
-     */
-    private void attributeSet(ServerWebExchange exchange, Span span, Boolean isSkipAuth, Boolean isSkipUrlTamperProof, String os, String version, Boolean isOld) {
-        AttributeSupport.put(exchange, span, IS_SKIP_AUTH_ATTR, isSkipAuth);
-        AttributeSupport.put(exchange, span, IS_SKIP_URL_TAMPER_PROOF_ATTR, isSkipUrlTamperProof);
-        AttributeSupport.put(exchange, span, IS_OLD_VERSION_ATTR, isOld);
-        AttributeSupport.put(exchange, span, APP_OS_ATTR, os);
-        AttributeSupport.put(exchange, span, APP_VERSION_ATTR, version);
     }
 
 }

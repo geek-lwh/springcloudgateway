@@ -4,11 +4,9 @@ import com.aha.tech.core.controller.FallBackController;
 import com.aha.tech.core.exception.LimiterException;
 import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.LimiterService;
-import com.aha.tech.core.service.RequestHandlerService;
 import com.aha.tech.core.support.AttributeSupport;
 import com.aha.tech.core.support.ResponseSupport;
 import com.aha.tech.util.LogUtil;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,7 +21,6 @@ import reactor.core.publisher.Mono;
 import javax.annotation.Resource;
 
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.IP_RATE_LIMITER_FILTER_ORDER;
-import static com.aha.tech.core.support.ParseHeadersSupport.parseHeaderIp;
 
 /**
  * @Author: luweihong
@@ -41,8 +38,6 @@ public class IpRateLimiterFilter implements GlobalFilter, Ordered {
     @Resource
     private LimiterService ipLimiterService;
 
-    @Resource
-    private RequestHandlerService httpRequestHandlerService;
 
     @Value("${ip.ratelimiter.enable:false}")
     private boolean isEnable;
@@ -55,11 +50,8 @@ public class IpRateLimiterFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         LogUtil.combineTraceId(exchange);
-        String ip = parseHeaderIp(exchange.getRequest().getHeaders());
-        if (StringUtils.isBlank(ip)) {
-            ip = exchange.getRequest().getRemoteAddress().getAddress().getHostAddress();
-        }
-        Boolean isAllowed = isOnTheWhiteList(exchange, ip);
+        String ip = AttributeSupport.getRequestIp(exchange);
+        Boolean isAllowed = isOnTheWhiteList(exchange);
 
         if (!isAllowed) {
             AttributeSupport.setHttpStatus(exchange, HttpStatus.TOO_MANY_REQUESTS);
@@ -77,13 +69,13 @@ public class IpRateLimiterFilter implements GlobalFilter, Ordered {
      * @param exchange
      * @return
      */
-    private Boolean isOnTheWhiteList(ServerWebExchange exchange, String ip) {
+    private Boolean isOnTheWhiteList(ServerWebExchange exchange) {
         if (!isEnable) {
             return Boolean.TRUE;
         }
 
-        String rawPath = exchange.getRequest().getURI().getRawPath();
-        if (httpRequestHandlerService.isSkipIpLimiter(rawPath, ip)) {
+        Boolean isWhiteList = AttributeSupport.getIsSkipIpLimiter(exchange);
+        if (isWhiteList) {
             return Boolean.TRUE;
         }
 

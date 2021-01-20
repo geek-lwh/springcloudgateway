@@ -123,6 +123,24 @@ public class AttributeSupport {
     }
 
     /**
+     * 获取是否跳过ip限流
+     * @param exchange
+     * @return
+     */
+    public static Boolean getIsSkipIpLimiter(ServerWebExchange exchange) {
+        return (Boolean) exchange.getAttributes().getOrDefault(IS_SKIP_IP_LIMITER_ATTR, Boolean.FALSE);
+    }
+
+    /**
+     * 获取是否跳过ip限流
+     * @param exchange
+     * @return
+     */
+    public static String getRequestIp(ServerWebExchange exchange) {
+        return (String) exchange.getAttributes().getOrDefault(REQUEST_IP_ATTR, exchange.getRequest().getRemoteAddress().getHostString());
+    }
+
+    /**
      * 获取是否跳过url防篡改
      * @param exchange
      * @return

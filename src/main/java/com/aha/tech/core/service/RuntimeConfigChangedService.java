@@ -17,20 +17,5 @@ public interface RuntimeConfigChangedService {
      */
     void routeApiUriChanged(ConfigChangeEvent changeEvent, Set<String> changeKeys);
 
-    /**
-     * 跳过授权模块白名单
-     * @param changeEvent
-     * @param changeKeys
-     */
-    void skipAuthWhiteListChanged(ConfigChangeEvent changeEvent, Set<String> changeKeys);
-
-    /**
-     * 跳过ip限流白名单
-     * @param changeEvent
-     * @param changeKeys
-     */
-    void skipIpLimiterWhiteListChanged(ConfigChangeEvent changeEvent, Set<String> changeKeys);
-
-    void skipUrlTamperProofWhiteListChanged(ConfigChangeEvent changeEvent, Set<String> changeKeys);
 
 }

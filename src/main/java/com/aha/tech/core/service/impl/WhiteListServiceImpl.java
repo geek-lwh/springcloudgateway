@@ -21,7 +21,7 @@ public class WhiteListServiceImpl implements WhiteListService {
 
     private final static String IP_LIST_OF_IP_LIMITER_WHITELIST = "skip.iplimiter.ip.list";
 
-    private final static String URL_TAMPER_PROOF_WHITELIST = "skip.url.tamper.proof";
+    private final static String URL_TAMPER_PROOF_WHITELIST = "skip.url.tamper.proof.list";
 
     @Override
     public List<String> fetchAuthWhiteList() {

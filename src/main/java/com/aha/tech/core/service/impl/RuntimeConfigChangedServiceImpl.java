@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -32,19 +31,7 @@ public class RuntimeConfigChangedServiceImpl implements RuntimeConfigChangedServ
 
     private String DYNAMIC_ROUTE_API_URI_BEAN = "routeEntityMap";
 
-    private String DYNAMIC_AUTH_WHITE_LIST_BEAN = "authWhiteList";
-
-    private String DYNAMIC_IP_LIMITER_WHITE_LIST_BEAN = "ipLimiterWhiteList";
-
-    private String DYNAMIC_URL_TAMPER_PROOF_WHITE_LIST_BEAN = "urlTamperProofWhiteList";
-
     private String ROUTE_API_URI_PREFIX = "route.api.uri.mappings.";
-
-    private String SKIP_AUTH_WHITE_LIST_PREFIX = "skip.auth.white.list";
-
-    private String SKIP_IP_LIMITER_WHITE_LIST_PREFIX = "skip.iplimiter.white.list";
-
-    private String SKIP_URL_TAMPER_PROOF_WHITE_LIST_PREFIX = "skip.url.tamper.proof.white.list";
 
 
     @Autowired
@@ -80,51 +67,6 @@ public class RuntimeConfigChangedServiceImpl implements RuntimeConfigChangedServ
     }
 
     /**
-     * 跳过授权白名单列表变更
-     * @param changeEvent
-     * @param changeKeys
-     */
-    @Override
-    public synchronized void skipAuthWhiteListChanged(ConfigChangeEvent changeEvent, Set<String> changeKeys) {
-        changeKeys.forEach(changeKeyName -> {
-            ConfigChange change = changeEvent.getChange(changeKeyName);
-            if (changeKeyName.startsWith(SKIP_AUTH_WHITE_LIST_PREFIX)) {
-                refreshSkipAuthWhiteListConfig(change);
-            }
-        });
-    }
-
-    /**
-     * 跳过ip限流白名单列表变更
-     * @param changeEvent
-     * @param changeKeys
-     */
-    @Override
-    public void skipIpLimiterWhiteListChanged(ConfigChangeEvent changeEvent, Set<String> changeKeys) {
-        changeKeys.forEach(changeKeyName -> {
-            ConfigChange change = changeEvent.getChange(changeKeyName);
-            if (changeKeyName.startsWith(SKIP_IP_LIMITER_WHITE_LIST_PREFIX)) {
-                refreshSkipIpLimiterWhiteListConfig(change);
-            }
-        });
-    }
-
-    /**
-     * 跳过url防篡改白名单列表变更
-     * @param changeEvent
-     * @param changeKeys
-     */
-    @Override
-    public void skipUrlTamperProofWhiteListChanged(ConfigChangeEvent changeEvent, Set<String> changeKeys) {
-        changeKeys.forEach(changeKeyName -> {
-            ConfigChange change = changeEvent.getChange(changeKeyName);
-            if (changeKeyName.startsWith(SKIP_URL_TAMPER_PROOF_WHITE_LIST_PREFIX)) {
-                refreshSkipUrlTamperProofWhiteListConfig(change);
-            }
-        });
-    }
-
-    /**
      * 刷新路由API资源配置
      * @param change
      * @param prefix
@@ -151,67 +93,6 @@ public class RuntimeConfigChangedServiceImpl implements RuntimeConfigChangedServ
         refreshScope.refresh(DYNAMIC_ROUTE_API_URI_BEAN);
 
         logger.info("更新 路由API资源地址 : {}", prefix + key);
-    }
-
-
-    /**
-     * 刷新跳过授权白名单列表配置
-     * @param change
-     */
-    private void refreshSkipAuthWhiteListConfig(ConfigChange change) {
-        logger.info("刷新跳过授权白名单列表配置 !");
-        String oldValue = change.getOldValue();
-        String newValue = change.getNewValue();
-        logger.info("变更前的值 : {},变更后的值 : {}", oldValue, newValue);
-
-        List<String> authWhiteList = (List<String>) SpringContextUtil.getBean(DYNAMIC_AUTH_WHITE_LIST_BEAN);
-
-        authWhiteList.remove(oldValue);
-        authWhiteList.add(newValue);
-
-        refreshScope.refresh(DYNAMIC_AUTH_WHITE_LIST_BEAN);
-
-        logger.info("更新 刷新跳过授权白名单列表配置 : {}", authWhiteList);
-    }
-
-    /**
-     * 刷新跳过ip限流白名单列表配置
-     * @param change
-     */
-    private void refreshSkipIpLimiterWhiteListConfig(ConfigChange change) {
-        logger.info("刷新跳过ip限流白名单列表配置 !");
-        String oldValue = change.getOldValue();
-        String newValue = change.getNewValue();
-        logger.info("变更前的值 : {},变更后的值 : {}", oldValue, newValue);
-
-        List<String> ipLimiterWhiteList = (List<String>) SpringContextUtil.getBean(DYNAMIC_IP_LIMITER_WHITE_LIST_BEAN);
-
-        ipLimiterWhiteList.remove(oldValue);
-        ipLimiterWhiteList.add(newValue);
-
-        refreshScope.refresh(DYNAMIC_IP_LIMITER_WHITE_LIST_BEAN);
-
-        logger.info("更新 刷新跳过ip限流白名单列表配置 : {}", ipLimiterWhiteList);
-    }
-
-    /**
-     * 刷新跳过url防篡改白名单列表配置
-     * @param change
-     */
-    private void refreshSkipUrlTamperProofWhiteListConfig(ConfigChange change) {
-        logger.info("刷新跳过url防篡改白名单列表配置 !");
-        String oldValue = change.getOldValue();
-        String newValue = change.getNewValue();
-        logger.info("变更前的值 : {},变更后的值 : {}", oldValue, newValue);
-
-        List<String> urlTamperProofWhiteList = (List<String>) SpringContextUtil.getBean(DYNAMIC_URL_TAMPER_PROOF_WHITE_LIST_BEAN);
-
-        urlTamperProofWhiteList.remove(oldValue);
-        urlTamperProofWhiteList.add(newValue);
-
-        refreshScope.refresh(DYNAMIC_URL_TAMPER_PROOF_WHITE_LIST_BEAN);
-
-        logger.info("更新 刷新跳过url防篡改白名单列表配置 : {}", urlTamperProofWhiteList);
     }
 
     /**
