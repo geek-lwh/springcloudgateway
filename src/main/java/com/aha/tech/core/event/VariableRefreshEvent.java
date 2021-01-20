@@ -36,11 +36,7 @@ public class VariableRefreshEvent {
     private void configChangeListener(ConfigChangeEvent changeEvent) {
         logger.info("配置中心 配置被发布!");
         Set<String> changeKeys = changeEvent.changedKeys();
-
         runtimeConfigChangedService.routeApiUriChanged(changeEvent,changeKeys);
-        runtimeConfigChangedService.skipAuthWhiteListChanged(changeEvent, changeKeys);
-        runtimeConfigChangedService.skipIpLimiterWhiteListChanged(changeEvent, changeKeys);
-        runtimeConfigChangedService.skipUrlTamperProofWhiteListChanged(changeEvent, changeKeys);
     }
 
 }
