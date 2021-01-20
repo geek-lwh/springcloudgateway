@@ -11,7 +11,7 @@ import java.util.List;
  */
 public class HeaderFieldConstant {
 
-    public static final String HEADER_SKIP_URL_TAMPER_PROOF = "X-NO-TAMPER-PROOF";
+    public static final String HEADER_SKIP_URL_TAMPER_PROOF = "NO-CHECK";
 
     public static final String HEADER_CONNECTION = "Connection";
 

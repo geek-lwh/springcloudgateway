@@ -74,41 +74,53 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
     @Resource
     private WhiteListService whiteListService;
 
+    /**
+     * 返回true 代表跳过,在白名单里
+     * @param api
+     * @return
+     */
     @Override
-    public Boolean isSkipIpLimiter(String rawPath) {
-        List<String> list = whiteListService.findSkipIpLimiterWhiteList();
-        if (CollectionUtils.isEmpty(list)) {
-            return Boolean.FALSE;
+    public Boolean isSkipIpLimiter(String api, String ip) {
+        List<String> apiList = whiteListService.fetchIpLimiterApiWhiteList();
+        if (apiList.contains(api)) {
+            logger.info("{} 在IP限流API白名单中", api);
+            return Boolean.TRUE;
         }
-        return list.contains(rawPath);
+
+        List<String> ipList = whiteListService.fetchIpLimiterIpWhiteList();
+        if (ipList.contains(ip)) {
+            logger.info("{} 在IP限流IP白名单中", ip);
+            return Boolean.TRUE;
+        }
+
+        return Boolean.FALSE;
     }
 
     @Override
-    public Boolean isSkipAuth(String rawPath) {
-        List<String> list = whiteListService.findSkipAuthWhiteList();
-        if (CollectionUtils.isEmpty(list)) {
-            return Boolean.FALSE;
+    public Boolean isSkipAuth(String api) {
+        List<String> list = whiteListService.fetchAuthWhiteList();
+        if (list.contains(api)) {
+            logger.info("{} 在auth白名单中", api);
+            return Boolean.TRUE;
         }
-        return list.contains(rawPath);
+
+        return Boolean.FALSE;
     }
 
     @Override
-    public Boolean isSkipUrlTamperProof(String rawPath, HttpHeaders httpHeaders) {
+    public Boolean isSkipUrlTamperProof(String api, HttpHeaders httpHeaders) {
         String profile = System.getProperty(SystemConstant.SPRING_PROFILES_ACTIVE);
         if (profile.startsWith(TEST)) {
             List<String> isSkip = httpHeaders.getOrDefault(HEADER_SKIP_URL_TAMPER_PROOF, Collections.EMPTY_LIST);
             if (!CollectionUtils.isEmpty(isSkip)) {
-                logger.info("存在跳过url防篡改的header头 : {}, profiles : {}", HEADER_SKIP_URL_TAMPER_PROOF, profile);
+                logger.info("环境 : {} 跳过防篡改校验", profile);
                 return Boolean.TRUE;
             }
         }
 
-        List<String> list = whiteListService.findSkipUrlTamperProofWhiteList();
-        if (CollectionUtils.isEmpty(list)) {
-            return Boolean.FALSE;
-        }
+        List<String> list = whiteListService.fetchUrlTamperProofWhiteList();
 
-        return list.contains(rawPath);
+        return list.contains(api);
     }
 
     /**

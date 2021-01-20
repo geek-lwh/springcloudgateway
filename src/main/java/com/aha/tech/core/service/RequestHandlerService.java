@@ -13,7 +13,7 @@ import org.springframework.web.server.ServerWebExchange;
  */
 public interface RequestHandlerService {
 
-    Boolean isSkipIpLimiter(String rawPath);
+    Boolean isSkipIpLimiter(String api, String ip);
 
     /**
      * 是否跳过授权验证

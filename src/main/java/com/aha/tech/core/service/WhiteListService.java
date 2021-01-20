@@ -12,17 +12,19 @@ public interface WhiteListService {
      * 查询跳过授权白名单列表
      * @return
      */
-    List<String> findSkipAuthWhiteList();
+    List<String> fetchAuthWhiteList();
 
     /**
-     * 查询跳过ip限流白名单列表
+     * 根据接口维度查询跳过api的白名单
      * @return
      */
-    List<String> findSkipIpLimiterWhiteList();
+    List<String> fetchIpLimiterApiWhiteList();
+
+    List<String> fetchIpLimiterIpWhiteList();
 
     /**
      * 查询跳过url防篡改白名单列表
      * @return
      */
-    List<String> findSkipUrlTamperProofWhiteList();
+    List<String> fetchUrlTamperProofWhiteList();
 }

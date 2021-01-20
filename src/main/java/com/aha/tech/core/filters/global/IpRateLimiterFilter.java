@@ -1,6 +1,5 @@
 package com.aha.tech.core.filters.global;
 
-import com.aha.tech.core.constant.HeaderFieldConstant;
 import com.aha.tech.core.controller.FallBackController;
 import com.aha.tech.core.exception.LimiterException;
 import com.aha.tech.core.model.vo.ResponseVo;
@@ -9,7 +8,7 @@ import com.aha.tech.core.service.RequestHandlerService;
 import com.aha.tech.core.support.AttributeSupport;
 import com.aha.tech.core.support.ResponseSupport;
 import com.aha.tech.util.LogUtil;
-import com.google.common.collect.Lists;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,9 +21,9 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
-import java.util.List;
 
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.IP_RATE_LIMITER_FILTER_ORDER;
+import static com.aha.tech.core.support.ParseHeadersSupport.parseHeaderIp;
 
 /**
  * @Author: luweihong
@@ -56,13 +55,15 @@ public class IpRateLimiterFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         LogUtil.combineTraceId(exchange);
-        Boolean isAllowed = isIpAllowed(exchange);
+        String ip = parseHeaderIp(exchange.getRequest().getHeaders());
+        if (StringUtils.isBlank(ip)) {
+            ip = exchange.getRequest().getRemoteAddress().getAddress().getHostAddress();
+        }
+        Boolean isAllowed = isOnTheWhiteList(exchange, ip);
 
         if (!isAllowed) {
-            List<String> ipList = exchange.getRequest().getHeaders().getOrDefault(HeaderFieldConstant.HEADER_X_FORWARDED_FOR, Lists.newArrayList("no ip"));
-            logger.error("ip : {} 限流算法生效", ipList.get(0));
             AttributeSupport.setHttpStatus(exchange, HttpStatus.TOO_MANY_REQUESTS);
-            AttributeSupport.fillErrorMsg(exchange, "IP限流算法生效");
+            AttributeSupport.fillErrorMsg(exchange, "IP限流算法生效 : " + ip);
 
             final ResponseVo responseVo = new ResponseVo(HttpStatus.TOO_MANY_REQUESTS.value(), FallBackController.DEFAULT_SYSTEM_ERROR);
             return Mono.defer(() -> ResponseSupport.interrupt(exchange, responseVo, HttpStatus.TOO_MANY_REQUESTS, new LimiterException(IP_RATE_LIMITER_ERROR_MSG)));
@@ -76,20 +77,17 @@ public class IpRateLimiterFilter implements GlobalFilter, Ordered {
      * @param exchange
      * @return
      */
-    private Boolean isIpAllowed(ServerWebExchange exchange) {
+    private Boolean isOnTheWhiteList(ServerWebExchange exchange, String ip) {
         if (!isEnable) {
             return Boolean.TRUE;
         }
 
         String rawPath = exchange.getRequest().getURI().getRawPath();
-        if (httpRequestHandlerService.isSkipIpLimiter(rawPath)) {
-            logger.info("跳过ip限流策略 : {}", rawPath);
+        if (httpRequestHandlerService.isSkipIpLimiter(rawPath, ip)) {
             return Boolean.TRUE;
         }
 
-        Boolean isAllowed = ipLimiterService.isAllowed(exchange);
-
-        return isAllowed;
+        return ipLimiterService.isAllowed(exchange);
     }
 
 }

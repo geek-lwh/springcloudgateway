@@ -72,10 +72,6 @@ public class IpLimiterServiceImpl implements LimiterService {
         return isAllowed;
     }
 
-//    @Override
-//    public Boolean isSkipLimiter(String rawPath) {
-//        return httpRequestHandlerService.isSkipIpLimiter(rawPath);
-//    }
 
     /**
      * 获取ip限流的key
