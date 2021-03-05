@@ -31,13 +31,6 @@ apply plugin: 'maven'
 apply plugin: 'io.spring.dependency-management'
 apply plugin: 'org.springframework.boot'
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-
-[compileJava, compileTestJava].each()
-        {
-            it.options.encoding = "UTF-8"
-        }
 
 dependencyManagement {
     imports {
@@ -55,7 +48,7 @@ dependencies {
     compile('org.springframework.cloud:spring-cloud-starter-gateway')
     compile('com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-discovery:2.2.4.RELEASE')
 
-    compile('org.springframework.cloud:spring-cloud-starter-config:2.2.7.RELEASE')
+    compile('org.springframework.cloud:spring-cloud-starter-config')
     compile ('org.springframework.cloud:spring-cloud-starter-openfeign')
     compile ('io.github.openfeign:feign-httpclient')
     compile('org.springframework.cloud:spring-cloud-starter-netflix-hystrix')

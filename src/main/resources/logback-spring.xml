@@ -11,5 +11,5 @@
 
     <!-- 引入项目核心配置 -->
     <include resource="logback-base.xml"/>
-
+    <logger name="io.jaegertracing.internal.reporters.LoggingReporter" level="OFF"/>
 </configuration>
