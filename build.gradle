@@ -75,7 +75,7 @@ dependencies {
     compile('com.ctrip.framework.apollo:apollo-client:1.0.0')
 
     // ahaschool
-    compile('com.aha.spi:aha-passport-spi:1.0.2')
+    compile('com.aha.spi:aha-passport-spi:1.2.0-SNAPSHOT')
     compile('com.aha.public:aha-commons-utils:1.5.0')
 
     // metrics

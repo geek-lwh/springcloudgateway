@@ -33,6 +33,8 @@ public class HttpOverwriteParamServiceImpl implements OverwriteParamService {
 
     private static final String USER_ID_FIELD = "user_id";
 
+    private static final String KID_ID_FIELD = "kid_id";
+
 //    private static final String SPECIAL_SYMBOL = "[]";
 
     /**
@@ -92,41 +94,21 @@ public class HttpOverwriteParamServiceImpl implements OverwriteParamService {
      */
     @Override
     public URI modifyQueryParams(RequestAddParamsDto requestAddParamsDto, ServerHttpRequest request) {
-//        StringBuilder query = new StringBuilder();
-//        String rawQuery = request.getURI().getRawQuery();
-//        String encoderRawQuery = StringUtils.isBlank(rawQuery) ? Strings.EMPTY : UriEncoder.decode(request.getURI().getRawQuery());
-//        Boolean isJavaLanguage = language.equals(LanguageConstant.JAVA);
-//        Boolean hasCompatibleQuery = StringUtils.isNoneBlank(encoderRawQuery) && encoderRawQuery.indexOf(SPECIAL_SYMBOL) != -1;
-//        Boolean needCompatible = isJavaLanguage && hasCompatibleQuery;
-
         URI uri = request.getURI();
-//        if (needCompatible) {
-//            logger.info("兼容java服务的get 请求");
-//            List<NameValuePair> params = URLEncodedUtils.parse(request.getURI(), StandardCharsets.UTF_8);
-//            for (NameValuePair pair : params) {
-//                String rename = pair.getName().replace(SPECIAL_SYMBOL, Strings.EMPTY);
-//                query.append(rename).append(Separator.EQUAL_SIGN_MARK).append(pair.getValue());
-//                query.append(Separator.AND_MARK);
-//            }
-//        }
-
-//        if (query.length() > 0) {
-//            query.deleteCharAt(query.length() - 1);
-//            uri = UriComponentsBuilder.fromUri(uri)
-//                    .replaceQuery(query.toString())
-//                    .build(true)
-//                    .toUri();
-//
-//            logger.info("兼容java服务的get请求,原始参数 : {},新的请求路径 : {} ", rawQuery, uri);
-//        }
 
         if (requestAddParamsDto == null || requestAddParamsDto.getUserId() == null) {
             logger.warn("user_id为null,赋值0");
             requestAddParamsDto.setUserId(0l);
         }
 
+        if (requestAddParamsDto == null || requestAddParamsDto.getKidId() == null) {
+            logger.warn("kid_id为null,赋值1");
+            requestAddParamsDto.setKidId(1L);
+        }
+
         URI newURI = UriComponentsBuilder.fromUri(uri)
                 .replaceQueryParam(USER_ID_FIELD, requestAddParamsDto.getUserId())
+                .replaceQueryParam(KID_ID_FIELD, requestAddParamsDto.getKidId())
                 .build(true)
                 .toUri();
 

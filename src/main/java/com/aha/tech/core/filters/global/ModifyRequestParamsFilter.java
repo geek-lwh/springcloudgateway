@@ -42,6 +42,8 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
 
     private static final String USER_ID_FIELD = "user_id";
 
+    private static final String KID_ID_FIELD = "Kid_id";
+
     @Override
     public int getOrder() {
         return MODIFY_PARAMS_FILTER_ORDER;
@@ -79,12 +81,16 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
 
         if (mediaType.isCompatibleWith(MediaType.APPLICATION_JSON_UTF8)) {
             Long userId = requestAddParamsDto.getUserId();
+            Long kidId = requestAddParamsDto.getKidId();
             Map<String, Object> map = Maps.newHashMap();
             if (StringUtils.isNotBlank(cacheBody)) {
                 map = JSON.parseObject(cacheBody, Map.class);
             }
             if (userId != null) {
                 map.put(USER_ID_FIELD, userId);
+            }
+            if (kidId != null) {
+                map.put(KID_ID_FIELD, kidId);
             }
 
             newBodyStr = JSON.toJSONString(map);

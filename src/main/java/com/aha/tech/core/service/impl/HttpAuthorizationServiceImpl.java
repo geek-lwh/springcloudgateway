@@ -47,6 +47,7 @@ public class HttpAuthorizationServiceImpl implements AuthorizationService {
         authenticationResultEntity.setCode(checkTokenValid ? ResponseConstants.SUCCESS : ResponseConstants.FAILURE);
         RequestAddParamsDto requestAddParamsDto = new RequestAddParamsDto();
         requestAddParamsDto.setUserId(UserVo.anonymousUser().getUserId());
+        requestAddParamsDto.setKidId(0L);
         swe.getAttributes().put(GATEWAY_REQUEST_ADD_PARAMS_ATTR, requestAddParamsDto);
 
         return authenticationResultEntity;
@@ -68,8 +69,10 @@ public class HttpAuthorizationServiceImpl implements AuthorizationService {
 //        authenticationResultEntity.setUserVo(rpcResponse.getData());
 
         if (code.equals(ResponseConstants.SUCCESS)) {
+            UserVo userVo = rpcResponse.getData();
             RequestAddParamsDto requestAddParamsDto = new RequestAddParamsDto();
-            requestAddParamsDto.setUserId(rpcResponse.getData().getUserId());
+            requestAddParamsDto.setUserId(userVo.getUserId());
+            requestAddParamsDto.setKidId(userVo.getKidId());
             exchange.getAttributes().put(GATEWAY_REQUEST_ADD_PARAMS_ATTR, requestAddParamsDto);
         }
 
