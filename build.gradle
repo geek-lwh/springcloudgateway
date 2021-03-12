@@ -52,6 +52,7 @@ dependencies {
     // 3-part tool dependency
     compile('com.google.guava:guava:23.0')
     compile('org.apache.commons:commons-lang3')
+    compile 'org.codehaus.janino:janino:3.0.6'
     // spring boot and spring cloud dependency
     compile('org.springframework.boot:spring-boot-starter-aop')
     compile('org.springframework.boot:spring-boot-starter-actuator')
