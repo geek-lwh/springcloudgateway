@@ -42,7 +42,7 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
 
     private static final String USER_ID_FIELD = "user_id";
 
-    private static final String KID_ID_FIELD = "Kid_id";
+    private static final String KID_ID_FIELD = "kid_id";
 
     @Override
     public int getOrder() {
