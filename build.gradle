@@ -42,6 +42,11 @@ targetCompatibility = 1.8
             it.options.encoding = "UTF-8"
         }
 
+configurations.all {
+    // 变化模块
+    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+}
+
 dependencyManagement {
     imports {
         mavenBom 'org.springframework.cloud:spring-cloud-dependencies:Greenwich.RELEASE'
