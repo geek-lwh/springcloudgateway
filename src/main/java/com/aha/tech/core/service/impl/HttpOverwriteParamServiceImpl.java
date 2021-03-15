@@ -97,12 +97,12 @@ public class HttpOverwriteParamServiceImpl implements OverwriteParamService {
         URI uri = request.getURI();
 
         if (requestAddParamsDto == null || requestAddParamsDto.getUserId() == null) {
-            logger.warn("user_id为null,赋值0");
+            logger.warn("缺失user_id,默认为游客访问");
             requestAddParamsDto.setUserId(0l);
         }
 
         if (requestAddParamsDto == null || requestAddParamsDto.getKidId() == null) {
-            logger.warn("kid_id为null,赋值1");
+            logger.warn("user_id : {} 缺少kid_id,默认设置为1", requestAddParamsDto.getUserId());
             requestAddParamsDto.setKidId(1L);
         }
 
