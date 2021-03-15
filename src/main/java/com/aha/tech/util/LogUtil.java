@@ -1,7 +1,7 @@
 package com.aha.tech.util;
 
+import com.aha.tech.core.filters.web.AcrossFilter;
 import com.aha.tech.core.support.AttributeSupport;
-import com.google.common.collect.Sets;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,7 +12,6 @@ import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.server.ServerWebExchange;
 
 import java.util.Random;
-import java.util.Set;
 
 import static com.aha.tech.core.constant.AttributeConstant.GATEWAY_REQUEST_CACHED_ATTR;
 import static com.aha.tech.core.constant.AttributeConstant.TRACE_LOG_ID;
@@ -25,7 +24,7 @@ public class LogUtil {
 
     private static final Logger logger = LoggerFactory.getLogger(LogUtil.class);
 
-    private static final Set<String> IGNORE_TRACE_API = Sets.newHashSet("/actuator/prometheus", "/v3/logs/create");
+//    private static final Set<String> IGNORE_TRACE_API = Sets.newHashSet("/actuator/prometheus", "/v3/logs/create","/v3/support/signature/get");
 
     public static String MDC_TRACE_ID = "traceId";
 
@@ -59,9 +58,10 @@ public class LogUtil {
 
     /**
      * 打印链路上的日志关键信息
+     * /v3/support/signature/get
      */
     public static void chainInfo(ServerWebExchange serverWebExchange, String uri) {
-        if (IGNORE_TRACE_API.contains(uri)) {
+        if (AcrossFilter.IGNORE_TRACE_API_SET.contains(uri)) {
             return;
         }
         StringBuffer sb = baseLogStrings(serverWebExchange);

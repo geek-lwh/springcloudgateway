@@ -47,7 +47,7 @@ public class AcrossFilter implements WebFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(AcrossFilter.class);
 
-    private static final Set<String> IGNORE_TRACE_API_SET = Sets.newHashSet("/actuator/prometheus", "/v3/logs/create", "/v3/support/signature/get");
+    public static final Set<String> IGNORE_TRACE_API_SET = Sets.newHashSet("/actuator/prometheus", "/v3/logs/create", "/v3/support/signature/get");
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain webFilterChain) {
