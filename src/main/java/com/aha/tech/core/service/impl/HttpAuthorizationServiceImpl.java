@@ -70,6 +70,7 @@ public class HttpAuthorizationServiceImpl implements AuthorizationService {
 
         if (code.equals(ResponseConstants.SUCCESS)) {
             UserVo userVo = rpcResponse.getData();
+            logger.info("invoke passport : {}", userVo);
             RequestAddParamsDto requestAddParamsDto = new RequestAddParamsDto();
             requestAddParamsDto.setUserId(userVo.getUserId());
             requestAddParamsDto.setKidId(userVo.getKidId());

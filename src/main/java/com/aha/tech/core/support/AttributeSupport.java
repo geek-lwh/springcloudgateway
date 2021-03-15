@@ -118,7 +118,7 @@ public class AttributeSupport {
      * @param exchange
      * @return
      */
-    public static Boolean getIsSkipAuth(ServerWebExchange exchange) {
+    public static Boolean isSkipAuth(ServerWebExchange exchange) {
         return (Boolean) exchange.getAttributes().getOrDefault(IS_SKIP_AUTH_ATTR, Boolean.FALSE);
     }
 

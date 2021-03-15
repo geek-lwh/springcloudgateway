@@ -245,9 +245,9 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
     @Override
     public AuthenticationResultEntity authorize(ServerWebExchange serverWebExchange) {
         ServerHttpRequest serverHttpRequest = serverWebExchange.getRequest();
-        Boolean isSkipAuth = AttributeSupport.getIsSkipAuth(serverWebExchange);
+        Boolean skip = AttributeSupport.isSkipAuth(serverWebExchange);
 
-        if (isSkipAuth) {
+        if (skip) {
             logger.info("跳过授权认证 : {}", serverHttpRequest.getURI());
             return new AuthenticationResultEntity(Boolean.TRUE, ResponseConstants.SUCCESS);
         }
@@ -266,7 +266,7 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
         String accessToken = authorization.getSecondEntity();
 
         AuthenticationResultEntity authenticationResultEntity = checkPermission(serverWebExchange, userName, accessToken);
-        authenticationResultEntity.setWhiteList(isSkipAuth);
+        authenticationResultEntity.setWhiteList(false);
 
         return authenticationResultEntity;
     }
