@@ -11,9 +11,10 @@ import com.aha.tech.passportserver.facade.constants.AuthorizationServerConstants
 import com.aha.tech.passportserver.facade.model.vo.UserVo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ServerWebExchange;
+
+import javax.annotation.Resource;
 
 import static com.aha.tech.core.constant.AttributeConstant.GATEWAY_REQUEST_ADD_PARAMS_ATTR;
 import static com.aha.tech.core.constant.HeaderFieldConstant.DEFAULT_X_TOKEN_VALUE;
@@ -28,7 +29,7 @@ public class HttpAuthorizationServiceImpl implements AuthorizationService {
 
     private static final Logger logger = LoggerFactory.getLogger(HttpAuthorizationServiceImpl.class);
 
-    @Autowired(required = false)
+    @Resource
     private PassportResource passportResource;
 
     /**
