@@ -73,13 +73,13 @@ public class AttributeSettingFilter implements GlobalFilter, Ordered {
      * @param span
      */
     private void setting(ServerWebExchange exchange, Span span) {
-        String rawPath = exchange.getRequest().getURI().getRawPath();
+        String originalApi = exchange.getRequest().getURI().getRawPath();
         HttpHeaders httpHeaders = exchange.getRequest().getHeaders();
         // 是否跳过授权
-        Boolean isSkipAuth = httpRequestHandlerService.isSkipAuth(rawPath);
+        Boolean skipAuth = httpRequestHandlerService.isSkipAuth(originalApi);
 
         // 是否跳过url防篡改
-        Boolean isSkipUrlTamperProof = httpRequestHandlerService.isSkipUrlTamperProof(rawPath, httpHeaders);
+        Boolean skipUrlTamperProof = httpRequestHandlerService.isSkipUrlTamperProof(originalApi, httpHeaders);
 
         // ip
         String ip = parseHeaderIp(exchange.getRequest().getHeaders());
@@ -87,7 +87,9 @@ public class AttributeSettingFilter implements GlobalFilter, Ordered {
             ip = exchange.getRequest().getRemoteAddress().getAddress().getHostAddress();
         }
 
-        Boolean isSkipIpLimiter = httpRequestHandlerService.isSkipIpLimiter(rawPath, ip);
+        Boolean skipIpLimiter = httpRequestHandlerService.isSkipIpLimiter(originalApi, ip);
+
+        Boolean skip5300 = httpRequestHandlerService.isSkip5300Error(originalApi);
 
         // 获取版本号和os
         PairEntity pair = parsingAgent(exchange);
@@ -101,9 +103,10 @@ public class AttributeSettingFilter implements GlobalFilter, Ordered {
             isOld = Boolean.TRUE;
         }
 
-        AttributeSupport.put(exchange, span, IS_SKIP_AUTH_ATTR, isSkipAuth);
-        AttributeSupport.put(exchange, span, IS_SKIP_URL_TAMPER_PROOF_ATTR, isSkipUrlTamperProof);
-        AttributeSupport.put(exchange, span, IS_SKIP_IP_LIMITER_ATTR, isSkipIpLimiter);
+        AttributeSupport.put(exchange, span, IS_SKIP_AUTH_ATTR, skipAuth);
+        AttributeSupport.put(exchange, span, IS_SKIP_KID_ACCOUNT_5300_ERROR, skip5300);
+        AttributeSupport.put(exchange, span, IS_SKIP_URL_TAMPER_PROOF_ATTR, skipUrlTamperProof);
+        AttributeSupport.put(exchange, span, IS_SKIP_IP_LIMITER_ATTR, skipIpLimiter);
         AttributeSupport.put(exchange, span, REQUEST_IP_ATTR, ip);
         AttributeSupport.put(exchange, span, IS_OLD_VERSION_ATTR, isOld);
         AttributeSupport.put(exchange, span, APP_OS_ATTR, os);

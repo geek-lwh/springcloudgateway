@@ -8,6 +8,7 @@ import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.RequestHandlerService;
 import com.aha.tech.core.support.AttributeSupport;
 import com.aha.tech.core.support.ResponseSupport;
+import com.aha.tech.passportserver.facade.code.AuthorizationCode;
 import com.aha.tech.util.TagsUtil;
 import com.aha.tech.util.TraceUtil;
 import io.opentracing.Scope;
@@ -55,6 +56,11 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
         try (Scope scope = tracer.scopeManager().activate(span)) {
             ResponseVo responseVo = verifyAccessToken(exchange);
             Integer code = responseVo.getCode();
+            // 如果授权系统返回 5300 并且 api
+            if (code.equals(AuthorizationCode.WRONG_KID_ACCOUNT_CODE)) {
+                return chain.filter(exchange);
+            }
+
             if (!code.equals(ResponseConstants.SUCCESS)) {
                 AttributeSupport.setHttpStatus(exchange, HttpStatus.UNAUTHORIZED);
                 span.log(responseVo.getMessage());
@@ -62,6 +68,7 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
                 AttributeSupport.fillErrorMsg(exchange, responseVo.getMessage());
                 return Mono.defer(() -> ResponseSupport.interrupt(exchange, HttpStatus.UNAUTHORIZED, responseVo));
             }
+
 
             return chain.filter(exchange);
         } catch (Exception e) {
@@ -79,9 +86,15 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
      */
     private ResponseVo verifyAccessToken(ServerWebExchange exchange) {
         AuthenticationResultEntity authenticationResultEntity = httpRequestHandlerService.authorize(exchange);
-        Boolean isWhiteList = authenticationResultEntity.getWhiteList();
+        Boolean isSkipAuth = authenticationResultEntity.getSkipAuth();
         Integer code = authenticationResultEntity.getCode();
-        if (isWhiteList || code.equals(ResponseConstants.SUCCESS)) {
+        if (isSkipAuth || code.equals(ResponseConstants.SUCCESS)) {
+            return new ResponseVo(ResponseConstants.SUCCESS);
+        }
+
+        // skip5300
+        Boolean isSkip5300 = authenticationResultEntity.getSkip5300();
+        if (isSkip5300 && code.equals(AuthorizationCode.WRONG_KID_ACCOUNT_CODE)) {
             return new ResponseVo(ResponseConstants.SUCCESS);
         }
 

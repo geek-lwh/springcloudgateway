@@ -123,6 +123,15 @@ public class AttributeSupport {
     }
 
     /**
+     * 获取是否跳过授权信息
+     * @param exchange
+     * @return
+     */
+    public static Boolean isSkip5300Error(ServerWebExchange exchange) {
+        return (Boolean) exchange.getAttributes().getOrDefault(IS_SKIP_KID_ACCOUNT_5300_ERROR, Boolean.FALSE);
+    }
+
+    /**
      * 获取是否跳过ip限流
      * @param exchange
      * @return

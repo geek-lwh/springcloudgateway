@@ -68,6 +68,18 @@ public class AcrossFilter implements WebFilter {
             return Mono.empty();
         }
 
+        return logging(exchange, webFilterChain, respHeaders);
+
+    }
+
+    /**
+     * 记录链路日志
+     * @param exchange
+     * @param webFilterChain
+     * @param respHeaders
+     * @return
+     */
+    private Mono<Void> logging(ServerWebExchange exchange, WebFilterChain webFilterChain, HttpHeaders respHeaders) {
         String uri = exchange.getRequest().getURI().getRawPath();
 
         Tracer tracer = GlobalTracer.get();
@@ -95,6 +107,5 @@ public class AcrossFilter implements WebFilter {
                 span.finish();
             });
         }
-
     }
 }

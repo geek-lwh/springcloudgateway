@@ -27,4 +27,10 @@ public interface WhiteListService {
      * @return
      */
     List<String> fetchUrlTamperProofWhiteList();
+
+    /**
+     * 查询孩子账户在出现5300错误后的白名单
+     * @return
+     */
+    List<String> fetchKidAccountWhiteList();
 }

@@ -21,6 +21,9 @@ import reactor.core.publisher.Mono;
 
 import java.net.URI;
 
+import static com.aha.tech.passportserver.facade.constants.AuthorizationServerConstants.ANONYMOUS_KID_ID;
+import static com.aha.tech.passportserver.facade.constants.AuthorizationServerConstants.ANONYMOUS_USER_ID;
+
 /**
  * @Author: luweihong
  * @Date: 2019/3/27
@@ -98,12 +101,12 @@ public class HttpOverwriteParamServiceImpl implements OverwriteParamService {
 
         if (requestAddParamsDto == null || requestAddParamsDto.getUserId() == null) {
             logger.warn("缺失user_id,默认为游客访问");
-            requestAddParamsDto.setUserId(0L);
+            requestAddParamsDto.setUserId(ANONYMOUS_USER_ID);
         }
 
         if (requestAddParamsDto == null || requestAddParamsDto.getKidId() == null) {
             logger.warn("user_id : {} 缺少kid_id,默认设置为0", requestAddParamsDto.getUserId());
-            requestAddParamsDto.setKidId(0L);
+            requestAddParamsDto.setKidId(ANONYMOUS_KID_ID);
         }
 
         URI newURI = UriComponentsBuilder.fromUri(uri)

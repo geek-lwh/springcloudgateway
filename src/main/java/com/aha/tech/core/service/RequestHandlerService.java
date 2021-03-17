@@ -23,6 +23,13 @@ public interface RequestHandlerService {
     Boolean isSkipAuth(String rawPath);
 
     /**
+     * 是否在孩子账户出现5300错误时跳过
+     * @param rawPath
+     * @return
+     */
+    Boolean isSkip5300Error(String rawPath);
+
+    /**
      * 是否跳过url防篡改
      * @param rawPath
      * @param httpHeaders

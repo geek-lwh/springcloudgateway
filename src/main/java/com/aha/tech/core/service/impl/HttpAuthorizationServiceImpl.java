@@ -6,6 +6,8 @@ import com.aha.tech.core.controller.resource.PassportResource;
 import com.aha.tech.core.model.dto.RequestAddParamsDto;
 import com.aha.tech.core.model.entity.AuthenticationResultEntity;
 import com.aha.tech.core.service.AuthorizationService;
+import com.aha.tech.passportserver.facade.code.AuthorizationCode;
+import com.aha.tech.passportserver.facade.constants.AuthorizationServerConstants;
 import com.aha.tech.passportserver.facade.model.vo.UserVo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +49,7 @@ public class HttpAuthorizationServiceImpl implements AuthorizationService {
         authenticationResultEntity.setCode(checkTokenValid ? ResponseConstants.SUCCESS : ResponseConstants.FAILURE);
         RequestAddParamsDto requestAddParamsDto = new RequestAddParamsDto();
         requestAddParamsDto.setUserId(UserVo.anonymousUser().getUserId());
-        requestAddParamsDto.setKidId(0L);
+        requestAddParamsDto.setKidId(AuthorizationServerConstants.ANONYMOUS_KID_ID);
         swe.getAttributes().put(GATEWAY_REQUEST_ADD_PARAMS_ATTR, requestAddParamsDto);
 
         return authenticationResultEntity;
@@ -66,9 +68,9 @@ public class HttpAuthorizationServiceImpl implements AuthorizationService {
         Integer code = rpcResponse.getCode();
         authenticationResultEntity.setMessage(rpcResponse.getMessage());
         authenticationResultEntity.setCode(code);
-//        authenticationResultEntity.setUserVo(rpcResponse.getData());
 
-        if (code.equals(ResponseConstants.SUCCESS)) {
+        // 如果是5300或者0 都传递userId和kidId
+        if (code.equals(ResponseConstants.SUCCESS) || code.equals(AuthorizationCode.WRONG_KID_ACCOUNT_CODE)) {
             UserVo userVo = rpcResponse.getData();
             RequestAddParamsDto requestAddParamsDto = new RequestAddParamsDto();
             requestAddParamsDto.setUserId(userVo.getUserId());

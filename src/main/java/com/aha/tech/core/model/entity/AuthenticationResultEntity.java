@@ -36,14 +36,16 @@ public class AuthenticationResultEntity {
      */
     private String message;
 
-    private Boolean isWhiteList;
+    private Boolean skipAuth;
+
+    private Boolean skip5300;
 
     public AuthenticationResultEntity() {
         super();
     }
 
-    public AuthenticationResultEntity(Boolean isWhiteList, Integer code) {
-        this.isWhiteList = isWhiteList;
+    public AuthenticationResultEntity(Boolean skipAuth, Integer code) {
+        this.skipAuth = skipAuth;
         this.code = code;
     }
 
@@ -88,16 +90,24 @@ public class AuthenticationResultEntity {
         this.message = message;
     }
 
-    public Boolean getWhiteList() {
-        return isWhiteList;
+    public Boolean getSkipAuth() {
+        return skipAuth;
     }
 
-    public void setWhiteList(Boolean whiteList) {
-        isWhiteList = whiteList;
+    public void setSkipAuth(Boolean skipAuth) {
+        this.skipAuth = skipAuth;
+    }
+
+    public Boolean getSkip5300() {
+        return skip5300;
+    }
+
+    public void setSkip5300(Boolean skip5300) {
+        this.skip5300 = skip5300;
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return ReflectionToStringBuilder.toString(this, ToStringStyle.NO_CLASS_NAME_STYLE);
     }
 }

@@ -23,33 +23,41 @@ public class WhiteListServiceImpl implements WhiteListService {
 
     private final static String URL_TAMPER_PROOF_WHITELIST = "skip.url.tamper.proof.list";
 
+    private final static String KID_ACCOUNT_WHITELIST = "skip.kid.account.list";
+
     @Override
     public List<String> fetchAuthWhiteList() {
-        Config config = ConfigService.getAppConfig();
-        String[] list = config.getArrayProperty(API_LIST_OF_AUTH_WHITELIST, ",", new String[]{});
-        return Arrays.asList(list);
+        return readAppProperties(API_LIST_OF_AUTH_WHITELIST);
     }
 
     @Override
     public List<String> fetchIpLimiterApiWhiteList() {
-        Config config = ConfigService.getAppConfig();
-        String[] list = config.getArrayProperty(API_LIST_OF_IP_LIMITER_WHITELIST, ",", new String[]{});
-
-        return Arrays.asList(list);
+        return readAppProperties(API_LIST_OF_IP_LIMITER_WHITELIST);
     }
 
     @Override
     public List<String> fetchIpLimiterIpWhiteList() {
-        Config config = ConfigService.getAppConfig();
-        String[] list = config.getArrayProperty(IP_LIST_OF_IP_LIMITER_WHITELIST, ",", new String[]{});
-
-        return Arrays.asList(list);
+        return readAppProperties(IP_LIST_OF_IP_LIMITER_WHITELIST);
     }
 
     @Override
     public List<String> fetchUrlTamperProofWhiteList() {
+        return readAppProperties(URL_TAMPER_PROOF_WHITELIST);
+    }
+
+    @Override
+    public List<String> fetchKidAccountWhiteList() {
+        return readAppProperties(KID_ACCOUNT_WHITELIST);
+    }
+
+    /**
+     * 读取application.properties
+     * @param propName
+     * @return
+     */
+    private List<String> readAppProperties(String propName) {
         Config config = ConfigService.getAppConfig();
-        String[] list = config.getArrayProperty(URL_TAMPER_PROOF_WHITELIST, ",", new String[]{});
+        String[] list = config.getArrayProperty(propName, ",", new String[]{});
 
         return Arrays.asList(list);
     }

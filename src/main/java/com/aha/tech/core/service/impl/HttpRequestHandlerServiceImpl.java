@@ -43,6 +43,7 @@ import static com.aha.tech.util.BeanUtil.copyMultiValueMap;
  * http请求处理实现类
  */
 @Service(value = "httpRequestHandlerService")
+
 public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
 
     private static final Logger logger = LoggerFactory.getLogger(HttpRequestHandlerServiceImpl.class);
@@ -101,6 +102,17 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
         List<String> list = whiteListService.fetchAuthWhiteList();
         if (list.contains(api)) {
             logger.info("{} 在auth白名单中", api);
+            return Boolean.TRUE;
+        }
+
+        return Boolean.FALSE;
+    }
+
+    @Override
+    public Boolean isSkip5300Error(String api) {
+        List<String> list = whiteListService.fetchKidAccountWhiteList();
+        if (list.contains(api)) {
+            logger.info("{} 在kid account白名单中", api);
             return Boolean.TRUE;
         }
 
@@ -245,9 +257,9 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
     @Override
     public AuthenticationResultEntity authorize(ServerWebExchange serverWebExchange) {
         ServerHttpRequest serverHttpRequest = serverWebExchange.getRequest();
-        Boolean skip = AttributeSupport.isSkipAuth(serverWebExchange);
+        Boolean skipAuth = AttributeSupport.isSkipAuth(serverWebExchange);
 
-        if (skip) {
+        if (skipAuth) {
             logger.info("跳过授权认证 : {}", serverHttpRequest.getURI());
             return new AuthenticationResultEntity(Boolean.TRUE, ResponseConstants.SUCCESS);
         }
@@ -266,7 +278,10 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
         String accessToken = authorization.getSecondEntity();
 
         AuthenticationResultEntity authenticationResultEntity = checkPermission(serverWebExchange, userName, accessToken);
-        authenticationResultEntity.setWhiteList(false);
+        authenticationResultEntity.setSkipAuth(false);
+
+        Boolean skip5300 = AttributeSupport.isSkip5300Error(serverWebExchange);
+        authenticationResultEntity.setSkip5300(skip5300);
 
         return authenticationResultEntity;
     }

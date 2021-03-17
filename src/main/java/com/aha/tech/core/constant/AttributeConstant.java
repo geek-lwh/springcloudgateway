@@ -29,6 +29,8 @@ public class AttributeConstant {
 
     public static final String IS_SKIP_AUTH_ATTR = "IS_SKIP_AUTH_ATTR";
 
+    public static final String IS_SKIP_KID_ACCOUNT_5300_ERROR = "IS_SKIP_KID_ACCOUNT_5300_ERROR";
+
     public static final String IS_SKIP_URL_TAMPER_PROOF_ATTR = "IS_SKIP_URL_TAMPER_PROOF_ATTR";
 
     public static final String IS_SKIP_IP_LIMITER_ATTR = "IS_SKIP_IP_LIMITER_ATTR";
