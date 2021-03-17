@@ -56,12 +56,14 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
         try (Scope scope = tracer.scopeManager().activate(span)) {
             ResponseVo responseVo = verifyAccessToken(exchange);
             Integer code = responseVo.getCode();
-            // 如果授权系统返回 5300 并且 api
-            if (code.equals(AuthorizationCode.WRONG_KID_ACCOUNT_CODE)) {
-                return chain.filter(exchange);
-            }
+            Boolean skip5300 = AttributeSupport.isSkip5300Error(exchange);
 
-            if (!code.equals(ResponseConstants.SUCCESS)) {
+            if (code.equals(ResponseConstants.SUCCESS)) {
+                return chain.filter(exchange);
+            } else if (skip5300 && code.equals(AuthorizationCode.WRONG_KID_ACCOUNT_CODE)) {
+                // 如果授权系统返回 5300 并且 在白名单
+                return chain.filter(exchange);
+            } else {
                 AttributeSupport.setHttpStatus(exchange, HttpStatus.UNAUTHORIZED);
                 span.log(responseVo.getMessage());
                 Tags.ERROR.set(span, true);
@@ -69,8 +71,6 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
                 return Mono.defer(() -> ResponseSupport.interrupt(exchange, HttpStatus.UNAUTHORIZED, responseVo));
             }
 
-
-            return chain.filter(exchange);
         } catch (Exception e) {
             TagsUtil.setCapturedErrorsTags(e);
             throw e;
@@ -89,12 +89,6 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
         Boolean isSkipAuth = authenticationResultEntity.getSkipAuth();
         Integer code = authenticationResultEntity.getCode();
         if (isSkipAuth || code.equals(ResponseConstants.SUCCESS)) {
-            return new ResponseVo(ResponseConstants.SUCCESS);
-        }
-
-        // skip5300
-        Boolean isSkip5300 = authenticationResultEntity.getSkip5300();
-        if (isSkip5300 && code.equals(AuthorizationCode.WRONG_KID_ACCOUNT_CODE)) {
             return new ResponseVo(ResponseConstants.SUCCESS);
         }
 

@@ -38,8 +38,6 @@ public class AuthenticationResultEntity {
 
     private Boolean skipAuth;
 
-    private Boolean skip5300;
-
     public AuthenticationResultEntity() {
         super();
     }
@@ -98,13 +96,6 @@ public class AuthenticationResultEntity {
         this.skipAuth = skipAuth;
     }
 
-    public Boolean getSkip5300() {
-        return skip5300;
-    }
-
-    public void setSkip5300(Boolean skip5300) {
-        this.skip5300 = skip5300;
-    }
 
     @Override
     public String toString() {

@@ -280,9 +280,6 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
         AuthenticationResultEntity authenticationResultEntity = checkPermission(serverWebExchange, userName, accessToken);
         authenticationResultEntity.setSkipAuth(false);
 
-        Boolean skip5300 = AttributeSupport.isSkip5300Error(serverWebExchange);
-        authenticationResultEntity.setSkip5300(skip5300);
-
         return authenticationResultEntity;
     }
 
