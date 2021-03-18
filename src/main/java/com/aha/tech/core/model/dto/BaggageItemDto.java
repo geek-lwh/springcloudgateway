@@ -9,13 +9,13 @@ import org.apache.commons.lang3.builder.ToStringStyle;
  * @Date: 2019/3/30
  * 网关对post,get请求等添加的参数
  */
-public class RequestAddParamsDto {
+public class BaggageItemDto {
 
     private Long userId;
 
     private Long kidId;
 
-    public RequestAddParamsDto() {
+    public BaggageItemDto() {
         super();
     }
 

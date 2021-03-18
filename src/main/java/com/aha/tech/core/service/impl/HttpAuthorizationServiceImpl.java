@@ -3,7 +3,7 @@ package com.aha.tech.core.service.impl;
 import com.aha.tech.commons.constants.ResponseConstants;
 import com.aha.tech.commons.response.RpcResponse;
 import com.aha.tech.core.controller.resource.PassportResource;
-import com.aha.tech.core.model.dto.RequestAddParamsDto;
+import com.aha.tech.core.model.dto.BaggageItemDto;
 import com.aha.tech.core.model.entity.AuthenticationResultEntity;
 import com.aha.tech.core.service.AuthorizationService;
 import com.aha.tech.passportserver.facade.code.AuthorizationCode;
@@ -48,7 +48,7 @@ public class HttpAuthorizationServiceImpl implements AuthorizationService {
         }
 
         authenticationResultEntity.setCode(checkTokenValid ? ResponseConstants.SUCCESS : ResponseConstants.FAILURE);
-        RequestAddParamsDto requestAddParamsDto = new RequestAddParamsDto();
+        BaggageItemDto requestAddParamsDto = new BaggageItemDto();
         requestAddParamsDto.setUserId(UserVo.anonymousUser().getUserId());
         requestAddParamsDto.setKidId(AuthorizationServerConstants.ANONYMOUS_KID_ID);
         swe.getAttributes().put(GATEWAY_REQUEST_ADD_PARAMS_ATTR, requestAddParamsDto);
@@ -73,7 +73,7 @@ public class HttpAuthorizationServiceImpl implements AuthorizationService {
         // 如果是5300或者0 都传递userId和kidId
         if (code.equals(ResponseConstants.SUCCESS) || code.equals(AuthorizationCode.WRONG_KID_ACCOUNT_CODE)) {
             UserVo userVo = rpcResponse.getData();
-            RequestAddParamsDto requestAddParamsDto = new RequestAddParamsDto();
+            BaggageItemDto requestAddParamsDto = new BaggageItemDto();
             requestAddParamsDto.setUserId(userVo.getUserId());
             requestAddParamsDto.setKidId(userVo.getKidId());
             exchange.getAttributes().put(GATEWAY_REQUEST_ADD_PARAMS_ATTR, requestAddParamsDto);

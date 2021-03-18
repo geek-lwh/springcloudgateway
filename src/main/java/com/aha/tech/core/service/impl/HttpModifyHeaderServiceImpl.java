@@ -2,7 +2,7 @@ package com.aha.tech.core.service.impl;
 
 import com.aha.tech.commons.symbol.Separator;
 import com.aha.tech.core.constant.SystemConstant;
-import com.aha.tech.core.model.dto.RequestAddParamsDto;
+import com.aha.tech.core.model.dto.BaggageItemDto;
 import com.aha.tech.core.service.ModifyHeaderService;
 import com.aha.tech.core.support.AttributeSupport;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -56,7 +56,7 @@ public class HttpModifyHeaderServiceImpl implements ModifyHeaderService {
             realIp = remoteIp;
         }
 
-        RequestAddParamsDto requestAddParamsDto = AttributeSupport.getRequestAddParamsDto(exchange);
+        BaggageItemDto requestAddParamsDto = AttributeSupport.getRequestAddParamsDto(exchange);
         String userId = requestAddParamsDto.getUserId() == null ? null : requestAddParamsDto.getUserId().toString();
         httpHeaders.set(X_ENV_USER_ID, userId);
         httpHeaders.set(HEADER_USER_ID, userId);

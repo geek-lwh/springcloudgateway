@@ -1,6 +1,6 @@
 package com.aha.tech.core.service;
 
-import com.aha.tech.core.model.dto.RequestAddParamsDto;
+import com.aha.tech.core.model.dto.BaggageItemDto;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.server.ServerWebExchange;
@@ -29,7 +29,7 @@ public interface OverwriteParamService {
      * @param request
      * @return
      */
-    URI modifyQueryParams(RequestAddParamsDto requestAddParamsDto, ServerHttpRequest request);
+    URI modifyQueryParams(BaggageItemDto requestAddParamsDto, ServerHttpRequest request);
 
     /**
      * 修改特殊的二进制body参数
@@ -37,6 +37,6 @@ public interface OverwriteParamService {
      * @param request
      * @return
      */
-    URI modifyParamsWithFormUrlencoded(RequestAddParamsDto requestAddParamsDto, ServerHttpRequest request);
+    URI modifyParamsWithFormUrlencoded(BaggageItemDto requestAddParamsDto, ServerHttpRequest request);
 
 }

@@ -1,6 +1,6 @@
 package com.aha.tech.core.service.impl;
 
-import com.aha.tech.core.model.dto.RequestAddParamsDto;
+import com.aha.tech.core.model.dto.BaggageItemDto;
 import com.aha.tech.core.service.OverwriteParamService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,9 +20,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.net.URI;
-
-import static com.aha.tech.passportserver.facade.constants.AuthorizationServerConstants.ANONYMOUS_KID_ID;
-import static com.aha.tech.passportserver.facade.constants.AuthorizationServerConstants.ANONYMOUS_USER_ID;
 
 /**
  * @Author: luweihong
@@ -91,27 +88,17 @@ public class HttpOverwriteParamServiceImpl implements OverwriteParamService {
     /**
      * 修改GET请求的参数
      * 兼容php get请求 传递数组问题 a[]=1&a[]=
-     * @param requestAddParamsDto
+     * @param baggageItemDto
      * @param request
      * @return
      */
     @Override
-    public URI modifyQueryParams(RequestAddParamsDto requestAddParamsDto, ServerHttpRequest request) {
+    public URI modifyQueryParams(BaggageItemDto baggageItemDto, ServerHttpRequest request) {
         URI uri = request.getURI();
 
-        if (requestAddParamsDto == null || requestAddParamsDto.getUserId() == null) {
-            logger.warn("缺失user_id,默认为游客访问");
-            requestAddParamsDto.setUserId(ANONYMOUS_USER_ID);
-        }
-
-        if (requestAddParamsDto == null || requestAddParamsDto.getKidId() == null) {
-            logger.warn("user_id : {} 缺少kid_id,默认设置为0", requestAddParamsDto.getUserId());
-            requestAddParamsDto.setKidId(ANONYMOUS_KID_ID);
-        }
-
         URI newURI = UriComponentsBuilder.fromUri(uri)
-                .replaceQueryParam(USER_ID_FIELD, requestAddParamsDto.getUserId())
-                .replaceQueryParam(KID_ID_FIELD, requestAddParamsDto.getKidId())
+                .replaceQueryParam(USER_ID_FIELD, baggageItemDto.getUserId())
+                .replaceQueryParam(KID_ID_FIELD, baggageItemDto.getKidId())
                 .build(true)
                 .toUri();
 
@@ -126,7 +113,7 @@ public class HttpOverwriteParamServiceImpl implements OverwriteParamService {
      * @return
      */
     @Override
-    public URI modifyParamsWithFormUrlencoded(RequestAddParamsDto requestAddParamsDto, ServerHttpRequest request) {
+    public URI modifyParamsWithFormUrlencoded(BaggageItemDto requestAddParamsDto, ServerHttpRequest request) {
         return this.modifyQueryParams(requestAddParamsDto, request);
     }
 }

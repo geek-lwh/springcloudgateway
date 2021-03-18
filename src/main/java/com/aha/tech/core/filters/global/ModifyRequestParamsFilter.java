@@ -1,6 +1,6 @@
 package com.aha.tech.core.filters.global;
 
-import com.aha.tech.core.model.dto.RequestAddParamsDto;
+import com.aha.tech.core.model.dto.BaggageItemDto;
 import com.aha.tech.core.model.entity.CacheRequestEntity;
 import com.aha.tech.core.service.OverwriteParamService;
 import com.aha.tech.core.support.AttributeSupport;
@@ -25,6 +25,8 @@ import java.net.URI;
 import java.util.Map;
 
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.MODIFY_PARAMS_FILTER_ORDER;
+import static com.aha.tech.passportserver.facade.constants.AuthorizationServerConstants.ANONYMOUS_KID_ID;
+import static com.aha.tech.passportserver.facade.constants.AuthorizationServerConstants.ANONYMOUS_USER_ID;
 
 /**
  * @Author: luweihong
@@ -68,8 +70,7 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
         HttpMethod httpMethod = serverHttpRequest.getMethod();
         CacheRequestEntity cacheRequestEntity = AttributeSupport.getCacheRequest(exchange);
         String cacheBody = cacheRequestEntity.getRequestBody();
-        RequestAddParamsDto requestAddParamsDto = AttributeSupport.getRequestAddParamsDto(exchange);
-
+        BaggageItemDto requestAddParamsDto = load(exchange);
         URI newUri = httpOverwriteParamService.modifyQueryParams(requestAddParamsDto, serverHttpRequest);
         Boolean needAddBodyParams = httpMethod.equals(HttpMethod.POST) || httpMethod.equals(HttpMethod.PUT);
         if (!needAddBodyParams) {
@@ -93,6 +94,26 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
         }
 
         return httpOverwriteParamService.rebuildRequestBody(newBodyStr, chain, exchange, newUri);
+    }
+
+    /**
+     * 获取exchange中缓存的数据
+     * @param exchange
+     * @return
+     */
+    private BaggageItemDto load(ServerWebExchange exchange) {
+        BaggageItemDto baggageItemDto = AttributeSupport.getRequestAddParamsDto(exchange);
+
+        if (baggageItemDto == null || baggageItemDto.getUserId() == null) {
+            logger.warn("缺失user_id,默认为游客访问");
+            baggageItemDto.setUserId(ANONYMOUS_USER_ID);
+        }
+
+        if (baggageItemDto == null || baggageItemDto.getKidId() == null) {
+            logger.warn("user_id : {} 缺少kid_id,默认设置为0", baggageItemDto.getUserId());
+            baggageItemDto.setKidId(ANONYMOUS_KID_ID);
+        }
+        return baggageItemDto;
     }
 
 }

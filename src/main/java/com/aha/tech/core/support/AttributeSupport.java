@@ -1,6 +1,6 @@
 package com.aha.tech.core.support;
 
-import com.aha.tech.core.model.dto.RequestAddParamsDto;
+import com.aha.tech.core.model.dto.BaggageItemDto;
 import com.aha.tech.core.model.entity.CacheRequestEntity;
 import com.google.common.collect.Maps;
 import io.opentracing.Span;
@@ -163,11 +163,11 @@ public class AttributeSupport {
      * @param exchange
      * @return
      */
-    public static RequestAddParamsDto getRequestAddParamsDto(ServerWebExchange exchange) {
-        RequestAddParamsDto requestAddParamsDto = (RequestAddParamsDto) exchange.getAttributes().getOrDefault(GATEWAY_REQUEST_ADD_PARAMS_ATTR, null);
+    public static BaggageItemDto getRequestAddParamsDto(ServerWebExchange exchange) {
+        BaggageItemDto requestAddParamsDto = (BaggageItemDto) exchange.getAttributes().getOrDefault(GATEWAY_REQUEST_ADD_PARAMS_ATTR, null);
         if (requestAddParamsDto == null) {
             logger.warn("需要添加的参数为空");
-            requestAddParamsDto = new RequestAddParamsDto();
+            requestAddParamsDto = new BaggageItemDto();
             requestAddParamsDto.setUserId(null);
         }
 
