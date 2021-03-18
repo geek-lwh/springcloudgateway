@@ -233,7 +233,7 @@ public class AttributeSupport {
      * @param exchange
      * @return
      */
-    public static int getHttpStatus(ServerWebExchange exchange) {
+    public static int responseStatus(ServerWebExchange exchange) {
         return exchange.getAttributeOrDefault(HTTP_STATUS, HttpStatus.OK.value());
     }
 

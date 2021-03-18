@@ -56,12 +56,7 @@ public class AcrossFilter implements WebFilter {
         HttpHeaders reqHeaders = request.getHeaders();
         String keepAlive = reqHeaders.getFirst(HeaderFieldConstant.HEADER_CONNECTION);
 
-        HttpHeaders respHeaders = response.getHeaders();
-        respHeaders.setAccessControlAllowOrigin(HEADER_ALL_CONTROL_ALLOW_ORIGIN_ACCESS);
-        respHeaders.setAccessControlAllowMethods(HEADER_CROSS_ACCESS_ALLOW_HTTP_METHODS);
-        respHeaders.setAccessControlMaxAge(HEADER_CROSS_ACCESS_ALLOW_MAX_AGE);
-        respHeaders.setAccessControlAllowHeaders(HEADER_CROSS_ACCESS_ALLOW_ALLOW_HEADERS);
-        respHeaders.set(HeaderFieldConstant.HEADER_CONNECTION, StringUtils.isBlank(keepAlive) ? KEEP_ALIVE_VALUE : keepAlive);
+        HttpHeaders respHeaders = crossDomainSetting(response, keepAlive);
 
         if (request.getMethod() == HttpMethod.OPTIONS) {
             response.setStatusCode(HttpStatus.OK);
@@ -70,6 +65,22 @@ public class AcrossFilter implements WebFilter {
 
         return logging(exchange, webFilterChain, respHeaders);
 
+    }
+
+    /**
+     * 跨域统一设置
+     * @param response
+     * @param keepAlive
+     * @return
+     */
+    private HttpHeaders crossDomainSetting(ServerHttpResponse response, String keepAlive) {
+        HttpHeaders respHeaders = response.getHeaders();
+        respHeaders.setAccessControlAllowOrigin(HEADER_ALL_CONTROL_ALLOW_ORIGIN_ACCESS);
+        respHeaders.setAccessControlAllowMethods(HEADER_CROSS_ACCESS_ALLOW_HTTP_METHODS);
+        respHeaders.setAccessControlMaxAge(HEADER_CROSS_ACCESS_ALLOW_MAX_AGE);
+        respHeaders.setAccessControlAllowHeaders(HEADER_CROSS_ACCESS_ALLOW_ALLOW_HEADERS);
+        respHeaders.set(HeaderFieldConstant.HEADER_CONNECTION, StringUtils.isBlank(keepAlive) ? KEEP_ALIVE_VALUE : keepAlive);
+        return respHeaders;
     }
 
     /**
@@ -95,8 +106,8 @@ public class AcrossFilter implements WebFilter {
             AttributeSupport.put(exchange, TRACE_LOG_ID, traceId);
             respHeaders.set(AttributeConstant.TRACE_LOG_ID, traceId);
             return webFilterChain.filter(exchange).doFinally((s) -> {
-                LogUtil.chainInfo(exchange, uri);
-                int status = AttributeSupport.getHttpStatus(exchange);
+                LogUtil.output(exchange, uri);
+                int status = AttributeSupport.responseStatus(exchange);
                 span.setTag(HTTP_STATUS, status);
                 String error = exchange.getAttributes().getOrDefault(ServerWebExchangeUtils.HYSTRIX_EXECUTION_EXCEPTION_ATTR, Strings.EMPTY).toString();
                 if (StringUtils.isNotBlank(error) || status > HttpStatus.OK.value()) {

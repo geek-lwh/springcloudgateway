@@ -1,8 +1,8 @@
 package com.aha.tech.util;
 
 import com.aha.tech.core.filters.web.AcrossFilter;
+import com.aha.tech.core.model.entity.SnapshotRequestEntity;
 import com.aha.tech.core.support.AttributeSupport;
-import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -13,7 +13,6 @@ import org.springframework.web.server.ServerWebExchange;
 
 import java.util.Random;
 
-import static com.aha.tech.core.constant.AttributeConstant.GATEWAY_SNAPSHOT_REQUEST_ATTR;
 import static com.aha.tech.core.constant.AttributeConstant.TRACE_LOG_ID;
 
 /**
@@ -47,7 +46,7 @@ public class LogUtil {
      * @return
      */
     public static void splicingError(ServerWebExchange serverWebExchange, Exception e) {
-        StringBuffer sb = baseLogStrings(serverWebExchange);
+        StringBuffer sb = appendLogging(serverWebExchange);
         sb.append("错误 : ");
         String error = serverWebExchange.getAttributes().getOrDefault(ServerWebExchangeUtils.HYSTRIX_EXECUTION_EXCEPTION_ATTR, e.getMessage()).toString();
         sb.append(error);
@@ -60,36 +59,36 @@ public class LogUtil {
      * 打印链路上的日志关键信息
      * /v3/support/signature/get
      */
-    public static void chainInfo(ServerWebExchange serverWebExchange, String uri) {
+    public static void output(ServerWebExchange serverWebExchange, String uri) {
         if (AcrossFilter.IGNORE_TRACE_API_SET.contains(uri)) {
             return;
         }
-        StringBuffer sb = baseLogStrings(serverWebExchange);
+        StringBuffer sb = appendLogging(serverWebExchange);
         logger.info(sb.toString());
     }
 
     /**
-     * 基础信息
+     * 拼接日志
      * @param exchange
      * @return
      */
-    private static StringBuffer baseLogStrings(ServerWebExchange exchange) {
+    private static StringBuffer appendLogging(ServerWebExchange exchange) {
         ServerHttpRequest serverHttpRequest = exchange.getRequest();
+        SnapshotRequestEntity snapshotRequestEntity = AttributeSupport.getSnapshotRequest(exchange);
+
         StringBuffer sb = new StringBuffer();
-        String url = AttributeSupport.getOriginalRequestPath(exchange, serverHttpRequest.getURI().toString());
         // 请求 行
-        sb.append("请求行 : ").append(serverHttpRequest.getMethod()).append(" ").append(url);
+        sb.append("请求行 : ").append(serverHttpRequest.getMethod()).append(" ").append(snapshotRequestEntity.getRequestLine());
         sb.append(System.lineSeparator());
 
         HttpHeaders httpHeaders = serverHttpRequest.getHeaders();
         sb.append("请求头 : ");
         sb.append(System.lineSeparator());
-        sb.append(HeaderUtil.formatHttpHeaders(httpHeaders));
+        sb.append(HeaderUtil.formatHttpHeaders(snapshotRequestEntity.getOriginalRequestHttpHeaders()));
 
         sb.append("请求体 : ");
         sb.append(System.lineSeparator());
-        String body = exchange.getAttributes().getOrDefault(GATEWAY_SNAPSHOT_REQUEST_ATTR, Strings.EMPTY).toString();
-        sb.append(body);
+        sb.append(snapshotRequestEntity.getRequestBody());
         sb.append(System.lineSeparator());
 
         return sb;

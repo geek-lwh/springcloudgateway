@@ -18,22 +18,23 @@ import reactor.core.publisher.Mono;
 import java.nio.charset.StandardCharsets;
 
 import static com.aha.tech.core.constant.AttributeConstant.GATEWAY_SNAPSHOT_REQUEST_ATTR;
-import static com.aha.tech.core.constant.FilterProcessOrderedConstant.COPY_BODY_FILTER;
+import static com.aha.tech.core.constant.FilterProcessOrderedConstant.SNAPSHOT_FILTER;
 
 /**
  * @Author: luweihong
  * @Date: 2019/4/8
  *
- * 预处理过滤器
+ * 快照过滤器
+ * 用于对请求快照拷贝
  */
 @Component
-public class CopyBodyFilter implements GlobalFilter, Ordered {
+public class SnapshotFilter implements GlobalFilter, Ordered {
 
-    private static final Logger logger = LoggerFactory.getLogger(CopyBodyFilter.class);
+    private static final Logger logger = LoggerFactory.getLogger(SnapshotFilter.class);
 
     @Override
     public int getOrder() {
-        return COPY_BODY_FILTER;
+        return SNAPSHOT_FILTER;
     }
 
     @Override
@@ -68,7 +69,6 @@ public class CopyBodyFilter implements GlobalFilter, Ordered {
                     .defaultIfEmpty(new byte[0])
                     .doOnNext(bytes -> {
                         String body = new String(bytes, StandardCharsets.UTF_8).trim();
-                        logger.debug("原始 body : {} ", body);
                         snapshotRequestEntity.setRequestBody(body);
                     }).then(chain.filter(exchange));
         }
