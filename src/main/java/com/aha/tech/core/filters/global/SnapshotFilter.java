@@ -17,7 +17,6 @@ import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
 
-import static com.aha.tech.core.constant.AttributeConstant.GATEWAY_SNAPSHOT_REQUEST_ATTR;
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.SNAPSHOT_FILTER;
 
 /**
@@ -53,10 +52,7 @@ public class SnapshotFilter implements GlobalFilter, Ordered {
         ServerHttpRequest request = exchange.getRequest();
         HttpMethod httpMethod = request.getMethod();
 
-        SnapshotRequestEntity snapshotRequestEntity = new SnapshotRequestEntity();
-        snapshotRequestEntity.setRequestLine(exchange.getRequest().getURI());
-        snapshotRequestEntity.setOriginalRequestHttpHeaders(request.getHeaders());
-        AttributeSupport.put(exchange, GATEWAY_SNAPSHOT_REQUEST_ATTR, snapshotRequestEntity);
+        SnapshotRequestEntity snapshotRequestEntity = AttributeSupport.getSnapshotRequest(exchange);
 
         if (httpMethod.equals(HttpMethod.POST) || httpMethod.equals(HttpMethod.PUT)) {
             return DataBufferUtils.join(request.getBody())
@@ -68,8 +64,7 @@ public class SnapshotFilter implements GlobalFilter, Ordered {
                     })
                     .defaultIfEmpty(new byte[0])
                     .doOnNext(bytes -> {
-                        String body = new String(bytes, StandardCharsets.UTF_8).trim();
-                        snapshotRequestEntity.setRequestBody(body);
+                        snapshotRequestEntity.setRequestBody(new String(bytes, StandardCharsets.UTF_8).trim());
                     }).then(chain.filter(exchange));
         }
 

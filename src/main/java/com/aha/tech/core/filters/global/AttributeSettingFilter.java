@@ -3,6 +3,7 @@ package com.aha.tech.core.filters.global;
 import com.aha.tech.core.constant.HeaderFieldConstant;
 import com.aha.tech.core.constant.SystemConstant;
 import com.aha.tech.core.model.entity.PairEntity;
+import com.aha.tech.core.model.entity.SnapshotRequestEntity;
 import com.aha.tech.core.service.RequestHandlerService;
 import com.aha.tech.core.support.AttributeSupport;
 import com.aha.tech.core.support.VersionSupport;
@@ -18,6 +19,7 @@ import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.server.ServerWebExchange;
@@ -73,8 +75,15 @@ public class AttributeSettingFilter implements GlobalFilter, Ordered {
      * @param span
      */
     private void setting(ServerWebExchange exchange, Span span) {
-        String originalApi = exchange.getRequest().getURI().getRawPath();
-        HttpHeaders httpHeaders = exchange.getRequest().getHeaders();
+        ServerHttpRequest request = exchange.getRequest();
+
+        String originalApi = request.getURI().getRawPath();
+        HttpHeaders httpHeaders = request.getHeaders();
+
+        SnapshotRequestEntity snapshotRequestEntity = AttributeSupport.getSnapshotRequest(exchange);
+        snapshotRequestEntity.setRequestLine(exchange.getRequest().getURI());
+        snapshotRequestEntity.setOriginalRequestHttpHeaders(request.getHeaders());
+
         // 是否跳过授权
         Boolean skipAuth = httpRequestHandlerService.isSkipAuth(originalApi);
 
@@ -82,9 +91,9 @@ public class AttributeSettingFilter implements GlobalFilter, Ordered {
         Boolean skipUrlTamperProof = httpRequestHandlerService.isSkipUrlTamperProof(originalApi, httpHeaders);
 
         // ip
-        String ip = parseHeaderIp(exchange.getRequest().getHeaders());
+        String ip = parseHeaderIp(httpHeaders);
         if (StringUtils.isBlank(ip)) {
-            ip = exchange.getRequest().getRemoteAddress().getAddress().getHostAddress();
+            ip = request.getRemoteAddress().getAddress().getHostAddress();
         }
 
         Boolean skipIpLimiter = httpRequestHandlerService.isSkipIpLimiter(originalApi, ip);
@@ -92,7 +101,7 @@ public class AttributeSettingFilter implements GlobalFilter, Ordered {
         Boolean skip5300 = httpRequestHandlerService.isSkip5300Error(originalApi);
 
         // 获取版本号和os
-        PairEntity pair = parsingAgent(exchange);
+        PairEntity pair = parsingAgent(httpHeaders);
         String os = pair.getFirstEntity().toString();
         String version = pair.getSecondEntity().toString();
 
@@ -111,17 +120,18 @@ public class AttributeSettingFilter implements GlobalFilter, Ordered {
         AttributeSupport.put(exchange, span, IS_OLD_VERSION_ATTR, isOld);
         AttributeSupport.put(exchange, span, APP_OS_ATTR, os);
         AttributeSupport.put(exchange, span, APP_VERSION_ATTR, version);
+        AttributeSupport.put(exchange, GATEWAY_SNAPSHOT_REQUEST_ATTR, snapshotRequestEntity);
     }
 
     /**
      * 根据agent解析os和version
-     * @param exchange
+     * @param httpHeaders
      * @return
      */
-    private PairEntity parsingAgent(ServerWebExchange exchange) {
+    private PairEntity parsingAgent(HttpHeaders httpHeaders) {
         String os = SystemConstant.WEB_CLIENT;
         String version = SystemConstant.DEFAULT_VERSION;
-        List<String> agentList = exchange.getRequest().getHeaders().getOrDefault(HeaderFieldConstant.HEADER_USER_AGENT, Collections.emptyList());
+        List<String> agentList = httpHeaders.getOrDefault(HeaderFieldConstant.HEADER_USER_AGENT, Collections.emptyList());
         if (!CollectionUtils.isEmpty(agentList)) {
             String agent = agentList.get(0);
             // parse agent and version less than 6.1.6 is old version

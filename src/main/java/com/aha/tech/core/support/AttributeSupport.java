@@ -103,12 +103,13 @@ public class AttributeSupport {
      * @return
      */
     public static SnapshotRequestEntity getSnapshotRequest(ServerWebExchange exchange) {
-        SnapshotRequestEntity snapshotRequestEntity = (SnapshotRequestEntity) exchange.getAttributes().getOrDefault(GATEWAY_SNAPSHOT_REQUEST_ATTR, null);
+        Object snapshotRequestEntity = exchange.getAttributes().get(GATEWAY_SNAPSHOT_REQUEST_ATTR);
         if (snapshotRequestEntity == null) {
             snapshotRequestEntity = new SnapshotRequestEntity();
             exchange.getAttributes().put(GATEWAY_SNAPSHOT_REQUEST_ATTR, snapshotRequestEntity);
         }
-        return snapshotRequestEntity;
+
+        return (SnapshotRequestEntity) snapshotRequestEntity;
     }
 
     /**
