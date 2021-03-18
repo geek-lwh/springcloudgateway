@@ -82,7 +82,7 @@ public class LogUtil {
      */
     private static StringBuffer appendingLog(SnapshotRequestEntity snapshotRequestEntity, Object responseData) {
 
-        StringBuffer sb = new StringBuffer();
+        StringBuffer sb = new StringBuffer(System.lineSeparator());
 
         sb.append("<=================================================").append(System.lineSeparator());
         // 请求 行
