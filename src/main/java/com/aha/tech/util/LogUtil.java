@@ -13,7 +13,7 @@ import org.springframework.web.server.ServerWebExchange;
 
 import java.util.Random;
 
-import static com.aha.tech.core.constant.AttributeConstant.GATEWAY_REQUEST_CACHED_ATTR;
+import static com.aha.tech.core.constant.AttributeConstant.GATEWAY_SNAPSHOT_REQUEST_ATTR;
 import static com.aha.tech.core.constant.AttributeConstant.TRACE_LOG_ID;
 
 /**
@@ -88,7 +88,7 @@ public class LogUtil {
 
         sb.append("请求体 : ");
         sb.append(System.lineSeparator());
-        String body = exchange.getAttributes().getOrDefault(GATEWAY_REQUEST_CACHED_ATTR, Strings.EMPTY).toString();
+        String body = exchange.getAttributes().getOrDefault(GATEWAY_SNAPSHOT_REQUEST_ATTR, Strings.EMPTY).toString();
         sb.append(body);
         sb.append(System.lineSeparator());
 

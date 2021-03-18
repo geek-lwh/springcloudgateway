@@ -1,7 +1,7 @@
 package com.aha.tech.core.filters.global;
 
 import com.aha.tech.core.controller.FallBackController;
-import com.aha.tech.core.model.entity.CacheRequestEntity;
+import com.aha.tech.core.model.entity.SnapshotRequestEntity;
 import com.aha.tech.core.model.entity.TamperProofEntity;
 import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.RequestHandlerService;
@@ -89,7 +89,7 @@ public class BodyTamperProofRequestFilter implements GlobalFilter, Ordered {
      */
     private Boolean verifyBody(ServerWebExchange exchange) {
         LogUtil.combineTraceId(exchange);
-        CacheRequestEntity cacheRequestEntity = AttributeSupport.getCacheRequest(exchange);
+        SnapshotRequestEntity snapshotRequestEntity = AttributeSupport.getSnapshotRequest(exchange);
         ServerHttpRequest request = exchange.getRequest();
         HttpMethod httpMethod = request.getMethod();
         if (!httpMethod.equals(HttpMethod.POST)) {
@@ -110,7 +110,7 @@ public class BodyTamperProofRequestFilter implements GlobalFilter, Ordered {
         }
 
         TamperProofEntity tamperProofEntity = new TamperProofEntity(httpHeaders, uri);
-        String body = cacheRequestEntity.getRequestBody();
+        String body = snapshotRequestEntity.getRequestBody();
 
         return bodyTamperProof(body, tamperProofEntity);
     }

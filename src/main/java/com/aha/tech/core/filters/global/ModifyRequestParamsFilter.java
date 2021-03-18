@@ -1,7 +1,7 @@
 package com.aha.tech.core.filters.global;
 
 import com.aha.tech.core.model.dto.BaggageItemDto;
-import com.aha.tech.core.model.entity.CacheRequestEntity;
+import com.aha.tech.core.model.entity.SnapshotRequestEntity;
 import com.aha.tech.core.service.OverwriteParamService;
 import com.aha.tech.core.support.AttributeSupport;
 import com.alibaba.fastjson.JSON;
@@ -68,10 +68,10 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
         MediaType mediaType = httpHeaders.getContentType();
 
         HttpMethod httpMethod = serverHttpRequest.getMethod();
-        CacheRequestEntity cacheRequestEntity = AttributeSupport.getCacheRequest(exchange);
-        String cacheBody = cacheRequestEntity.getRequestBody();
-        BaggageItemDto requestAddParamsDto = load(exchange);
-        URI newUri = httpOverwriteParamService.modifyQueryParams(requestAddParamsDto, serverHttpRequest);
+        SnapshotRequestEntity snapshotRequestEntity = AttributeSupport.getSnapshotRequest(exchange);
+        String cacheBody = snapshotRequestEntity.getRequestBody();
+        BaggageItemDto baggageItemDto = load(exchange);
+        URI newUri = httpOverwriteParamService.modifyQueryParams(baggageItemDto, serverHttpRequest);
         Boolean needAddBodyParams = httpMethod.equals(HttpMethod.POST) || httpMethod.equals(HttpMethod.PUT);
         if (!needAddBodyParams) {
             ServerHttpRequest request = exchange.getRequest().mutate().uri(newUri).build();
@@ -81,8 +81,8 @@ public class ModifyRequestParamsFilter implements GlobalFilter, Ordered {
         String newBodyStr = cacheBody;
 
         if (mediaType.isCompatibleWith(MediaType.APPLICATION_JSON_UTF8)) {
-            Long userId = requestAddParamsDto.getUserId();
-            Long kidId = requestAddParamsDto.getKidId();
+            Long userId = baggageItemDto.getUserId();
+            Long kidId = baggageItemDto.getKidId();
             Map<String, Object> map = Maps.newHashMap();
             if (StringUtils.isNotBlank(cacheBody)) {
                 map = JSON.parseObject(cacheBody, Map.class);

@@ -1,7 +1,7 @@
 package com.aha.tech.core.support;
 
 import com.aha.tech.commons.constants.ResponseConstants;
-import com.aha.tech.core.model.entity.CacheRequestEntity;
+import com.aha.tech.core.model.entity.SnapshotRequestEntity;
 import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.util.LogUtil;
 import com.alibaba.fastjson.JSON;
@@ -90,17 +90,17 @@ public class ResponseSupport {
      */
     @Deprecated
     public static String buildWarnLog(ServerWebExchange exchange, ResponseVo responseVo, HttpStatus httpStatus) {
-        CacheRequestEntity cacheRequestEntity = AttributeSupport.getCacheRequest(exchange);
+        SnapshotRequestEntity snapshotRequestEntity = AttributeSupport.getSnapshotRequest(exchange);
 //        String requestId = ExchangeSupport.getTraceId(exchange);
 
-        URI uri = cacheRequestEntity.getRequestLine();
+        URI uri = snapshotRequestEntity.getRequestLine();
         if (uri == null) {
-            cacheRequestEntity.setRequestLine(exchange.getRequest().getURI());
+            snapshotRequestEntity.setRequestLine(exchange.getRequest().getURI());
         }
 
-        HttpHeaders httpHeaders = cacheRequestEntity.getAfterModifyRequestHttpHeaders();
+        HttpHeaders httpHeaders = snapshotRequestEntity.getAfterModifyRequestHttpHeaders();
         if (httpHeaders == null) {
-            cacheRequestEntity.setAfterModifyRequestHttpHeaders(exchange.getRequest().getHeaders());
+            snapshotRequestEntity.setAfterModifyRequestHttpHeaders(exchange.getRequest().getHeaders());
         }
 
         Integer code = responseVo.getCode();
@@ -109,7 +109,7 @@ public class ResponseSupport {
 //            sb.append("requestId : ").append(requestId).append(System.lineSeparator());
             sb.append("response body: ").append(responseVo).append(System.lineSeparator());
             sb.append("http status : ").append(httpStatus).append(System.lineSeparator());
-            sb.append("info : ").append(cacheRequestEntity).append(System.lineSeparator());
+            sb.append("info : ").append(snapshotRequestEntity).append(System.lineSeparator());
             return sb.toString();
         }
 

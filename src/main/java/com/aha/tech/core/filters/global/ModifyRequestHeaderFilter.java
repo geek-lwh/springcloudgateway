@@ -1,6 +1,6 @@
 package com.aha.tech.core.filters.global;
 
-import com.aha.tech.core.model.entity.CacheRequestEntity;
+import com.aha.tech.core.model.entity.SnapshotRequestEntity;
 import com.aha.tech.core.model.wrapper.ServletRequestCarrierWrapper;
 import com.aha.tech.core.service.RequestHandlerService;
 import com.aha.tech.core.support.AttributeSupport;
@@ -62,7 +62,7 @@ public class ModifyRequestHeaderFilter implements GlobalFilter, Ordered {
     private ServerHttpRequest replaceHeader(ServerWebExchange exchange) {
         ServerHttpRequest serverHttpRequest = exchange.getRequest();
         HttpHeaders originalHeaders = serverHttpRequest.getHeaders();
-        CacheRequestEntity cacheRequestEntity = AttributeSupport.getCacheRequest(exchange);
+        SnapshotRequestEntity snapshotRequestEntity = AttributeSupport.getSnapshotRequest(exchange);
         String remoteIp = serverHttpRequest.getRemoteAddress().getAddress().getHostAddress();
         HttpHeaders newHttpHeaders = httpRequestHandlerService.modifyRequestHeaders(exchange, originalHeaders, remoteIp);
 
@@ -70,8 +70,8 @@ public class ModifyRequestHeaderFilter implements GlobalFilter, Ordered {
         Span span = AttributeSupport.getActiveSpan(exchange);
         tracer.inject(span.context(), Format.Builtin.HTTP_HEADERS, new ServletRequestCarrierWrapper(newHttpHeaders));
 
-        cacheRequestEntity.setOriginalRequestHttpHeaders(originalHeaders);
-        cacheRequestEntity.setAfterModifyRequestHttpHeaders(newHttpHeaders);
+        snapshotRequestEntity.setOriginalRequestHttpHeaders(originalHeaders);
+        snapshotRequestEntity.setAfterModifyRequestHttpHeaders(newHttpHeaders);
 
         ServerHttpRequest newRequest = new ServerHttpRequestDecorator(serverHttpRequest) {
             @Override

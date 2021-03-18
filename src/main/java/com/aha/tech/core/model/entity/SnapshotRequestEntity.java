@@ -10,7 +10,7 @@ import java.net.URI;
  * @Author: luweihong
  * @Date: 2019/4/17
  */
-public class CacheRequestEntity {
+public class SnapshotRequestEntity {
 
     private HttpHeaders originalRequestHttpHeaders;
 

@@ -1,6 +1,6 @@
 package com.aha.tech.core.filters.global;
 
-import com.aha.tech.core.model.entity.CacheRequestEntity;
+import com.aha.tech.core.model.entity.SnapshotRequestEntity;
 import com.aha.tech.core.support.AttributeSupport;
 import com.aha.tech.util.LogUtil;
 import org.slf4j.Logger;
@@ -17,7 +17,7 @@ import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
 
-import static com.aha.tech.core.constant.AttributeConstant.GATEWAY_REQUEST_CACHED_ATTR;
+import static com.aha.tech.core.constant.AttributeConstant.GATEWAY_SNAPSHOT_REQUEST_ATTR;
 import static com.aha.tech.core.constant.FilterProcessOrderedConstant.COPY_BODY_FILTER;
 
 /**
@@ -52,10 +52,10 @@ public class CopyBodyFilter implements GlobalFilter, Ordered {
         ServerHttpRequest request = exchange.getRequest();
         HttpMethod httpMethod = request.getMethod();
 
-        CacheRequestEntity cacheRequestEntity = new CacheRequestEntity();
-        cacheRequestEntity.setRequestLine(exchange.getRequest().getURI());
-        cacheRequestEntity.setOriginalRequestHttpHeaders(request.getHeaders());
-        AttributeSupport.put(exchange, GATEWAY_REQUEST_CACHED_ATTR, cacheRequestEntity);
+        SnapshotRequestEntity snapshotRequestEntity = new SnapshotRequestEntity();
+        snapshotRequestEntity.setRequestLine(exchange.getRequest().getURI());
+        snapshotRequestEntity.setOriginalRequestHttpHeaders(request.getHeaders());
+        AttributeSupport.put(exchange, GATEWAY_SNAPSHOT_REQUEST_ATTR, snapshotRequestEntity);
 
         if (httpMethod.equals(HttpMethod.POST) || httpMethod.equals(HttpMethod.PUT)) {
             return DataBufferUtils.join(request.getBody())
@@ -69,7 +69,7 @@ public class CopyBodyFilter implements GlobalFilter, Ordered {
                     .doOnNext(bytes -> {
                         String body = new String(bytes, StandardCharsets.UTF_8).trim();
                         logger.debug("原始 body : {} ", body);
-                        cacheRequestEntity.setRequestBody(body);
+                        snapshotRequestEntity.setRequestBody(body);
                     }).then(chain.filter(exchange));
         }
 

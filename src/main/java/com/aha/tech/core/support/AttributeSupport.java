@@ -1,7 +1,7 @@
 package com.aha.tech.core.support;
 
 import com.aha.tech.core.model.dto.BaggageItemDto;
-import com.aha.tech.core.model.entity.CacheRequestEntity;
+import com.aha.tech.core.model.entity.SnapshotRequestEntity;
 import com.google.common.collect.Maps;
 import io.opentracing.Span;
 import org.apache.logging.log4j.util.Strings;
@@ -104,13 +104,13 @@ public class AttributeSupport {
      * @param exchange
      * @return
      */
-    public static CacheRequestEntity getCacheRequest(ServerWebExchange exchange) {
-        CacheRequestEntity cacheRequestEntity = (CacheRequestEntity) exchange.getAttributes().getOrDefault(GATEWAY_REQUEST_CACHED_ATTR, null);
-        if (cacheRequestEntity == null) {
-            cacheRequestEntity = new CacheRequestEntity();
-            exchange.getAttributes().put(GATEWAY_REQUEST_CACHED_ATTR, cacheRequestEntity);
+    public static SnapshotRequestEntity getSnapshotRequest(ServerWebExchange exchange) {
+        SnapshotRequestEntity snapshotRequestEntity = (SnapshotRequestEntity) exchange.getAttributes().getOrDefault(GATEWAY_SNAPSHOT_REQUEST_ATTR, null);
+        if (snapshotRequestEntity == null) {
+            snapshotRequestEntity = new SnapshotRequestEntity();
+            exchange.getAttributes().put(GATEWAY_SNAPSHOT_REQUEST_ATTR, snapshotRequestEntity);
         }
-        return cacheRequestEntity;
+        return snapshotRequestEntity;
     }
 
     /**
