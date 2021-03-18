@@ -71,7 +71,7 @@ public class LogUtil {
         Object responseData = responseVo.getData();
         SnapshotRequestEntity snapshotRequestEntity = AttributeSupport.getSnapshotRequest(serverWebExchange);
         StringBuffer sb = appendingLog(snapshotRequestEntity, responseData);
-        logByLevel(sb.toString(), code, isError, errMsg);
+        logByLevel(sb.toString(), responseVo, isError, errMsg);
     }
 
     /**
@@ -146,15 +146,16 @@ public class LogUtil {
     /**
      * 分级输出
      * @param log
-     * @param code
+     * @param responseVo
      * @param isError
      */
-    private static void logByLevel(String log, int code, Boolean isError, String errMsg) {
+    private static void logByLevel(String log, ResponseVo responseVo, Boolean isError, String errMsg) {
         if (isError) {
             logger.error("请求出现异常 : {}", errMsg);
+            logger.error("请求出现异常 : {}", responseVo);
             logger.error(log);
-        } else if (code > ResponseConstants.SUCCESS) {
-            logger.warn("状态码异常: code = {}", code);
+        } else if (responseVo.getCode() > ResponseConstants.SUCCESS) {
+            logger.warn("状态码异常: {}", responseVo);
             logger.warn(log);
         } else {
             logger.info(log);
