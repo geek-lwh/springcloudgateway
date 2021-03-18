@@ -45,7 +45,7 @@ public class AttributeConstant {
 
     public static final String IP_LIMITER_ATTR = "IP_LIMITER_ATTR";
 
-    public static final String RESPONSE_BODY = "RESPONSE_BODY";
+    public static final String RESPONSE_LINE = "RESPONSE_LINE";
 
     public static final String TRACE_LOG_ID = "TRACE_LOG_ID";
 

@@ -2,9 +2,9 @@ package com.aha.tech.core.support;
 
 import com.aha.tech.core.model.dto.BaggageItemDto;
 import com.aha.tech.core.model.entity.SnapshotRequestEntity;
+import com.aha.tech.core.model.vo.ResponseVo;
 import com.google.common.collect.Maps;
 import io.opentracing.Span;
-import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.ratelimit.RateLimiter;
@@ -72,20 +72,18 @@ public class AttributeSupport {
     /**
      * 设置responseBody
      * @param exchange
-     * @param responseBody
+     * @param responseVo
      */
-    @Deprecated
-    public static void putResponseBody(ServerWebExchange exchange, String responseBody) {
-        exchange.getAttributes().put(RESPONSE_BODY, responseBody);
+    public static void putResponseLine(ServerWebExchange exchange, ResponseVo responseVo) {
+        exchange.getAttributes().put(RESPONSE_LINE, responseVo);
     }
 
     /**
      * 设置responseBody
      * @param exchange
      */
-    @Deprecated
-    public static String getResponseBody(ServerWebExchange exchange) {
-        return exchange.getAttributes().getOrDefault(RESPONSE_BODY, Strings.EMPTY).toString();
+    public static ResponseVo getResponseLine(ServerWebExchange exchange) {
+        return (ResponseVo) exchange.getAttributes().getOrDefault(RESPONSE_LINE, new ResponseVo());
     }
 
     /**

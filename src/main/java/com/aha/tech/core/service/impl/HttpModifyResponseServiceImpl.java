@@ -4,7 +4,6 @@ import com.aha.tech.core.constant.HeaderFieldConstant;
 import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.service.ModifyResponseService;
 import com.aha.tech.core.support.AttributeSupport;
-import com.aha.tech.core.support.ResponseSupport;
 import com.aha.tech.util.LogUtil;
 import com.alibaba.fastjson.JSON;
 import org.apache.commons.lang3.StringUtils;
@@ -61,19 +60,20 @@ public class HttpModifyResponseServiceImpl implements ModifyResponseService {
                 ResponseAdapter responseAdapter = m.new ResponseAdapter(body, httpHeaders);
                 DefaultClientResponse clientResponse = new DefaultClientResponse(responseAdapter, ExchangeStrategies.withDefaults());
                 LogUtil.combineTraceId(serverWebExchange);
-                Mono modifiedBody = clientResponse.bodyToMono(String.class).flatMap(originalBody -> {
+                Mono modifiedBody = clientResponse.bodyToMono(String.class).flatMap(responseBody -> {
                     ResponseVo responseVo = ResponseVo.defaultFailureResponseVo();
                     try {
-                        AttributeSupport.putResponseBody(serverWebExchange, originalBody);
-                        responseVo = JSON.parseObject(originalBody, ResponseVo.class);
+                        responseVo = JSON.parseObject(responseBody, ResponseVo.class);
+                        AttributeSupport.putResponseLine(serverWebExchange, responseVo);
+
                     } catch (Exception e) {
-                        logger.error("网关解析返回值异常 originalBody : {}", originalBody, e);
+                        logger.error("网关解析返回值异常 responseBody : {}", responseBody, e);
                     }
-                    String warnLog = ResponseSupport.buildWarnLog(serverWebExchange, responseVo, getDelegate().getStatusCode());
-                    if (StringUtils.isNotBlank(warnLog)) {
-                        logger.warn("状态码异常! {}", warnLog);
-                    }
-                    return Mono.just(originalBody);
+//                    String warnLog = ResponseSupport.buildWarnLog(serverWebExchange, responseVo, getDelegate().getStatusCode());
+//                    if (StringUtils.isNotBlank(warnLog)) {
+//                        logger.warn("状态码异常! {}", warnLog);
+//                    }
+                    return Mono.just(responseBody);
                 });
 
 //                HttpHeaders requestHeader = serverWebExchange.getRequest().getHeaders();

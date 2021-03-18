@@ -1,7 +1,9 @@
 package com.aha.tech.util;
 
+import com.aha.tech.commons.constants.ResponseConstants;
 import com.aha.tech.core.filters.web.AcrossFilter;
 import com.aha.tech.core.model.entity.SnapshotRequestEntity;
+import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.core.support.AttributeSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +48,7 @@ public class LogUtil {
      * @return
      */
     public static void splicingError(ServerWebExchange serverWebExchange, Exception e) {
-        StringBuffer sb = appendLogging(serverWebExchange);
+        StringBuffer sb = appendingLog(serverWebExchange);
         sb.append("错误 : ");
         String error = serverWebExchange.getAttributes().getOrDefault(ServerWebExchangeUtils.HYSTRIX_EXECUTION_EXCEPTION_ATTR, e.getMessage()).toString();
         sb.append(error);
@@ -59,24 +61,69 @@ public class LogUtil {
      * 打印链路上的日志关键信息
      * /v3/support/signature/get
      */
-    public static void output(ServerWebExchange serverWebExchange, String uri) {
-        if (AcrossFilter.IGNORE_TRACE_API_SET.contains(uri)) {
+    public static void output(ServerWebExchange serverWebExchange, String uri, Boolean isError, String errMsg) {
+        if (AcrossFilter.IGNORE_TRACE_API_SET.contains(uri) && !isError) {
             return;
         }
-        StringBuffer sb = appendLogging(serverWebExchange);
-        logger.info(sb.toString());
+
+        ResponseVo responseVo = AttributeSupport.getResponseLine(serverWebExchange);
+        int code = responseVo.getCode();
+        Object responseData = responseVo.getData();
+        SnapshotRequestEntity snapshotRequestEntity = AttributeSupport.getSnapshotRequest(serverWebExchange);
+        StringBuffer sb = appendingLog(snapshotRequestEntity, responseData);
+        logByLevel(sb.toString(), code, isError, errMsg);
     }
 
     /**
      * 拼接日志
-     * @param exchange
+     * @param snapshotRequestEntity
+     * @param responseData
      * @return
      */
-    private static StringBuffer appendLogging(ServerWebExchange exchange) {
-        ServerHttpRequest serverHttpRequest = exchange.getRequest();
-        SnapshotRequestEntity snapshotRequestEntity = AttributeSupport.getSnapshotRequest(exchange);
+    private static StringBuffer appendingLog(SnapshotRequestEntity snapshotRequestEntity, Object responseData) {
 
         StringBuffer sb = new StringBuffer();
+
+        sb.append("<=================================================").append(System.lineSeparator());
+        // 请求 行
+        sb.append("请求行 : ").append(snapshotRequestEntity.getRequestLine());
+        sb.append(System.lineSeparator());
+
+        sb.append("原始请求头 : ");
+        sb.append(System.lineSeparator());
+        sb.append(HeaderUtil.formatHttpHeaders(snapshotRequestEntity.getOriginalRequestHttpHeaders()));
+
+        sb.append("修改后请求头 : ");
+        sb.append(System.lineSeparator());
+        sb.append(HeaderUtil.formatHttpHeaders(snapshotRequestEntity.getAfterModifyRequestHttpHeaders()));
+
+        sb.append("请求体 : ");
+        sb.append(System.lineSeparator());
+        sb.append(snapshotRequestEntity.getRequestBody());
+        sb.append(System.lineSeparator());
+
+
+        sb.append("响应体 : ");
+        sb.append(System.lineSeparator());
+        sb.append(responseData);
+        sb.append(System.lineSeparator());
+
+        sb.append("=================================================>").append(System.lineSeparator());
+
+        return sb;
+    }
+
+    /**
+     * 拼接日志
+     * @param serverWebExchange
+     * @return
+     */
+    private static StringBuffer appendingLog(ServerWebExchange serverWebExchange) {
+        ServerHttpRequest serverHttpRequest = serverWebExchange.getRequest();
+        SnapshotRequestEntity snapshotRequestEntity = AttributeSupport.getSnapshotRequest(serverWebExchange);
+
+        StringBuffer sb = new StringBuffer();
+        sb.append("<=================================================").append(System.lineSeparator());
         // 请求 行
         sb.append("请求行 : ").append(serverHttpRequest.getMethod()).append(" ").append(snapshotRequestEntity.getRequestLine());
         sb.append(System.lineSeparator());
@@ -91,6 +138,26 @@ public class LogUtil {
         sb.append(snapshotRequestEntity.getRequestBody());
         sb.append(System.lineSeparator());
 
+        sb.append("=================================================>").append(System.lineSeparator());
+
         return sb;
+    }
+
+    /**
+     * 分级输出
+     * @param log
+     * @param code
+     * @param isError
+     */
+    private static void logByLevel(String log, int code, Boolean isError, String errMsg) {
+        if (isError) {
+            logger.error("请求出现异常 : {}", errMsg);
+            logger.error(log);
+        } else if (code > ResponseConstants.SUCCESS) {
+            logger.warn("状态码异常: code = {}", code);
+            logger.warn(log);
+        } else {
+            logger.info(log);
+        }
     }
 }

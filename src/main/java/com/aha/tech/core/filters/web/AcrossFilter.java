@@ -106,14 +106,16 @@ public class AcrossFilter implements WebFilter {
             AttributeSupport.put(exchange, TRACE_LOG_ID, traceId);
             respHeaders.set(AttributeConstant.TRACE_LOG_ID, traceId);
             return webFilterChain.filter(exchange).doFinally((s) -> {
-                LogUtil.output(exchange, uri);
                 int status = AttributeSupport.responseStatus(exchange);
                 span.setTag(HTTP_STATUS, status);
-                String error = exchange.getAttributes().getOrDefault(ServerWebExchangeUtils.HYSTRIX_EXECUTION_EXCEPTION_ATTR, Strings.EMPTY).toString();
-                if (StringUtils.isNotBlank(error) || status > HttpStatus.OK.value()) {
-                    span.log(error);
+                String errMsg = exchange.getAttributes().getOrDefault(ServerWebExchangeUtils.HYSTRIX_EXECUTION_EXCEPTION_ATTR, Strings.EMPTY).toString();
+                Boolean isError = StringUtils.isNotBlank(errMsg) || status > HttpStatus.OK.value();
+                if (isError) {
+                    span.log(errMsg);
                     Tags.ERROR.set(span, true);
                 }
+
+                LogUtil.output(exchange, uri, isError, errMsg);
 
                 span.finish();
             });

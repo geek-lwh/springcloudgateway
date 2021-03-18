@@ -5,6 +5,7 @@ import com.aha.tech.core.model.entity.SnapshotRequestEntity;
 import com.aha.tech.core.model.vo.ResponseVo;
 import com.aha.tech.util.LogUtil;
 import com.alibaba.fastjson.JSON;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.buffer.DataBuffer;
@@ -106,14 +107,13 @@ public class ResponseSupport {
         Integer code = responseVo.getCode();
         if (!code.equals(ResponseConstants.SUCCESS) || !httpStatus.equals(HttpStatus.OK)) {
             StringBuffer sb = new StringBuffer();
-//            sb.append("requestId : ").append(requestId).append(System.lineSeparator());
             sb.append("response body: ").append(responseVo).append(System.lineSeparator());
             sb.append("http status : ").append(httpStatus).append(System.lineSeparator());
             sb.append("info : ").append(snapshotRequestEntity).append(System.lineSeparator());
             return sb.toString();
         }
 
-        return org.apache.commons.lang3.StringUtils.EMPTY;
+        return StringUtils.EMPTY;
     }
 
 }
