@@ -56,19 +56,19 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
         try (Scope scope = tracer.scopeManager().activate(span)) {
             ResponseVo responseVo = verifyAccessToken(exchange);
             Integer code = responseVo.getCode();
-            Boolean ignore5300 = AttributeSupport.ignore5300(exchange);
+            Boolean ignore = AttributeSupport.ignoreEmptyKidMapping(exchange);
 
             if (code.equals(ResponseConstants.SUCCESS)) {
                 return chain.filter(exchange);
             }
 
-            boolean is5300 = is5300(code);
-            if (is5300 & ignore5300) {
+            boolean emptyKid = emptyKidMapping(code);
+            if (emptyKid & ignore) {
                 return chain.filter(exchange);
             }
 
-            Boolean notifyUpgradeImmediately = AttributeSupport.needUpgrade(exchange);
-            if (is5300 && notifyUpgradeImmediately) {
+            Boolean upgrade = AttributeSupport.shouldClientUpgrade(exchange);
+            if (emptyKid && upgrade) {
                 responseVo.setMessage("检测到当前孩子被删除，请升级到最新版本后正常使用！");
                 return Mono.defer(() -> ResponseSupport.interrupt(exchange, HttpStatus.UNAUTHORIZED, responseVo));
             }
@@ -115,7 +115,7 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
      * @param code
      * @return
      */
-    private boolean is5300(Integer code) {
+    private boolean emptyKidMapping(Integer code) {
         return code.equals(AuthorizationCode.WRONG_KID_ACCOUNT_CODE);
     }
 }

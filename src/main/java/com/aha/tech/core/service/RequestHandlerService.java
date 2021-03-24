@@ -27,7 +27,7 @@ public interface RequestHandlerService {
      * @param rawPath
      * @return
      */
-    Boolean isSkip5300Error(String rawPath);
+    Boolean isIgnoreEmptyKidMapping(String rawPath);
 
     /**
      * 是否跳过url防篡改

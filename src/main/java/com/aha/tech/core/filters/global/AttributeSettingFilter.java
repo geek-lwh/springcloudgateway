@@ -98,7 +98,7 @@ public class AttributeSettingFilter implements GlobalFilter, Ordered {
 
         Boolean skipIpLimiter = httpRequestHandlerService.isSkipIpLimiter(originalApi, ip);
 
-        Boolean skip5300 = httpRequestHandlerService.isSkip5300Error(originalApi);
+        Boolean ignoreEmptyKidMapping = httpRequestHandlerService.isIgnoreEmptyKidMapping(originalApi);
 
         // 获取版本号和os
         PairEntity pair = parsingAgent(httpHeaders);
@@ -120,7 +120,7 @@ public class AttributeSettingFilter implements GlobalFilter, Ordered {
         }
 
         AttributeSupport.put(exchange, span, IS_SKIP_AUTH_ATTR, skipAuth);
-        AttributeSupport.put(exchange, span, IS_IGNORE_5300_ERROR, skip5300);
+        AttributeSupport.put(exchange, span, IS_IGNORE_EMPTY_KID_MAPPING_ATTR, ignoreEmptyKidMapping);
         AttributeSupport.put(exchange, span, IS_SKIP_URL_TAMPER_PROOF_ATTR, skipUrlTamperProof);
         AttributeSupport.put(exchange, span, IS_SKIP_IP_LIMITER_ATTR, skipIpLimiter);
         AttributeSupport.put(exchange, span, REQUEST_IP_ATTR, ip);

@@ -29,7 +29,7 @@ public class AttributeConstant {
 
     public static final String IS_SKIP_AUTH_ATTR = "IS_SKIP_AUTH_ATTR";
 
-    public static final String IS_IGNORE_5300_ERROR = "IS_IGNORE_5300_ERROR";
+    public static final String IS_IGNORE_EMPTY_KID_MAPPING_ATTR = "IS_IGNORE_5300_ERROR";
 
     public static final String IS_SKIP_URL_TAMPER_PROOF_ATTR = "IS_SKIP_URL_TAMPER_PROOF_ATTR";
 

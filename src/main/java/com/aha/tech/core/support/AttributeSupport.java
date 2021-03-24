@@ -126,8 +126,8 @@ public class AttributeSupport {
      * @param exchange
      * @return
      */
-    public static Boolean ignore5300(ServerWebExchange exchange) {
-        return (Boolean) exchange.getAttributes().getOrDefault(IS_IGNORE_5300_ERROR, Boolean.FALSE);
+    public static Boolean ignoreEmptyKidMapping(ServerWebExchange exchange) {
+        return (Boolean) exchange.getAttributes().getOrDefault(IS_IGNORE_EMPTY_KID_MAPPING_ATTR, Boolean.FALSE);
     }
 
     /**
@@ -241,7 +241,7 @@ public class AttributeSupport {
      * @param exchange
      * @return
      */
-    public static Boolean needUpgrade(ServerWebExchange exchange) {
+    public static Boolean shouldClientUpgrade(ServerWebExchange exchange) {
         return (Boolean) exchange.getAttributes().getOrDefault(IS_NEED_UPGRADE_ATTR, Boolean.FALSE);
     }
 

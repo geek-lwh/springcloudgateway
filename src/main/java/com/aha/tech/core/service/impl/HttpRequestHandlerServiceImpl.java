@@ -109,7 +109,7 @@ public class HttpRequestHandlerServiceImpl implements RequestHandlerService {
     }
 
     @Override
-    public Boolean isSkip5300Error(String api) {
+    public Boolean isIgnoreEmptyKidMapping(String api) {
         List<String> list = whiteListService.fetchKidAccountWhiteList();
         if (list.contains(api)) {
             logger.info("{} 在kid account白名单中", api);
