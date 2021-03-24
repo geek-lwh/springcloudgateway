@@ -112,7 +112,7 @@ public class AttributeSettingFilter implements GlobalFilter, Ordered {
             oldVersion = Boolean.TRUE;
         }
 
-        // 是否因为5300错误强制升级
+        // 如果孩子账户被删除
         Boolean needUpgrade = Boolean.FALSE;
         int var2 = VersionSupport.compareVersion(version, SystemConstant.COMPATIBILITY_5300_VERSION);
         if (var2 == -1) {

@@ -50,6 +50,8 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
         return FilterProcessOrderedConstant.AUTH_GATEWAY_FILTER_ORDER;
     }
 
+    private static final String FORCE_UPGRADE_MSG = "检测到当前孩子被删除，请升级到最新版本后正常使用！";
+
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         Span span = TraceUtil.start(exchange, this.getClass().getSimpleName());
@@ -62,14 +64,17 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
                 return chain.filter(exchange);
             }
 
+            // 如果孩子账户被删除,但是在白名单中则忽略
             boolean emptyKid = emptyKidMapping(code);
-            if (emptyKid & ignore) {
+            if (emptyKid && ignore) {
                 return chain.filter(exchange);
             }
 
+            // 如果孩子账户被删除,没有忽略,判断新老版本是否需要提示强制升级
             Boolean upgrade = AttributeSupport.shouldClientUpgrade(exchange);
             if (emptyKid && upgrade) {
-                responseVo.setMessage("检测到当前孩子被删除，请升级到最新版本后正常使用！");
+                responseVo.setMessage(FORCE_UPGRADE_MSG);
+                span.log(FORCE_UPGRADE_MSG);
                 return Mono.defer(() -> ResponseSupport.interrupt(exchange, HttpStatus.UNAUTHORIZED, responseVo));
             }
 
