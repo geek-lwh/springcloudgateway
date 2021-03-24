@@ -14,8 +14,11 @@ public class SystemConstant {
 
     public final static String TEST = "test";
 
-    // 从这个版本开始区分新老 分界线
-    public final static String DIVIDING_LINE_OF_VERSION = "6.1.6";
+    // 在这个版本之前与之后useragent是否需要额外的逻辑处理
+    public final static String FIX_AHA_KID_USER_AGENT_VERSION = "6.1.6";
+
+    // 兼容5300
+    public final static String COMPATIBILITY_5300_VERSION = "7.1.0";
 
     public final static String WEB_CLIENT = "web";
 

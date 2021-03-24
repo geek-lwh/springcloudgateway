@@ -122,12 +122,12 @@ public class AttributeSupport {
     }
 
     /**
-     * 获取是否跳过授权信息
+     * 获取是否忽略授权信息
      * @param exchange
      * @return
      */
-    public static Boolean isSkip5300Error(ServerWebExchange exchange) {
-        return (Boolean) exchange.getAttributes().getOrDefault(IS_SKIP_KID_ACCOUNT_5300_ERROR, Boolean.FALSE);
+    public static Boolean ignore5300(ServerWebExchange exchange) {
+        return (Boolean) exchange.getAttributes().getOrDefault(IS_IGNORE_5300_ERROR, Boolean.FALSE);
     }
 
     /**
@@ -234,6 +234,15 @@ public class AttributeSupport {
      */
     public static int responseStatus(ServerWebExchange exchange) {
         return exchange.getAttributeOrDefault(HTTP_STATUS, HttpStatus.OK.value());
+    }
+
+    /**
+     * 是否需要强制升级
+     * @param exchange
+     * @return
+     */
+    public static Boolean needUpgrade(ServerWebExchange exchange) {
+        return (Boolean) exchange.getAttributes().getOrDefault(IS_NEED_UPGRADE_ATTR, Boolean.FALSE);
     }
 
 }

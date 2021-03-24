@@ -29,7 +29,7 @@ public class AttributeConstant {
 
     public static final String IS_SKIP_AUTH_ATTR = "IS_SKIP_AUTH_ATTR";
 
-    public static final String IS_SKIP_KID_ACCOUNT_5300_ERROR = "IS_SKIP_KID_ACCOUNT_5300_ERROR";
+    public static final String IS_IGNORE_5300_ERROR = "IS_IGNORE_5300_ERROR";
 
     public static final String IS_SKIP_URL_TAMPER_PROOF_ATTR = "IS_SKIP_URL_TAMPER_PROOF_ATTR";
 
@@ -38,6 +38,8 @@ public class AttributeConstant {
     public static final String REQUEST_IP_ATTR = "REQUEST_IP_ATTR";
 
     public static final String IS_OLD_VERSION_ATTR = "IS_OLD_VERSION_ATTR";
+
+    public static final String IS_NEED_UPGRADE_ATTR = "IS_NEED_UPGRADE_ATTR";
 
     public static final String APP_OS_ATTR = "APP_OS_ATTR";
 

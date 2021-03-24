@@ -106,18 +106,26 @@ public class AttributeSettingFilter implements GlobalFilter, Ordered {
         String version = pair.getSecondEntity().toString();
 
         // 判断新老版本
-        Boolean isOld = Boolean.FALSE;
-        int result = VersionSupport.compareVersion(version, SystemConstant.DIVIDING_LINE_OF_VERSION);
-        if (result == -1) {
-            isOld = Boolean.TRUE;
+        Boolean oldVersion = Boolean.FALSE;
+        int var = VersionSupport.compareVersion(version, SystemConstant.FIX_AHA_KID_USER_AGENT_VERSION);
+        if (var == -1) {
+            oldVersion = Boolean.TRUE;
+        }
+
+        // 是否因为5300错误强制升级
+        Boolean needUpgrade = Boolean.FALSE;
+        int var2 = VersionSupport.compareVersion(version, SystemConstant.COMPATIBILITY_5300_VERSION);
+        if (var2 == -1) {
+            needUpgrade = Boolean.TRUE;
         }
 
         AttributeSupport.put(exchange, span, IS_SKIP_AUTH_ATTR, skipAuth);
-        AttributeSupport.put(exchange, span, IS_SKIP_KID_ACCOUNT_5300_ERROR, skip5300);
+        AttributeSupport.put(exchange, span, IS_IGNORE_5300_ERROR, skip5300);
         AttributeSupport.put(exchange, span, IS_SKIP_URL_TAMPER_PROOF_ATTR, skipUrlTamperProof);
         AttributeSupport.put(exchange, span, IS_SKIP_IP_LIMITER_ATTR, skipIpLimiter);
         AttributeSupport.put(exchange, span, REQUEST_IP_ATTR, ip);
-        AttributeSupport.put(exchange, span, IS_OLD_VERSION_ATTR, isOld);
+        AttributeSupport.put(exchange, span, IS_OLD_VERSION_ATTR, oldVersion);
+        AttributeSupport.put(exchange, span, IS_NEED_UPGRADE_ATTR, needUpgrade);
         AttributeSupport.put(exchange, span, APP_OS_ATTR, os);
         AttributeSupport.put(exchange, span, APP_VERSION_ATTR, version);
         AttributeSupport.put(exchange, GATEWAY_SNAPSHOT_REQUEST_ATTR, snapshotRequestEntity);

@@ -56,20 +56,28 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
         try (Scope scope = tracer.scopeManager().activate(span)) {
             ResponseVo responseVo = verifyAccessToken(exchange);
             Integer code = responseVo.getCode();
-            Boolean skip5300 = AttributeSupport.isSkip5300Error(exchange);
+            Boolean ignore5300 = AttributeSupport.ignore5300(exchange);
 
             if (code.equals(ResponseConstants.SUCCESS)) {
                 return chain.filter(exchange);
-            } else if (skip5300 && code.equals(AuthorizationCode.WRONG_KID_ACCOUNT_CODE)) {
-                // 如果授权系统返回 5300 并且 在白名单
+            }
+
+            boolean is5300 = is5300(code);
+            if (is5300 & ignore5300) {
                 return chain.filter(exchange);
-            } else {
-                AttributeSupport.setHttpStatus(exchange, HttpStatus.UNAUTHORIZED);
-                span.log(responseVo.getMessage());
-                Tags.ERROR.set(span, true);
-                AttributeSupport.fillErrorMsg(exchange, responseVo.getMessage());
+            }
+
+            Boolean notifyUpgradeImmediately = AttributeSupport.needUpgrade(exchange);
+            if (is5300 && notifyUpgradeImmediately) {
+                responseVo.setMessage("检测到当前孩子被删除，请升级到最新版本后正常使用！");
                 return Mono.defer(() -> ResponseSupport.interrupt(exchange, HttpStatus.UNAUTHORIZED, responseVo));
             }
+
+            AttributeSupport.setHttpStatus(exchange, HttpStatus.UNAUTHORIZED);
+            span.log(responseVo.getMessage());
+            Tags.ERROR.set(span, true);
+            AttributeSupport.fillErrorMsg(exchange, responseVo.getMessage());
+            return Mono.defer(() -> ResponseSupport.interrupt(exchange, HttpStatus.UNAUTHORIZED, responseVo));
 
         } catch (Exception e) {
             TagsUtil.setCapturedErrorsTags(e);
@@ -102,4 +110,12 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
         return new ResponseVo(code, message);
     }
 
+    /**
+     * 返回码是不是5300
+     * @param code
+     * @return
+     */
+    private boolean is5300(Integer code) {
+        return code.equals(AuthorizationCode.WRONG_KID_ACCOUNT_CODE);
+    }
 }
