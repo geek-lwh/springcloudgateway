@@ -50,7 +50,7 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
         return FilterProcessOrderedConstant.AUTH_GATEWAY_FILTER_ORDER;
     }
 
-    private static final Integer FORCE_UPGRADE_CODE = 738001;
+    private static final Integer FORCE_UPGRADE_CODE = 738002;
 
     private static final String FORCE_UPGRADE_MSG = "检测到当前孩子被删除，请升级到最新版本后正常使用！";
 
